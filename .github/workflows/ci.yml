@@ -9,25 +9,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12', cache: pip }
+        with: { python-version: '3.12' }
       - run: pip install -r requirements.txt
       - name: Run Python tests
-        shell: bash
-        run: |
-          set +e
-          python -m pytest -q 2>&1 | tee pytest-output.txt
-          status=${PIPESTATUS[0]}
-          if [ "$status" -ne 0 ]; then
-            python -c "from pathlib import Path; text='\n'.join(Path('pytest-output.txt').read_text(encoding='utf-8').splitlines()[-80:]); text=text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'); print(f'::error title=Pytest failed::{text}')"
-          fi
-          exit "$status"
+        run: python -m pytest -q
       - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm, cache-dependency-path: frontend/package-lock.json }
-      - run: npm ci
+        with: { node-version: '22' }
+      - run: npm install
         working-directory: frontend
       - run: npm run build
-        working-directory: frontend
-      - run: npm audit --audit-level=high || true
         working-directory: frontend
       - run: node --check app/static/app.js
       - run: python -m compileall -q app scripts
