@@ -1,0 +1,2 @@
+"""Akıllı Kitap Danışmanı uygulaması."""
+

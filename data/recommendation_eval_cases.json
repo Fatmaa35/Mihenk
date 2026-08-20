@@ -1,0 +1,14 @@
+[
+  {"id":"short-atmospheric-crime","query":"Kısa, atmosferik polisiye","ideal_titles":["Kızıl Dosya"],"acceptable_titles":[],"irrelevant_titles":["Suç ve Ceza"],"required_types":["fiction"],"max_pages":320,"minimum_ndcg":0.7},
+  {"id":"introvert-transformation","query":"İçe dönük karakter dönüşümü","ideal_titles":["Martin Eden","Sefiller"],"acceptable_titles":["Yeraltından Notlar","Küçük Kadınlar"],"irrelevant_titles":["Kızıl Dosya"],"required_types":["fiction"],"minimum_ndcg":0.25},
+  {"id":"accessible-scifi","query":"Kolay okunan bilimkurgu","ideal_titles":["Denizler Altında Yirmi Bin Fersah"],"acceptable_titles":["Frankenstein"],"irrelevant_titles":[],"required_types":["fiction"],"minimum_ndcg":0.5},
+  {"id":"historical-no-war","query":"Savaş temalı olmayan tarihî roman","ideal_titles":["Sefiller"],"acceptable_titles":["İki Şehrin Hikâyesi"],"irrelevant_titles":[],"required_types":["fiction"],"forbidden_signals":["savaş"],"minimum_ndcg":0.35},
+  {"id":"gothic-identity","query":"Gotik atmosferde kimlik ve benlik çatışması","ideal_titles":["Dorian Gray'in Portresi"],"acceptable_titles":["Frankenstein"],"irrelevant_titles":["Don Kişot"],"required_types":["fiction"],"minimum_ndcg":0.45},
+  {"id":"family-warm","query":"Sıcak bir aile ve büyüme hikâyesi","ideal_titles":["Küçük Kadınlar"],"acceptable_titles":["Gurur ve Önyargı"],"irrelevant_titles":["Yeraltından Notlar"],"required_types":["fiction"],"minimum_ndcg":0.45},
+  {"id":"adventure-discovery","query":"Keşif duygusu güçlü bilimsel macera","ideal_titles":["Denizler Altında Yirmi Bin Fersah"],"acceptable_titles":["Don Kişot"],"irrelevant_titles":["Gurur ve Önyargı"],"required_types":["fiction"],"minimum_ndcg":0.45},
+  {"id":"social-justice","query":"Toplumsal adalet ve merhamet üzerine roman","ideal_titles":["Sefiller"],"acceptable_titles":["Suç ve Ceza","İki Şehrin Hikâyesi"],"irrelevant_titles":[],"required_types":["fiction"],"minimum_ndcg":0.35},
+  {"id":"satirical-adventure","query":"Hicivli ve maceralı bir klasik","ideal_titles":["Don Kişot"],"acceptable_titles":[],"irrelevant_titles":["Dorian Gray'in Portresi"],"required_types":["fiction"],"minimum_ndcg":0.45},
+  {"id":"psychological-guilt","query":"Vicdan ve suçluluk duygusunu işleyen psikolojik roman","ideal_titles":["Suç ve Ceza"],"acceptable_titles":["Dorian Gray'in Portresi"],"irrelevant_titles":["Kızıl Dosya"],"required_types":["fiction"],"minimum_ndcg":0.45},
+  {"id":"alienation-short","query":"Yabancılaşma ve özgür irade üzerine kısa roman","ideal_titles":["Yeraltından Notlar"],"acceptable_titles":[],"irrelevant_titles":["Denizler Altında Yirmi Bin Fersah"],"required_types":["fiction"],"max_pages":250,"minimum_ndcg":0.45},
+  {"id":"romance-social","query":"Toplumsal gözlemi güçlü romantik klasik","ideal_titles":["Gurur ve Önyargı"],"acceptable_titles":["İki Şehrin Hikâyesi"],"irrelevant_titles":["Kızıl Dosya"],"required_types":["fiction"],"minimum_ndcg":0.45}
+]
