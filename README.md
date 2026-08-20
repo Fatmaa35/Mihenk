@@ -1,39 +1,40 @@
-# Mihenk
+# Mihenk - Akıllı Kitap Danışmanı
 
-Mihenk; okuma geçmişi ve kişisel tercihlere göre kitap önerileri sunan, kitaplık ve okuma takibi özelliklerine sahip bir web uygulamasıdır.
+Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek kitap önerileri sunan, kitaplık ve okuma takibi yapmanızı sağlayan bir web uygulamasıdır.
 
 ## Özellikler
 
-- Kişiselleştirilmiş kitap önerileri
-- ISBN ve barkod ile kitap ekleme
-- Kişisel kitaplık ve okuma ilerlemesi
-- Pomodoro, okuma seansları ve yıllık okuma takvimi
-- Okuma istatistikleri ve hedefler
-- Supabase Auth ve PostgreSQL desteği
-- Responsive PWA ve telefon için QR bağlantısı
+- **Kişiselleştirilmiş Kitap Önerileri:** İlgi alanlarına ve okuma geçmişine göre dinamik kitap tavsiyeleri.
+- **ISBN & Barkod Sorgulama:** Open Library ve Google Books entegrasyonu ile hızlı kitap ekleme.
+- **Okuma Takibi:** Okuma süreleri, Pomodoro zamanlayıcı, alıntı takibi ve istatistikler.
+- **Fiyat Alarmı:** Kitapların fiyat hareketlerini izleme ve bildirim alma.
+- **Kullanıcı Yönetimi:** Supabase Auth desteği, kişisel profil ve tercihler.
 
 ## Teknolojiler
 
-- FastAPI ve Python
-- JavaScript, React ve TypeScript
-- Supabase / PostgreSQL
-- SQLite test altyapısı
+- **Backend:** Python, FastAPI, SQLite / Supabase (PostgreSQL)
+- **Frontend:** React, TypeScript, Vite
+- **Test:** Pytest, Playwright, Vitest
 
-## Yerelde çalıştırma
+## Kurulum ve Çalıştırma
 
-```powershell
+### 1. Backend
+
+```bash
+# Sanal ortam oluşturma ve bağımlılıkları yükleme
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+source .venv/bin/activate  # Windows için: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-Copy-Item .env.example .env
-uvicorn app.main:app --host 0.0.0.0 --port 8010
+
+# Uygulamayı başlatma
+uvicorn app.main:app --host 127.0.0.1 --port 8010
 ```
 
-Uygulama: [http://127.0.0.1:8010](http://127.0.0.1:8010)
+Uygulama [http://127.0.0.1:8010](http://127.0.0.1:8010) adresinde çalışır.
 
-Frontend dosyalarını yeniden derlemek için:
+### 2. Frontend (Geliştirme / Derleme)
 
-```powershell
+```bash
 cd frontend
 npm install
 npm run build
@@ -41,11 +42,11 @@ npm run build
 
 ## Testler
 
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
+```bash
+# Python backend testleri
+pytest -q
+
+# Frontend testleri
 cd frontend
 npm test
-npm run test:e2e
 ```
-
-Ortam değişkenleri ve Supabase bağlantısı için `.env.example` dosyasını kullanın. Gizli anahtarları repoya eklemeyin.
