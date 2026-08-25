@@ -1,9 +1,7 @@
 from datetime import date, datetime, timezone
 import asyncio
-import ipaddress
 import json
 import secrets
-import socket
 import httpx
 from pathlib import Path
 from time import perf_counter
@@ -100,25 +98,6 @@ STATIC_PAGE = STATIC_DIR / "index.html"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 ACCESS_COOKIE = "book_access_token"
 REFRESH_COOKIE = "book_refresh_token"
-
-
-@app.get("/app/network-url")
-def app_network_url(request: Request) -> dict:
-    if settings.public_app_url:
-        return {"url": settings.public_app_url}
-    host = request.url.hostname or "127.0.0.1"
-    if host in {"127.0.0.1", "localhost", "::1"}:
-        try:
-            candidates = socket.gethostbyname_ex(socket.gethostname())[2]
-            host = next(
-                address for address in candidates
-                if ipaddress.ip_address(address).is_private
-                and not ipaddress.ip_address(address).is_loopback
-            )
-        except (OSError, StopIteration, ValueError):
-            pass
-    port = f":{request.url.port}" if request.url.port else ""
-    return {"url": f"{request.url.scheme}://{host}{port}"}
 
 
 def current_session(request: Request, response: Response) -> dict:

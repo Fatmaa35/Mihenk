@@ -44,17 +44,4 @@ test.describe('authenticated reading flow', () => {
     await expect(page.locator('#app')).toHaveClass(/hidden/)
   })
 
-  test('phone QR overlay covers the viewport', async ({ page }) => {
-    await page.getByRole('button', { name: 'Telefonda açmak için QR kod' }).click()
-    const overlay = page.locator('.phone-qr-modal')
-    await expect(overlay).toBeVisible()
-    const box = await overlay.boundingBox()
-    const viewport = page.viewportSize()
-    expect(box).not.toBeNull()
-    expect(viewport).not.toBeNull()
-    expect(box!.x).toBe(0)
-    expect(box!.y).toBe(0)
-    expect(Math.round(box!.width)).toBe(viewport!.width)
-    expect(Math.round(box!.height)).toBe(viewport!.height)
-  })
 })

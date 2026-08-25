@@ -1,7 +1,5 @@
 import React, { FormEvent, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { createRoot } from 'react-dom/client'
-import { BrowserQRCodeSvgWriter } from '@zxing/browser'
 import { z } from 'zod'
 import { api } from './api'
 import { t } from './i18n'
@@ -68,41 +66,6 @@ function AppRoot() {
   </>
 }
 
-function PhoneQr() {
-  const [open, setOpen] = useState(false)
-  const [url, setUrl] = useState(window.location.origin)
-  const qrRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    api<{ url: string }>('/app/network-url').then(value => setUrl(value.url)).catch(() => undefined)
-  }, [])
-
-  useEffect(() => {
-    if (!open || !qrRef.current || !url) return
-    const size = Math.max(190, Math.min(280, window.innerWidth - 80, window.innerHeight - 330))
-    qrRef.current.replaceChildren(new BrowserQRCodeSvgWriter().write(url, size, size))
-  }, [open, url])
-
-  useEffect(() => {
-    if (!open) return
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [open])
-
-  return <>
-    <button type="button" className="icon-button phone-qr-button" aria-label="Telefonda açmak için QR kod" onClick={() => setOpen(true)}>▦</button>
-    {open && createPortal(<div className="product-modal phone-qr-modal" role="presentation" onClick={event => { if (event.target === event.currentTarget) setOpen(false) }}><section className="product-dialog phone-qr-dialog" role="dialog" aria-modal="true" aria-labelledby="phone-qr-title">
-      <p className="product-eyebrow">TELEFONDA AÇ</p>
-      <h2 id="phone-qr-title">QR kodu telefonunla tara</h2>
-      <div ref={qrRef} className="phone-qr-code" aria-label={`QR kod: ${url}`} />
-      <label>Telefon bağlantısı<input value={url} onChange={event => setUrl(event.target.value)} inputMode="url" /></label>
-      <p className="phone-qr-hint">Bilgisayar ve telefon aynı ağda olmalı. Kamera kullanımı için HTTPS gerekir.</p>
-      <div className="product-actions"><button type="button" onClick={() => setOpen(false)}>Kapat</button></div>
-    </section></div>, document.body)}
-  </>
-}
-
 function initMounts() {
   const pkmMount = document.getElementById('pkm-dashboard-mount')
   let pkmMounted = false
@@ -117,8 +80,6 @@ function initMounts() {
   const host = document.getElementById('product-ui-root')
   if (host) createRoot(host).render(<AppRoot />)
 
-  const phoneQrMount = document.getElementById('phone-qr-mount')
-  if (phoneQrMount) createRoot(phoneQrMount).render(<PhoneQr />)
 }
 
 if (document.readyState === 'loading') {

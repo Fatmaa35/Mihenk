@@ -44,22 +44,6 @@ test('login screen never restores a session without an explicit submit', async (
   expect(bootstrapWasRequested).toBe(false)
 })
 
-test('phone QR modal is portaled to and covers the full viewport', async ({ page }) => {
-  await page.goto('/')
-  await page.locator('#app').evaluate(element => element.classList.remove('hidden'))
-  await page.getByRole('button', { name: 'Telefonda açmak için QR kod' }).click()
-  const overlay = page.locator('body > .phone-qr-modal')
-  await expect(overlay).toBeVisible()
-  const box = await overlay.boundingBox()
-  const viewport = page.viewportSize()
-  expect(box).not.toBeNull()
-  expect(viewport).not.toBeNull()
-  expect(box!.x).toBe(0)
-  expect(box!.y).toBe(0)
-  expect(Math.round(box!.width)).toBe(viewport!.width)
-  expect(Math.round(box!.height)).toBe(viewport!.height)
-})
-
 test('assistant removes the thinking state when a response arrives', async ({ page }) => {
   await page.route('**/me/chat', route => route.fulfill({
     status: 200,

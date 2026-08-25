@@ -22,7 +22,6 @@ class Settings:
     recovery_redirect_url: str = os.getenv(
         "RECOVERY_REDIRECT_URL", "http://127.0.0.1:8010/"
     ).strip()
-    public_app_url: str = os.getenv("PUBLIC_APP_URL", "").strip().rstrip("/")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     google_books_api_key: str = os.getenv("GOOGLE_BOOKS_API_KEY", "")
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")

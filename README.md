@@ -12,9 +12,13 @@ Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek 
 
 ## Teknolojiler
 
-- **Backend:** Python, FastAPI, SQLite / Supabase (PostgreSQL)
-- **Frontend:** React, TypeScript, Vite
-- **Test:** Pytest, Playwright, Vitest
+- **Çalışma ortamı:** Python 3.12, Node.js 22
+- **Backend:** FastAPI 0.141.1, Pydantic 2.13.4, SQLite / Supabase (PostgreSQL)
+- **Frontend:** React 19.1.1, TypeScript 5.9.2, Vite 6.4.3
+- **Test:** Pytest 9.1.1, Playwright 1.62.0, Vitest 4.1.11
+
+GitHub Actions, tekrarlanabilir kurulum için `requirements.lock.txt` ve
+`frontend/package-lock.json` dosyalarını kullanır.
 
 ## Kurulum ve Çalıştırma
 
@@ -24,7 +28,7 @@ Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek 
 # Sanal ortam oluşturma ve bağımlılıkları yükleme
 python -m venv .venv
 source .venv/bin/activate  # Windows için: .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install -r requirements.lock.txt
 
 # Uygulamayı başlatma
 uvicorn app.main:app --host 127.0.0.1 --port 8010
@@ -36,7 +40,7 @@ Uygulama [http://127.0.0.1:8010](http://127.0.0.1:8010) adresinde çalışır.
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run build
 ```
 

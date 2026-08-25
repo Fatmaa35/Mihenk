@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser'
+import { BrowserMultiFormatOneDReader, type IScannerControls } from '@zxing/browser'
 import { BarcodeFormat, DecodeHintType } from '@zxing/library'
 import { api } from './api'
 
@@ -112,7 +112,7 @@ export function ISBNScannerModal({ onClose, onBookAdded }: ISBNScannerModalProps
       const hints = new Map()
       hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.EAN_13, BarcodeFormat.UPC_A])
       hints.set(DecodeHintType.TRY_HARDER, true)
-      const reader = new BrowserMultiFormatReader(hints, {
+      const reader = new BrowserMultiFormatOneDReader(hints, {
         delayBetweenScanAttempts: 80,
         delayBetweenScanSuccess: 300,
         tryPlayVideoTimeout: 5000

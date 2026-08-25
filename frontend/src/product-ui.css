@@ -422,16 +422,6 @@
 .annual-goal span { color: var(--text-muted); font-size: .78rem; }
 .annual-goal-track { height: 9px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
 .annual-goal-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1b9a75, #08654f); }
-.phone-qr-button { font-size: 1.35rem; }
-.phone-qr-modal { position: fixed; inset: 0; z-index: 2000; width: 100vw; height: 100dvh; min-height: 100vh; overflow-y: auto; padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
-.phone-qr-dialog { width: min(430px, 100%); max-height: calc(100dvh - 36px); overflow-y: auto; text-align: center; }
-.phone-qr-code { display: grid; place-items: center; min-height: 220px; margin: 14px auto; }
-.phone-qr-code svg { display: block; max-width: 100%; max-height: min(42dvh, 280px); width: auto; height: auto; padding: 8px; border: 1px solid var(--product-line); border-radius: 16px; background: #fff; }
-.phone-qr-dialog label { display: grid; gap: 6px; text-align: left; font-weight: 700; }
-.phone-qr-dialog input { width: 100%; padding: 10px 12px; border: 1px solid var(--product-line); border-radius: 10px; }
-.phone-qr-hint { color: var(--text-muted); font-size: .78rem; }
-@media (max-height: 620px) { .phone-qr-dialog { padding: 20px; } .phone-qr-code { min-height: 150px; margin: 8px auto; } .phone-qr-code svg { max-height: 32dvh; } }
-
 /* ISBN Scanner Modal */
 .barcode-camera-container {
   text-align: center;
