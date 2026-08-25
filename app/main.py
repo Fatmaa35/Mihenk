@@ -34,6 +34,8 @@ from app.schemas import (
     RecommendationFeedbackUpsert,
     BookComparisonRequest,
     ReadingPlanUpsert,
+    PushSubscriptionDelete,
+    PushSubscriptionUpsert,
     ReadingPlanStatusPatch,
     ReadingGoalUpsert,
     RegisterRequest,
@@ -83,7 +85,14 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
-app.add_middleware(SecurityMiddleware, allowed_origins=settings.allowed_origins, enabled=settings.rate_limit_enabled)
+metrics.configure_redis(settings.redis_url, settings.redis_key_prefix)
+app.add_middleware(
+    SecurityMiddleware,
+    allowed_origins=settings.allowed_origins,
+    enabled=settings.rate_limit_enabled,
+    redis_url=settings.redis_url,
+    redis_key_prefix=settings.redis_key_prefix,
+)
 app.add_middleware(ObservabilityMiddleware)
 repository = create_repository(settings)
 app.state.application_event_sink = repository.application_event
@@ -91,10 +100,25 @@ repository.seed_books(ROOT / "data" / "books.json")
 catalog = repository.list_books()
 search_index = create_search_index(settings, repository, catalog)
 recommender = ConsensusRecommender(catalog, search_index)
-explainer = create_explainer(settings)
+
+
+def record_ai_usage(event: dict) -> None:
+    metrics.increment("ai_calls")
+    metrics.increment("ai_failures", 0 if event["success"] else 1)
+    metrics.increment("ai_prompt_tokens", event["prompt_tokens"])
+    metrics.increment("ai_output_tokens", event["output_tokens"])
+    metrics.increment("ai_estimated_cost_microusd", round(event["estimated_cost_usd"] * 1_000_000))
+    repository.application_event(
+        "info" if event["success"] else "error", "ai_usage",
+        route=event["operation"], duration_ms=event["latency_ms"], details=event,
+    )
+
+
+explainer = create_explainer(settings, record_ai_usage)
 chatbot = BookChatbot(recommender, explainer, settings.gemini_model)
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_PAGE = STATIC_DIR / "index.html"
+PRIVACY_PAGE = STATIC_DIR / "privacy.html"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 ACCESS_COOKIE = "book_access_token"
 REFRESH_COOKIE = "book_refresh_token"
@@ -203,6 +227,11 @@ def supabase_error_handler(request: Request, error: SupabaseRequestError) -> JSO
 @app.get("/", include_in_schema=False)
 def home() -> FileResponse:
     return FileResponse(STATIC_PAGE, media_type="text/html; charset=utf-8")
+
+
+@app.get("/privacy", include_in_schema=False)
+def privacy_notice() -> FileResponse:
+    return FileResponse(PRIVACY_PAGE, media_type="text/html; charset=utf-8")
 
 
 @app.get("/health")
@@ -363,6 +392,20 @@ def delete_my_account(request: Request, response: Response) -> Response:
     response.delete_cookie(ACCESS_COOKIE)
     response.delete_cookie(REFRESH_COOKIE)
     response.status_code = 204
+    return response
+
+
+@app.get("/me/data-export")
+def export_my_data(request: Request, response: Response) -> Response:
+    session = current_session(request, response)
+    payload = repository.export_user_data(
+        session["user"]["id"], session["access_token"]
+    )
+    body = json.dumps(payload, ensure_ascii=False, indent=2, default=str)
+    response.body = body.encode("utf-8")
+    response.media_type = "application/json"
+    response.headers["Content-Type"] = "application/json; charset=utf-8"
+    response.headers["Content-Disposition"] = "attachment; filename=mihenk-verilerim.json"
     return response
 
 
@@ -676,6 +719,39 @@ def my_notifications(request: Request, response: Response) -> list[dict]:
     )
 
 
+@app.get("/notifications/capabilities")
+def notification_capabilities() -> dict:
+    return {
+        "email": settings.reminder_provider in {"smtp", "multi"},
+        "push": settings.reminder_provider in {"webpush", "multi"},
+        "vapid_public_key": settings.web_push_vapid_public_key
+        if settings.reminder_provider in {"webpush", "multi"} else None,
+    }
+
+
+@app.post("/me/push-subscriptions", status_code=201)
+def save_push_subscription(payload: PushSubscriptionUpsert, request: Request,
+                           response: Response) -> dict:
+    if settings.reminder_provider not in {"webpush", "multi"}:
+        raise HTTPException(status_code=503, detail="Push bildirimleri yapılandırılmadı.")
+    session = current_session(request, response)
+    return repository.upsert_web_push_subscription(
+        session["user"]["id"], payload.endpoint, payload.p256dh, payload.auth,
+        request.headers.get("user-agent", "")[:500], session["access_token"],
+    )
+
+
+@app.delete("/me/push-subscriptions", status_code=204)
+def remove_push_subscription(payload: PushSubscriptionDelete, request: Request,
+                             response: Response) -> Response:
+    session = current_session(request, response)
+    repository.delete_web_push_subscription(
+        session["user"]["id"], payload.endpoint, session["access_token"]
+    )
+    response.status_code = 204
+    return response
+
+
 @app.put("/me/notifications/{notification_id}/read")
 def read_my_notification(
     notification_id: str, request: Request, response: Response,
@@ -927,6 +1003,10 @@ def my_reading_plans(request: Request, response: Response) -> list[dict]:
 @app.put("/me/reading-plans")
 def update_my_reading_plan(payload: ReadingPlanUpsert, request: Request, response: Response) -> dict:
     session = current_session(request, response)
+    if payload.delivery_channel == "email" and settings.reminder_provider not in {"smtp", "multi"}:
+        raise HTTPException(status_code=503, detail="E-posta bildirimleri henüz yapılandırılmadı.")
+    if payload.delivery_channel == "push" and settings.reminder_provider not in {"webpush", "multi"}:
+        raise HTTPException(status_code=503, detail="Push bildirimleri henüz yapılandırılmadı.")
     try:
         return repository.upsert_reading_plan(session["user"]["id"], **payload.model_dump(), access_token=session["access_token"])
     except ValueError as error:

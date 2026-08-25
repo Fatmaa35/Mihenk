@@ -31,17 +31,17 @@ test('invalid login preserves a generic error and can recover', async ({ page })
   await expect(auth.getByRole('button', { name: 'Giriş yap', exact: true })).toBeEnabled()
 })
 
-test('login screen never restores a session without an explicit submit', async ({ page }) => {
+test('anonymous startup checks for a restorable session', async ({ page }) => {
   let bootstrapWasRequested = false
   await page.route('**/me/bootstrap', async route => {
     bootstrapWasRequested = true
-    await route.fulfill({ status: 500, json: { detail: 'unexpected bootstrap' } })
+    await route.fulfill({ status: 401, json: { detail: 'Oturum açmanız gerekiyor.' } })
   })
   await page.goto('/')
   await expect(page.getByRole('heading', { name: /Bir sonraki kitabın seni bekliyor/ })).toBeVisible()
   await expect(page.locator('#auth-form')).not.toBeVisible()
   await expect(page.locator('#app')).toHaveClass(/hidden/)
-  expect(bootstrapWasRequested).toBe(false)
+  expect(bootstrapWasRequested).toBe(true)
 })
 
 test('assistant removes the thinking state when a response arrives', async ({ page }) => {

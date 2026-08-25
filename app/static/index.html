@@ -9,10 +9,10 @@
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
   <link rel="icon" href="/static/favicon.svg?v=2" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/styles.css?v=20260820_chat_v8">
-  <link rel="stylesheet" href="/static/generated/product-ui.css?v=20260820_qr_v7">
-  <script src="/static/app.js?v=20260820_chat_v8" defer></script>
-  <script type="module" src="/static/generated/product-ui.js?v=20260820_qr_v7"></script>
+  <link rel="stylesheet" href="/static/styles.css?v=20260826_release_v1">
+  <link rel="stylesheet" href="/static/generated/product-ui.css?v=20260826_release_v1">
+  <script src="/static/app.js?v=20260826_release_v1" defer></script>
+  <script type="module" src="/static/generated/product-ui.js?v=20260826_release_v1"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">İçeriğe geç</a>
@@ -62,7 +62,7 @@
         <p id="auth-error" class="error-line" role="alert" aria-live="assertive"></p>
         <button id="auth-submit" class="primary wide" type="submit">Kayıt ol</button>
         <button id="auth-switch" class="text-button" type="button">Zaten hesabım var</button>
-        <p class="auth-legal">Devam ederek topluluk kurallarını ve gizlilik ilkelerini kabul etmiş olursun.</p>
+        <p class="auth-legal">Devam ederek topluluk kurallarını ve <a href="/privacy" target="_blank" rel="noopener">gizlilik ilkelerini</a> kabul etmiş olursun.</p>
       </form>
       </div>
     </dialog>
@@ -83,7 +83,7 @@
       <div><p class="landing-section-kicker">Mihenk hakkında</p><h2>Her okurun pusulası kendine özgüdür.</h2></div>
       <p>Mihenk; katalog, okuma alışkanlıkları ve kişisel tercihleri bir araya getirerek daha anlamlı kitap keşifleri oluşturur.</p>
     </section>
-    <footer id="landing-contact" class="landing-footer"><a class="landing-brand compact" href="#landing-home"><img src="/static/favicon.svg" alt=""><span>Mihenk</span></a><p>Yeni okuma yolculuğuna başlamak için giriş yap.</p><button type="button" data-open-login>Giriş yap →</button></footer>
+    <footer id="landing-contact" class="landing-footer"><a class="landing-brand compact" href="#landing-home"><img src="/static/favicon.svg" alt=""><span>Mihenk</span></a><p>Yeni okuma yolculuğuna başlamak için giriş yap. <a href="/privacy">Gizlilik ve KVKK</a></p><button type="button" data-open-login>Giriş yap →</button></footer>
   </section>
 
   <div id="app" class="hidden">
@@ -94,9 +94,30 @@
       </div>
       <div class="top-actions">
         <button id="notification-button" class="icon-button" data-view="alerts" aria-label="Bildirimler">♢<b id="notification-count" class="badge hidden">0</b></button>
-        <div id="top-avatar" class="avatar"></div>
-        <span id="top-name"></span>
-        <button id="logout" class="ghost">Çıkış</button>
+        <div id="profile-menu-root" class="profile-menu">
+          <button id="profile-menu-button" class="profile-menu-trigger" type="button" aria-haspopup="menu" aria-controls="profile-menu-panel" aria-expanded="false">
+            <span id="top-avatar" class="avatar" aria-hidden="true"></span>
+            <span id="top-name"></span>
+            <span class="profile-menu-chevron" aria-hidden="true">⌄</span>
+            <span class="sr-only">Profil menüsünü aç</span>
+          </button>
+          <div id="profile-menu-panel" class="profile-menu-panel hidden" role="menu" aria-labelledby="profile-menu-button">
+            <div class="profile-menu-summary">
+              <div id="profile-menu-avatar" class="avatar profile-menu-avatar" aria-hidden="true"></div>
+              <div class="profile-menu-identity">
+                <strong id="profile-menu-name"></strong>
+                <small id="profile-menu-email"></small>
+              </div>
+            </div>
+            <div class="profile-menu-actions">
+              <button id="profile-overview" class="profile-menu-item" type="button" role="menuitem">Profilim</button>
+              <button id="change-password" class="profile-menu-item" type="button" role="menuitem">Şifre Değiştir</button>
+              <a class="profile-menu-item" href="/me/data-export" role="menuitem">Verilerimi indir</a>
+              <a class="profile-menu-item" href="/privacy" target="_blank" rel="noopener" role="menuitem">Gizlilik ve KVKK</a>
+              <button id="logout" class="profile-menu-item profile-menu-logout" type="button" role="menuitem">Çıkış</button>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -127,7 +148,7 @@
           <div class="welcome-hero">
             <div class="literary-drift" aria-hidden="true"><i></i><i></i><i></i></div>
             <div class="welcome-copy"><p class="eyebrow">KİŞİSEL OKUMA PUSULAN</p><h1><span id="welcome-name">Merhaba</span>, bugün nasıl bir hikâye arıyorsun?</h1><p>Ruh halini, sevdiğin temaları veya aradığın karakteri anlat. Pusula, okuma geçmişinle birlikte değerlendirsin.</p><div id="home-summary" class="home-summary" aria-label="Okuma özeti"></div></div>
-            <div class="ambient-stage" aria-hidden="true"><div class="ambient-grid"></div><canvas id="ambient-canvas"></canvas><div class="orbit-label"><span class="orbit-kicker">MİHENK İNDEKSİ</span><strong><b id="orbit-count">514</b><em>kitap</em></strong><small>Kişisel zevklerinle eşleşen canlı katalog</small><div class="orbit-progress"><i></i></div></div><div class="orbit-chip chip-rag"><i></i><span>RAG indeksli</span></div><div class="orbit-chip chip-live"><i></i><span>Canlı katalog</span></div><div class="orbit-caption"><span>Gemma</span><b>×</b><span>Hibrit Arama</span></div></div>
+            <div class="ambient-stage" aria-hidden="true"><div class="ambient-grid"></div><canvas id="ambient-canvas"></canvas><div class="orbit-label"><span class="orbit-kicker">MİHENK İNDEKSİ</span><strong><b id="orbit-count" aria-live="polite" aria-busy="true">—</b><em>kitap</em></strong><small>Kişisel zevklerinle eşleşen canlı katalog</small><div class="orbit-progress"><i></i></div></div><div class="orbit-chip chip-rag"><i></i><span>RAG indeksli</span></div><div class="orbit-chip chip-live"><i></i><span>Canlı katalog</span></div><div class="orbit-caption"><span>Gemma</span><b>×</b><span>Hibrit Arama</span></div></div>
           </div>
           <div class="card search-card"><div class="search-card-head"><div><p class="eyebrow">AKILLI EŞLEŞTİRME</p><h2>Nasıl bir kitap arıyorsun?</h2></div><span class="ai-status"><i></i> Gemma 4 destekli</span></div><div id="quick-prompts" class="quick-prompts"><button type="button" data-prompt="Kısa, sürükleyici ve gizemli bir roman">Kısa ve gizemli</button><button type="button" data-prompt="İçe dönük bir karakterin dönüşüm hikâyesi">Karakter dönüşümü</button><button type="button" data-prompt="Umut veren, sıcak ve sakin bir kitap">İyi hissettiren</button><button type="button" data-prompt="Yağmurlu bir akşama uygun atmosferik bir klasik">Yağmurlu akşam</button></div><div id="traits" class="tags" aria-label="Karakter özellikleri"></div><div id="search-signal-summary" class="search-signal-summary" aria-live="polite"><span>✦</span><p>Tür, atmosfer veya karakter seç; Mihenk sinyalleri birlikte yorumlasın.</p></div><label class="sr-only" for="character">Kitapta aradığın karakter, atmosfer ve temalar</label><textarea id="character" placeholder="Örneğin: Melankolik bir kış akşamı için distopik bir bilim kurgu romanı arıyorum…"></textarea><div class="search-footer"><span class="muted">Gemma, zevk profilini ve katalog sinyallerini birlikte değerlendirecek.</span><button id="recommend" class="primary"><span>✦</span> Eşleşmeleri bul</button></div><p id="recommend-status" class="status" aria-live="polite"></p></div>
           <section class="home-bento" aria-label="Kişisel okuma panosu"><article id="home-reading-card" class="card bento-card bento-reading"></article><article id="home-badge-card" class="card bento-card bento-badge"></article><article id="home-ai-card" class="card bento-card bento-ai"></article></section>
@@ -170,20 +191,23 @@
 
         <section id="alerts-view" class="view hidden">
           <div class="view-head"><div><p class="eyebrow">AKILLI TAKİP</p><h1>Fiyat pusulan</h1></div><p>Favori kitaplarına hedef fiyat koy; uygun teklif oluştuğunda burada gör.</p></div>
-          <div class="dashboard-grid"><article class="card"><div class="section-title compact"><div><p class="eyebrow">ALARMLAR</p><h2>Takip edilen kitaplar</h2></div></div><div id="alerts-list"></div></article><article class="card"><div class="section-title compact"><div><p class="eyebrow">BİLDİRİMLER</p><h2>Son gelişmeler</h2></div><button id="read-all" class="text-button">Okundu işaretle</button></div><div id="notifications-list"></div></article></div>
+          <div class="dashboard-grid"><article class="card"><div class="section-title compact"><div><p class="eyebrow">ALARMLAR</p><h2>Takip edilen kitaplar</h2></div></div><div id="alerts-list"></div></article><article class="card"><div class="section-title compact"><div><p class="eyebrow">BİLDİRİMLER</p><h2>Son gelişmeler</h2></div><div><button id="enable-push" class="text-button hidden" type="button">Push'ı aç</button><button id="read-all" class="text-button">Okundu işaretle</button></div></div><div id="notifications-list"></div></article></div>
         </section>
 
-        <section id="quality-view" class="view hidden">
-          <div class="view-head"><div><p class="eyebrow">KALİTE VE GÖZLEMLENEBİLİRLİK</p><h1>Katalog sağlığı</h1></div><p>Eksik metadata, öneri davranışı ve fallback sinyallerini tek yerde izle.</p></div>
-          <div id="quality-metrics" class="metric-grid"></div>
-          <div id="admin-social-metrics" class="metric-grid"></div>
-          <div class="dashboard-grid"><article class="card series-card"><p class="eyebrow">TOPLULUK</p><h2>En çok yıldızlanan kitaplar</h2><div id="admin-top-books" class="admin-list"></div></article><article class="card series-card"><p class="eyebrow">SİSTEM LOGLARI</p><h2>Son istekler ve hatalar</h2><div id="system-logs" class="admin-list"></div></article></div>
-          <article class="card series-card pipeline-card"><div class="section-title compact"><div><p class="eyebrow">VERİ BORU HATTI</p><h2>Fiyat toplama ve tahminler</h2></div><button id="run-price-pipeline" class="primary" type="button">Şimdi çalıştır</button></div><div id="pipeline-summary" class="pipeline-summary"></div><div class="dashboard-grid"><div><h3>Son çalışmalar</h3><div id="pipeline-runs" class="admin-list"></div></div><div><h3>Pipeline logları</h3><div id="pipeline-logs" class="admin-list"></div></div></div></article>
-          <article class="card series-card"><div class="section-title compact"><div><p class="eyebrow">KULLANICI YÖNETİMİ</p><h2>Doğrulama ve erişim</h2></div><input id="admin-user-search" type="search" placeholder="Kullanıcı ara"></div><div id="admin-users" class="admin-list"></div></article>
-          <article class="card series-card"><div class="section-title compact"><div><p class="eyebrow">TOPLULUK GÜVENLİĞİ</p><h2>Yorum şikâyetleri</h2></div><span id="report-queue-count" class="pill">0 açık</span></div><div id="admin-reports" class="admin-list"></div></article>
-          <article class="card series-card"><p class="eyebrow">GERİ BİLDİRİM</p><h2>Öneri tepkileri</h2><div id="quality-feedback" class="bar-chart"></div></article>
-          <div class="dashboard-grid"><article class="card series-card"><div class="section-title compact"><div><p class="eyebrow">ÖNERİ REGRESYONU</p><h2>Semantik kalite</h2></div><button id="run-evaluation" class="primary">Testleri çalıştır</button></div><div id="evaluation-results" class="admin-list muted">Henüz çalıştırılmadı.</div></article><article class="card series-card"><div class="section-title compact"><div><p class="eyebrow">KATALOG KUYRUĞU</p><h2>Veri işleri</h2></div><button id="queue-quality-scan" class="ghost">Kalite taraması ekle</button></div><div id="catalog-jobs" class="admin-list"></div></article></div>
-          <article class="card series-card"><p class="eyebrow">İNCELEME KUYRUĞU</p><h2>Eksik ve şüpheli kayıtlar</h2><div id="catalog-issues" class="admin-list"></div></article>
+        <section id="quality-view" class="view hidden quality-view">
+          <div class="view-head admin-view-head"><div><p class="eyebrow">YÖNETİM MERKEZİ</p><h1>Mihenk kontrol paneli</h1></div><p>Önemli sinyaller tek bakışta; ayrıntılar gerektiğinde aşağıda.</p></div>
+          <div id="quality-metrics" class="metric-grid admin-kpi-grid" aria-label="Katalog özeti"></div>
+          <div class="admin-visual-grid">
+            <article class="card admin-chart-card"><div class="admin-chart-heading"><div><p class="eyebrow">KATALOG</p><h2>Veri bütünlüğü</h2></div><span class="status-chip status-good">Canlı</span></div><div id="catalog-health-chart" class="donut-layout" aria-label="Katalog bütünlük grafiği"></div><div id="catalog-risk-chart" class="compact-bars" aria-label="Katalog sorun dağılımı"></div></article>
+            <article class="card admin-chart-card"><div class="admin-chart-heading"><div><p class="eyebrow">TOPLULUK</p><h2>Hareket görünümü</h2></div><span class="chart-period">Toplam</span></div><div id="admin-community-chart" class="column-chart" aria-label="Topluluk hareket grafiği"></div></article>
+            <article class="card admin-chart-card"><div class="admin-chart-heading"><div><p class="eyebrow">SİSTEM</p><h2>Operasyon sağlığı</h2></div><span id="admin-alert-count" class="status-chip">0 uyarı</span></div><div id="admin-ops-health" class="ops-health" aria-label="Operasyon sağlık göstergeleri"></div></article>
+          </div>
+          <div id="admin-social-metrics" class="metric-grid admin-kpi-grid admin-community-kpis"></div>
+          <div class="dashboard-grid admin-dashboard-grid"><article class="card series-card"><p class="eyebrow">OKUR İLGİSİ</p><h2>Öne çıkan kitaplar</h2><div id="admin-top-books" class="rank-chart"></div></article><article class="card series-card"><div class="admin-chart-heading"><div><p class="eyebrow">İSTEK TRAFİĞİ</p><h2>Sistem kayıtları</h2></div><span class="chart-period">Son 30</span></div><div id="admin-log-chart" class="log-health-chart"></div><div id="system-logs" class="admin-list compact-log-list"></div></article></div>
+          <div class="admin-tools-heading"><div><p class="eyebrow">YÖNETİM ARAÇLARI</p><h2>Ayrıntılı işlemler</h2></div><p>İhtiyacın olan bölümü aç.</p></div>
+          <details class="card admin-tool-panel"><summary><span><b>Veri boru hattı</b><small>Fiyat toplama ve tahminler</small></span><span class="summary-action">Aç</span></summary><div class="admin-tool-content pipeline-card"><div class="section-title compact"><div><p class="eyebrow">VERİ BORU HATTI</p><h2>Fiyat toplama ve tahminler</h2></div><button id="run-price-pipeline" class="primary" type="button">Şimdi çalıştır</button></div><div id="pipeline-summary" class="pipeline-summary"></div><div class="dashboard-grid"><div><h3>Son çalışmalar</h3><div id="pipeline-runs" class="admin-list"></div></div><div><h3>Pipeline logları</h3><div id="pipeline-logs" class="admin-list"></div></div></div></div></details>
+          <details class="card admin-tool-panel"><summary><span><b>Kullanıcı ve topluluk</b><small>Hesap erişimleri ve yorum şikâyetleri</small></span><span class="summary-action">Aç</span></summary><div class="admin-tool-content"><div class="section-title compact"><div><p class="eyebrow">KULLANICI YÖNETİMİ</p><h2>Doğrulama ve erişim</h2></div><input id="admin-user-search" type="search" placeholder="Kullanıcı ara"></div><div id="admin-users" class="admin-list"></div><div class="section-title compact admin-subsection"><div><p class="eyebrow">TOPLULUK GÜVENLİĞİ</p><h2>Yorum şikâyetleri</h2></div><span id="report-queue-count" class="pill">0 açık</span></div><div id="admin-reports" class="admin-list"></div></div></details>
+          <details class="card admin-tool-panel"><summary><span><b>Kalite ve inceleme</b><small>Geri bildirim, regresyon ve katalog kuyruğu</small></span><span class="summary-action">Aç</span></summary><div class="admin-tool-content"><div class="dashboard-grid"><div><p class="eyebrow">GERİ BİLDİRİM</p><h2>Öneri tepkileri</h2><div id="quality-feedback" class="bar-chart"></div></div><div><div class="section-title compact"><div><p class="eyebrow">ÖNERİ REGRESYONU</p><h2>Semantik kalite</h2></div><button id="run-evaluation" class="primary">Testleri çalıştır</button></div><div id="evaluation-results" class="admin-list muted">Henüz çalıştırılmadı.</div></div></div><div class="dashboard-grid admin-subsection"><div><div class="section-title compact"><div><p class="eyebrow">KATALOG KUYRUĞU</p><h2>Veri işleri</h2></div><button id="queue-quality-scan" class="ghost">Kalite taraması ekle</button></div><div id="catalog-jobs" class="admin-list"></div></div><div><p class="eyebrow">İNCELEME KUYRUĞU</p><h2>Eksik ve şüpheli kayıtlar</h2><div id="catalog-issues" class="admin-list"></div></div></div></div></details>
         </section>
       </main>
     </div>

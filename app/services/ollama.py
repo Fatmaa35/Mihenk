@@ -1,5 +1,7 @@
 import json
 import asyncio
+from time import perf_counter
+from typing import Callable
 
 import httpx
 
@@ -18,9 +20,22 @@ from app.services.llm_profiles import ASSISTANT_PROFILE, MATCHER_PROFILE
 class OllamaExplainer(GeminiExplainer):
     """Yerel Ollama API'si üzerinden yerel veya Cloud modellerini kullanır."""
 
-    def __init__(self, base_url: str, model: str, enabled: bool) -> None:
-        super().__init__("ollama-local", model, enabled)
+    def __init__(
+        self, base_url: str, model: str, enabled: bool,
+        usage_sink: Callable[[dict], None] | None = None,
+        input_cost_per_million: float = 0,
+        output_cost_per_million: float = 0,
+    ) -> None:
+        super().__init__(
+            "ollama-local", model, enabled, usage_sink,
+            input_cost_per_million, output_cost_per_million,
+        )
+        self.provider = "ollama"
         self.base_url = base_url.rstrip("/")
+
+    @staticmethod
+    def _ollama_tokens(payload: dict) -> tuple[int, int]:
+        return int(payload.get("prompt_eval_count", 0) or 0), int(payload.get("eval_count", 0) or 0)
 
     async def explain(
         self, profile: dict, character_description: str, summary: str,
@@ -40,6 +55,7 @@ class OllamaExplainer(GeminiExplainer):
         candidates: list[dict], output_limit: int | None = None,
     ) -> CharacterRecommendationResponse:
         fallback = self._fallback(summary, candidates)
+        started = perf_counter()
         try:
             response = httpx.post(
                 f"{self.base_url}/api/chat",
@@ -57,7 +73,8 @@ class OllamaExplainer(GeminiExplainer):
                 timeout=httpx.Timeout(90.0, connect=4.0),
             )
             response.raise_for_status()
-            content = response.json()["message"]["content"].strip()
+            payload = response.json()
+            content = payload["message"]["content"].strip()
             try:
                 parsed = CharacterRecommendationResponse.model_validate_json(
                     self._without_code_fence(content)
@@ -67,11 +84,16 @@ class OllamaExplainer(GeminiExplainer):
                 # Böyle durumda yalnızca serbest metin özeti alınır; kitaplar ve skorlar
                 # deterministik fallback yanıtından korunur.
                 if self._apply_alternative_json(content, fallback, profile):
+                    self._record_usage("recommendation", started, True, *self._ollama_tokens(payload))
                     return fallback
                 fallback.character_analysis_summary = self._safe_summary(content, summary)
+                self._record_usage("recommendation", started, True, *self._ollama_tokens(payload))
                 return fallback
-            return self._guard(parsed, fallback, profile, output_limit)
-        except (httpx.HTTPError, KeyError) as error:
+            result = self._guard(parsed, fallback, profile, output_limit)
+            self._record_usage("recommendation", started, True, *self._ollama_tokens(payload))
+            return result
+        except (httpx.HTTPError, KeyError, ValueError) as error:
+            self._record_usage("recommendation", started, False)
             raise GeminiUnavailable("Ollama açıklama katmanına ulaşılamadı.") from error
 
     async def answer_book_question(
@@ -99,6 +121,7 @@ class OllamaExplainer(GeminiExplainer):
             ],
             {"role": "user", "content": question},
         ]
+        started = perf_counter()
         try:
             response = httpx.post(
                 f"{self.base_url}/api/chat",
@@ -112,11 +135,14 @@ class OllamaExplainer(GeminiExplainer):
                 timeout=httpx.Timeout(90.0, connect=4.0),
             )
             response.raise_for_status()
-            answer = response.json()["message"]["content"].strip()
+            payload = response.json()
+            answer = payload["message"]["content"].strip()
             if not answer or len(answer) > 8_000:
                 raise ValueError("Geçersiz Ollama yanıtı")
+            self._record_usage("chat", started, True, *self._ollama_tokens(payload))
             return answer
         except (httpx.HTTPError, KeyError, ValueError) as error:
+            self._record_usage("chat", started, False)
             raise GeminiUnavailable("Ollama genel kitap danışmanına ulaşılamadı.") from error
 
     @staticmethod

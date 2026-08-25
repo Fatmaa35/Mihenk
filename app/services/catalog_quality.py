@@ -188,6 +188,8 @@ def assess_book_quality(book: dict) -> tuple[float, list[str]]:
 
 def enrich_book_record(book: dict) -> dict:
     enriched = dict(book)
+    isbn10, isbn13 = normalize_isbn(book.get("isbn"))
+    enriched["isbn"] = isbn13 or isbn10
     enriched["canonical_work_key"] = book.get("canonical_work_key") or canonical_work_key(
         book["title"], book["author"]
     )

@@ -11,7 +11,7 @@ import httpx
 
 from app.services.catalog_quality import canonical_work_key, deduplicate_library_entries, enrich_book_record, normalize_isbn
 from app.services.gamification import BADGE_RULES, build_gamification_summary, earned_badge_codes
-from app.services.reading_planner import build_schedule, schedule_summary
+from app.services.reading_planner import build_schedule, reminder_datetime_utc, schedule_summary
 
 
 class SupabaseRequestError(RuntimeError):
@@ -247,6 +247,71 @@ class SupabaseRepository:
     def delete_user_account(self, user_id: str, access_token: str | None = None) -> None:
         self._request("DELETE", f"/auth/v1/admin/users/{user_id}", admin=True)
 
+    def export_user_data(self, user_id: str, access_token: str | None = None) -> dict:
+        """Return the authenticated user's portable data without secrets or auth tokens."""
+        if not access_token:
+            raise ValueError("Veri dışa aktarma için etkin oturum gerekir.")
+        tables = (
+            "user_preferences", "user_books", "user_custom_books", "reading_goals",
+            "reading_activity", "reading_sessions", "book_quotes", "price_alerts",
+            "notifications", "recommendation_feedback", "book_ratings", "book_comments",
+            "comment_helpful_votes", "comment_reports", "user_badges", "user_badge_showcase",
+            "chat_sessions", "chat_messages", "reading_plans", "reading_plan_days",
+            "reminder_deliveries",
+        )
+        profile = self._request(
+            "GET", "/rest/v1/profiles", token=access_token,
+            params={"select": "id,display_name,app_role,is_verified,verification_label,created_at,updated_at",
+                    "id": f"eq.{user_id}", "limit": 1},
+        ).json()
+        records: dict[str, list[dict]] = {}
+        for table in tables:
+            records[table] = self._request(
+                "GET", f"/rest/v1/{table}", token=access_token,
+                params={"select": "*", "user_id": f"eq.{user_id}"},
+            ).json()
+        try:
+            records["web_push_subscriptions"] = self._request(
+                "GET", "/rest/v1/web_push_subscriptions", token=access_token,
+                params={"select": "id,user_id,user_agent,created_at,updated_at", "user_id": f"eq.{user_id}"},
+            ).json()
+        except SupabaseRequestError as error:
+            if error.status_code != 404:
+                raise
+            records["web_push_subscriptions"] = []
+        follows = self._request(
+            "GET", "/rest/v1/user_follows", token=access_token,
+            params={"select": "*", "or": f"(follower_id.eq.{user_id},followed_id.eq.{user_id})"},
+        ).json()
+        return {
+            "format": "mihenk-user-export-v1",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "account": profile[0] if profile else {"id": user_id},
+            "records": {**records, "user_follows": follows},
+        }
+
+    def purge_expired_data(self, *, audit_days: int, event_days: int,
+                           notification_days: int, chat_days: int) -> dict[str, int]:
+        now = datetime.now(timezone.utc)
+        rules = (
+            ("audit_log", "created_at", audit_days, {}),
+            ("application_events", "created_at", event_days, {}),
+            ("recommendation_events", "created_at", event_days, {}),
+            ("notifications", "created_at", notification_days, {"read_at": "not.is.null"}),
+            ("chat_messages", "created_at", chat_days, {}),
+            ("reminder_deliveries", "created_at", event_days, {"status": "in.(sent,failed,dead_letter)"}),
+        )
+        deleted: dict[str, int] = {}
+        for table, column, days, filters in rules:
+            cutoff = (now - timedelta(days=days)).isoformat()
+            response = self._request(
+                "DELETE", f"/rest/v1/{table}", admin=True,
+                params={column: f"lt.{cutoff}", **filters},
+                extra_headers={"Prefer": "return=representation"},
+            )
+            deleted[table] = len(response.json())
+        return deleted
+
     def audit(self, actor_user_id: str | None, action: str, entity_type: str, entity_id: str | None,
               before: dict | None = None, after: dict | None = None, request_id: str | None = None,
               access_token: str | None = None) -> None:
@@ -429,6 +494,11 @@ class SupabaseRepository:
                     "limit": 10,
                 },
             ).json()
+        if not existing_rows:
+            existing_rows = self._request(
+                "GET", "/rest/v1/books", admin=True,
+                params={"select": "id,source_name", "id": f"eq.{record['id']}", "limit": 1},
+            ).json()
         existing_rows.sort(key=lambda row: row.get("source_name") != "local_curated")
         existing = existing_rows[0] if existing_rows else None
         book_id = existing["id"] if existing else record["id"]
@@ -468,10 +538,9 @@ class SupabaseRepository:
             )
         if record.get("isbn"):
             isbn10, isbn13 = normalize_isbn(record["isbn"])
-            compact_isbn = re.sub(r"[^0-9Xx]", "", record["isbn"] or "").upper()
             # Production editions use ISBN-13 as the canonical key; valid
             # ISBN-10 values are converted by normalize_isbn.
-            canonical_isbn = isbn13 or (compact_isbn if len(compact_isbn) == 13 else None)
+            canonical_isbn = isbn13
             if not canonical_isbn:
                 return book_id
             self._request(
@@ -1537,6 +1606,82 @@ class SupabaseRepository:
             },
         ).json()
 
+    def upsert_web_push_subscription(self, user_id: str, endpoint: str, p256dh: str,
+                                     auth: str, user_agent: str | None = None,
+                                     access_token: str | None = None) -> dict:
+        if not access_token:
+            raise SupabaseRequestError("Oturum açmanız gerekiyor.", 401)
+        rows = self._request(
+            "POST", "/rest/v1/rpc/save_web_push_subscription", token=access_token,
+            json_body={"p_endpoint": endpoint, "p_p256dh": p256dh,
+                       "p_auth": auth, "p_user_agent": user_agent},
+        ).json()
+        if not rows:
+            raise SupabaseRequestError("Push aboneliği kaydedilemedi.", 409)
+        return rows[0]
+
+    def delete_web_push_subscription(self, user_id: str, endpoint: str,
+                                     access_token: str | None = None) -> None:
+        self._request(
+            "DELETE", "/rest/v1/web_push_subscriptions", token=access_token,
+            params={"user_id": f"eq.{user_id}", "endpoint": f"eq.{endpoint}"},
+        )
+
+    def list_web_push_subscriptions(self, user_id: str) -> list[dict]:
+        return self._request(
+            "GET", "/rest/v1/web_push_subscriptions", admin=True,
+            params={"select": "*", "user_id": f"eq.{user_id}"},
+        ).json()
+
+    def user_email(self, user_id: str) -> str | None:
+        response = self._request("GET", f"/auth/v1/admin/users/{user_id}", admin=True)
+        return response.json().get("email")
+
+    def claim_due_reminders(self, now: str, limit: int = 100) -> list[dict]:
+        rows = self._request(
+            "GET", "/rest/v1/reminder_deliveries", admin=True,
+            params={"select": "*,book:books(title)", "status": "eq.pending",
+                    "scheduled_for": f"lte.{now}", "order": "scheduled_for", "limit": limit},
+        ).json()
+        claimed = []
+        for row in rows:
+            updated = self._request(
+                "PATCH", "/rest/v1/reminder_deliveries", admin=True,
+                params={"id": f"eq.{row['id']}", "status": "eq.pending"},
+                json_body={"status": "processing", "attempts": row["attempts"] + 1},
+                extra_headers={"Prefer": "return=representation"},
+            ).json()
+            if updated:
+                claimed.append({**updated[0], "book_title": (row.get("book") or {}).get("title", "Kitabın")})
+        return claimed
+
+    def finish_reminder(self, reminder_id: str, success: bool, error: str | None = None) -> None:
+        current = self._request(
+            "GET", "/rest/v1/reminder_deliveries", admin=True,
+            params={"select": "attempts", "id": f"eq.{reminder_id}", "status": "eq.processing", "limit": 1},
+        ).json()
+        if not current:
+            return
+        attempts = int(current[0].get("attempts", 1))
+        retry = not success and attempts < 3
+        next_attempt = (datetime.now(timezone.utc) + timedelta(minutes=5 * (2 ** max(0, attempts - 1)))).isoformat()
+        self._request(
+            "PATCH", "/rest/v1/reminder_deliveries", admin=True,
+            params={"id": f"eq.{reminder_id}", "status": "eq.processing"},
+            json_body={"status": "sent" if success else "pending" if retry else "dead_letter",
+                       "scheduled_for": next_attempt if retry else datetime.now(timezone.utc).isoformat(),
+                       "sent_at": datetime.now(timezone.utc).isoformat() if success else None,
+                       "last_error": error[:500] if error else None},
+        )
+
+    def create_reminder_notification(self, user_id: str, book_id: str, title: str, body: str) -> None:
+        self._request(
+            "POST", "/rest/v1/notifications", admin=True,
+            json_body={"user_id": user_id, "kind": "reading_reminder", "book_id": book_id,
+                       "title": title, "body": body, "payload": {}},
+            extra_headers={"Prefer": "return=minimal"},
+        )
+
     def mark_notification_read(
         self, user_id: str, notification_id: str, access_token: str | None = None,
     ) -> dict:
@@ -1727,7 +1872,7 @@ class SupabaseRepository:
                           params={"on_conflict": "user_id,book_id,plan_date"}, json_body=day_rows,
                           extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"})
         if reminder_enabled and self.secret_key:
-            deliveries = [{"user_id": user_id, "book_id": book_id, "scheduled_for": f"{day['plan_date']}T{reminder_time}:00",
+            deliveries = [{"user_id": user_id, "book_id": book_id, "scheduled_for": reminder_datetime_utc(day["plan_date"], reminder_time, timezone),
                            "channel": delivery_channel, "idempotency_key": f"reading:{user_id}:{book_id}:{day['plan_date']}:{reminder_time}:{delivery_channel}"} for day in schedule]
             if deliveries:
                 self._request("POST", "/rest/v1/reminder_deliveries", admin=True,

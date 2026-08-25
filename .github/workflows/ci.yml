@@ -33,6 +33,16 @@ jobs:
         working-directory: frontend
       - run: npm run build
         working-directory: frontend
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Start test server
+        run: python -m uvicorn app.main:app --host 127.0.0.1 --port 8010 &
+      - name: Wait for test server
+        run: curl --retry 30 --retry-delay 1 --retry-connrefused --fail --silent http://127.0.0.1:8010/ready
+      - name: Run public browser smoke tests
+        run: npm run test:e2e -- --project=desktop
+        working-directory: frontend
       - run: node --check app/static/app.js
       - run: python -m compileall -q app scripts
   migration-smoke:
@@ -46,3 +56,15 @@ jobs:
           cache-dependency-path: requirements.lock.txt
       - run: python -m pip install -r requirements.lock.txt
       - run: python -c "from pathlib import Path; from app.database import Repository; Repository(Path('/tmp/migration-smoke.db'))"
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: mihenk:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

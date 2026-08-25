@@ -25,7 +25,7 @@ Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek 
 - **Çalışma ortamı:** Python 3.12, Node.js 22
 - **Backend:** FastAPI 0.141.1, Pydantic 2.13.4, SQLite / Supabase (PostgreSQL)
 - **Frontend:** React 19.1.1, TypeScript 5.9.2, Vite 6.4.3
-- **Test:** Pytest 9.1.1, Playwright 1.62.0, Vitest 4.1.11
+- **Test:** Pytest 9.1.1, Playwright 1.62.1, Vitest 4.1.11
 
 GitHub Actions, tekrarlanabilir kurulum için `requirements.lock.txt` ve
 `frontend/package-lock.json` dosyalarını kullanır.
@@ -63,4 +63,11 @@ pytest -q
 # Frontend testleri
 cd frontend
 npm test
+
+# Uçtan uca smoke testleri (uygulama 8010 portunda çalışırken)
+npm run test:e2e -- --project=desktop
 ```
+
+## Üretim
+
+`.env.production.example` dosyasını `.env.production` olarak kopyalayıp gerçek secret manager değerleriyle doldurun. Container yayın, Redis, otomatik bildirim/saklama worker'ları ve geri dönüş akışı için [dağıtım rehberine](docs/deployment.md) bakın. Supabase bildirim migration'ı `database/supabase_notification_delivery.sql` dosyasındadır.

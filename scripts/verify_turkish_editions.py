@@ -5,7 +5,7 @@ import json
 import time
 
 from app.config import settings
-from app.database import Repository
+from app.repository_factory import create_repository
 from app.services.edition_verification import TurkishEditionVerifier
 
 
@@ -14,7 +14,7 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=200)
     parser.add_argument("--delay", type=float, default=0.25)
     args = parser.parse_args()
-    repository = Repository(settings.database_path)
+    repository = create_repository(settings)
     verifier = TurkishEditionVerifier()
     report = {"checked": 0, "verified": 0, "missing": 0, "errors": []}
     for book in repository.books_for_edition_verification(args.limit):

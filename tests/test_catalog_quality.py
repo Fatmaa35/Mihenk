@@ -20,7 +20,7 @@ def _record(book_id: str, title: str, genre: str, page_count: int) -> dict:
         "source_name": "Google Books",
         "source_url": f"https://example.test/{book_id}",
         "cover_url": f"https://example.test/{book_id}.jpg",
-        "isbn": "9789750000001",
+        "isbn": "9789750719387",
         "publisher": "Örnek Yayınları",
         "language": "tr",
         "page_count": page_count,
@@ -37,7 +37,7 @@ def test_canonical_work_identity_ignores_case_spacing_and_accents() -> None:
 def test_metadata_upsert_merges_same_work_and_keeps_edition(tmp_path) -> None:
     repository = Repository(tmp_path / "catalog.db")
     first = _record("source-a", "Dönüşüm", "Roman", 144)
-    second = {**first, "id": "source-b", "isbn": "9789750000018"}
+    second = {**first, "id": "source-b", "isbn": "9789750720000"}
 
     assert repository.upsert_metadata_book(first) == "source-a"
     assert repository.upsert_metadata_book(second) == "source-a"
@@ -58,6 +58,17 @@ def test_query_intent_enforces_publication_type_and_page_limit() -> None:
     assert book_matches_intent(short_fiction, intent)
     assert not book_matches_intent(long_fiction, intent)
     assert not book_matches_intent(essay, intent)
+
+
+def test_invalid_isbn_is_not_persisted_as_an_edition(tmp_path) -> None:
+    repository = Repository(tmp_path / "invalid-isbn.db")
+    record = _record("invalid", "Hatalı Barkod", "Roman", 200)
+    record["isbn"] = "8572981562454"
+
+    repository.upsert_metadata_book(record)
+
+    with repository.connect() as connection:
+        assert connection.execute("SELECT count(*) FROM editions").fetchone()[0] == 0
 
 
 def test_recommender_excludes_academic_records_from_fiction_query() -> None:
