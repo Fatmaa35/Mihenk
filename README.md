@@ -12,6 +12,14 @@ Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek 
 - **Fiyat Alarmı:** Kitapların fiyat hareketlerini izleme ve bildirim alma.
 - **Kullanıcı Yönetimi:** Supabase Auth desteği, kişisel profil ve tercihler.
 
+## Ekran Görüntüleri
+
+###  Landing Page
+<p align="center">
+  <img src="./asset/LandingPage.png" alt="Mihenk Landing Page" width="800">
+</p>
+
+
 ## Teknolojiler
 
 - **Çalışma ortamı:** Python 3.12, Node.js 22
