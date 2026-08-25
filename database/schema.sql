@@ -416,6 +416,13 @@ CREATE TABLE IF NOT EXISTS reminder_deliveries (
 );
 CREATE INDEX IF NOT EXISTS idx_reminder_deliveries_due ON reminder_deliveries(status,scheduled_for);
 
+CREATE TABLE IF NOT EXISTS web_push_subscriptions (
+    id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL UNIQUE,p256dh TEXT NOT NULL,auth TEXT NOT NULL,user_agent TEXT,
+    created_at TEXT NOT NULL,updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_web_push_subscriptions_user ON web_push_subscriptions(user_id);
+
 CREATE TABLE IF NOT EXISTS feature_flags (
     key TEXT PRIMARY KEY,description TEXT NOT NULL DEFAULT '',enabled INTEGER NOT NULL DEFAULT 0,
     rollout_percent INTEGER NOT NULL DEFAULT 0 CHECK(rollout_percent BETWEEN 0 AND 100),updated_at TEXT NOT NULL

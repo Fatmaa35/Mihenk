@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from math import ceil
+from zoneinfo import ZoneInfo
 
 
 def build_schedule(remaining_pages: int, target_date: date, excluded_weekdays: list[int],
@@ -46,3 +47,11 @@ def schedule_summary(schedule: list[dict]) -> dict:
     return {"planned_pages": planned, "completed_pages": completed,
             "completion_percent": round(completed / planned * 100, 1) if planned else 100.0,
             "days": len(schedule)}
+
+
+def reminder_datetime_utc(plan_date: str, reminder_time: str, timezone_name: str) -> str:
+    """Convert the reader's wall-clock reminder time to an unambiguous UTC instant."""
+    local = datetime.fromisoformat(f"{plan_date}T{reminder_time}:00").replace(
+        tzinfo=ZoneInfo(timezone_name)
+    )
+    return local.astimezone(UTC).isoformat()

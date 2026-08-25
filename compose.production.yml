@@ -1,0 +1,51 @@
+services:
+  app:
+    image: ${MIHENK_IMAGE:?MIHENK_IMAGE is required}
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      APP_ENVIRONMENT: production
+      COOKIE_SECURE: "true"
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "127.0.0.1:8010:8010"
+    depends_on:
+      redis:
+        condition: service_healthy
+  reminder-worker:
+    image: ${MIHENK_IMAGE:?MIHENK_IMAGE is required}
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      APP_ENVIRONMENT: production
+      COOKIE_SECURE: "true"
+      REDIS_URL: redis://redis:6379/0
+    command: ["sh", "-c", "while true; do python -m scripts.process_reading_reminders; sleep 60; done"]
+    depends_on:
+      redis:
+        condition: service_healthy
+  retention-worker:
+    image: ${MIHENK_IMAGE:?MIHENK_IMAGE is required}
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      APP_ENVIRONMENT: production
+      COOKIE_SECURE: "true"
+      REDIS_URL: redis://redis:6379/0
+    command: ["sh", "-c", "while true; do python -m scripts.enforce_data_retention; sleep 86400; done"]
+    depends_on:
+      redis:
+        condition: service_healthy
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-production:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  redis-production:

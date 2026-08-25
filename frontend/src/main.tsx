@@ -1,15 +1,12 @@
 import React, { FormEvent, useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { z } from 'zod'
 import { api } from './api'
 import { t } from './i18n'
-import { BentoReadingDashboard } from './BentoReadingDashboard'
+import { PlanSchema } from './schemas'
 import './product-ui.css'
 
 type Action = { action_type: string; book_id: string; book_title: string; arguments: Record<string, string | number | boolean>; confirmation: string }
 type Book = { id: string; title: string }
-const PlanSchema = z.object({ target_date: z.string().date(), reminder_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), timezone: z.string().min(3), excluded_weekdays: z.array(z.number().int().min(0).max(6)), delivery_channel: z.enum(['in_app', 'email', 'push']) })
-
 declare global { interface Window { BookPusulasiUI: {
   confirmAction(action: Action): Promise<Record<string, unknown> | null>
   openReadingPlan(book: Book): Promise<Record<string, unknown> | null>
@@ -69,10 +66,16 @@ function AppRoot() {
 function initMounts() {
   const pkmMount = document.getElementById('pkm-dashboard-mount')
   let pkmMounted = false
-  const mountPkm = () => {
+  const mountPkm = async () => {
     if (!pkmMount || pkmMounted) return
     pkmMounted = true
-    createRoot(pkmMount).render(<BentoReadingDashboard />)
+    try {
+      const { BentoReadingDashboard } = await import('./BentoReadingDashboard')
+      createRoot(pkmMount).render(<BentoReadingDashboard />)
+    } catch {
+      pkmMounted = false
+      pkmMount.textContent = 'Okuma paneli yüklenemedi. Lütfen tekrar deneyin.'
+    }
   }
   window.addEventListener('pkm-refresh', mountPkm)
   if (!document.getElementById('app')?.classList.contains('hidden')) mountPkm()

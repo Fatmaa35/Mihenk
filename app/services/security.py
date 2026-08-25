@@ -4,8 +4,9 @@ from collections import defaultdict, deque
 from dataclasses import dataclass
 import hashlib
 import ipaddress
+import secrets
 from threading import Lock
-from time import monotonic
+from time import monotonic, time
 from urllib.parse import urlsplit
 
 from fastapi import Request
@@ -72,6 +73,48 @@ class SlidingWindowRateLimiter:
             return True, policy.requests - len(events), policy.window_seconds
 
 
+class RedisSlidingWindowRateLimiter:
+    """Atomic cross-process rate limiter backed by a shared Redis instance."""
+
+    SCRIPT = """
+    local key = KEYS[1]
+    local now = tonumber(ARGV[1])
+    local window = tonumber(ARGV[2])
+    local maximum = tonumber(ARGV[3])
+    local member = ARGV[4]
+    redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
+    local count = redis.call('ZCARD', key)
+    if count >= maximum then
+      local ttl = redis.call('PTTL', key)
+      if ttl < 1 then ttl = window end
+      return {0, 0, ttl}
+    end
+    redis.call('ZADD', key, now, member)
+    redis.call('PEXPIRE', key, window)
+    return {1, maximum - count - 1, window}
+    """
+
+    def __init__(self, redis_url: str, key_prefix: str = "mihenk") -> None:
+        try:
+            import redis
+        except ImportError as error:  # pragma: no cover - guarded by production dependencies
+            raise RuntimeError("REDIS_URL için redis paketi kurulmalıdır.") from error
+        self.client = redis.Redis.from_url(redis_url, decode_responses=True)
+        self.key_prefix = key_prefix
+        self.script = self.client.register_script(self.SCRIPT)
+
+    def check(self, bucket: str, identity: str, policy: RatePolicy) -> tuple[bool, int, int]:
+        digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()
+        key = f"{self.key_prefix}:rate:{bucket}:{digest}"
+        now_ms = int(time() * 1000)
+        result = self.script(
+            keys=[key],
+            args=[now_ms, policy.window_seconds * 1000, policy.requests,
+                  f"{now_ms}:{secrets.token_hex(8)}"],
+        )
+        return bool(int(result[0])), int(result[1]), max(1, int(result[2]) // 1000)
+
+
 def route_bucket(request: Request) -> str:
     path = request.url.path
     if path.startswith("/auth/"):
@@ -84,11 +127,16 @@ def route_bucket(request: Request) -> str:
 
 
 class SecurityMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, allowed_origins: tuple[str, ...], enabled: bool = True) -> None:
+    def __init__(self, app, allowed_origins: tuple[str, ...], enabled: bool = True,
+                 redis_url: str = "", redis_key_prefix: str = "mihenk") -> None:
         super().__init__(app)
         self.allowed_origins = set(allowed_origins)
         self.enabled = enabled
-        self.limiter = SlidingWindowRateLimiter()
+        self.fallback_limiter = SlidingWindowRateLimiter()
+        self.limiter = (
+            RedisSlidingWindowRateLimiter(redis_url, redis_key_prefix)
+            if redis_url else self.fallback_limiter
+        )
 
     async def dispatch(self, request: Request, call_next):
         origin = request.headers.get("origin")
@@ -101,7 +149,15 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 "ip:" + (request.client.host if request.client else "unknown")
             )
             bucket = route_bucket(request)
-            allowed, remaining, retry_after = self.limiter.check(bucket, identity, RATE_POLICIES[bucket])
+            try:
+                allowed, remaining, retry_after = self.limiter.check(
+                    bucket, identity, RATE_POLICIES[bucket]
+                )
+            except Exception:
+                # A Redis outage degrades to per-process protection instead of disabling limits.
+                allowed, remaining, retry_after = self.fallback_limiter.check(
+                    bucket, identity, RATE_POLICIES[bucket]
+                )
             if not allowed:
                 return JSONResponse(
                     {"detail": "Çok fazla istek gönderildi. Lütfen kısa süre sonra yeniden deneyin."},
@@ -119,4 +175,6 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             "Content-Security-Policy": "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'",
             "X-RateLimit-Remaining": str(remaining),
         })
+        if request.url.path.startswith(("/me/", "/admin/", "/auth/")):
+            response.headers["Cache-Control"] = "no-store, private"
         return response

@@ -1,4 +1,6 @@
 import asyncio
+from time import perf_counter
+from typing import Callable
 
 from app.schemas import CharacterRecommendationResponse
 from app.services.assistant_prompt import ASSISTANT_SYSTEM_PROMPT, build_assistant_context
@@ -17,10 +19,52 @@ class GeminiUnavailable(RuntimeError):
 class GeminiExplainer:
     """LLM yalnızca önceden seçilmiş adayların açıklamasını üretir."""
 
-    def __init__(self, api_key: str, model: str, enabled: bool) -> None:
+    def __init__(
+        self, api_key: str, model: str, enabled: bool,
+        usage_sink: Callable[[dict], None] | None = None,
+        input_cost_per_million: float = 0,
+        output_cost_per_million: float = 0,
+    ) -> None:
         self.api_key = api_key
         self.model = model
         self.enabled = enabled and bool(api_key)
+        self.provider = "gemini"
+        self.usage_sink = usage_sink
+        self.input_cost_per_million = input_cost_per_million
+        self.output_cost_per_million = output_cost_per_million
+
+    def _record_usage(
+        self, operation: str, started: float, success: bool,
+        prompt_tokens: int = 0, output_tokens: int = 0,
+    ) -> None:
+        if not self.usage_sink:
+            return
+        estimated_cost_usd = (
+            prompt_tokens * self.input_cost_per_million
+            + output_tokens * self.output_cost_per_million
+        ) / 1_000_000
+        try:
+            self.usage_sink({
+                "provider": self.provider,
+                "model": self.model,
+                "operation": operation,
+                "success": success,
+                "latency_ms": round((perf_counter() - started) * 1000, 2),
+                "prompt_tokens": int(prompt_tokens or 0),
+                "output_tokens": int(output_tokens or 0),
+                "estimated_cost_usd": round(estimated_cost_usd, 8),
+            })
+        except Exception:
+            # Telemetri arızası çalışan bir model yanıtını kullanıcı için bozmamalı.
+            return
+
+    @staticmethod
+    def _gemini_tokens(response) -> tuple[int, int]:
+        usage = getattr(response, "usage_metadata", None)
+        return (
+            int(getattr(usage, "prompt_token_count", 0) or 0),
+            int(getattr(usage, "candidates_token_count", 0) or 0),
+        )
 
     async def explain(self, profile: dict, character_description: str, summary: str, candidates: list[dict], output_limit: int | None = None) -> CharacterRecommendationResponse:
         fallback = self._fallback(summary, candidates)
@@ -41,6 +85,7 @@ class GeminiExplainer:
         from google import genai
         from google.genai import types
 
+        started = perf_counter()
         try:
             client = genai.Client(api_key=self.api_key)
             response = client.models.generate_content(
@@ -54,8 +99,11 @@ class GeminiExplainer:
                 ),
             )
             parsed = CharacterRecommendationResponse.model_validate_json(response.text)
-            return self._guard(parsed, fallback, profile, output_limit)
+            result = self._guard(parsed, fallback, profile, output_limit)
+            self._record_usage("recommendation", started, True, *self._gemini_tokens(response))
+            return result
         except Exception as error:
+            self._record_usage("recommendation", started, False)
             raise GeminiUnavailable("Gemini açıklama katmanına ulaşılamadı.") from error
 
     async def answer_book_question(
@@ -75,6 +123,7 @@ class GeminiExplainer:
         from google import genai
         from google.genai import types
 
+        started = perf_counter()
         try:
             client = genai.Client(api_key=self.api_key)
             transcript = "\n".join(
@@ -97,8 +146,10 @@ class GeminiExplainer:
             answer = response.text.strip()
             if not answer or len(answer) > 8_000:
                 raise ValueError("Geçersiz Gemini yanıtı")
+            self._record_usage("chat", started, True, *self._gemini_tokens(response))
             return answer
         except Exception as error:
+            self._record_usage("chat", started, False)
             raise GeminiUnavailable("Gemini edebiyat danışmanına ulaşılamadı.") from error
 
     @staticmethod

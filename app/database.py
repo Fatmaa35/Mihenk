@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from app.services.catalog_quality import canonical_work_key, deduplicate_library_entries, enrich_book_record, normalize_isbn
 from app.services.gamification import BADGE_RULES, build_gamification_summary, earned_badge_codes
-from app.services.reading_planner import build_schedule, schedule_summary
+from app.services.reading_planner import build_schedule, reminder_datetime_utc, schedule_summary
 
 
 class Repository:
@@ -307,9 +307,9 @@ class Repository:
         with self.connect() as connection:
             existing = connection.execute(
                 """SELECT id,source_name FROM books
-                   WHERE canonical_work_key=? OR (lower(title)=lower(?) AND lower(author)=lower(?))
+                   WHERE id=? OR canonical_work_key=? OR (lower(title)=lower(?) AND lower(author)=lower(?))
                    ORDER BY CASE WHEN source_name='local_curated' THEN 0 ELSE 1 END LIMIT 1""",
-                (record["canonical_work_key"], record["title"], record["author"]),
+                (record["id"], record["canonical_work_key"], record["title"], record["author"]),
             ).fetchone()
             book_id = existing["id"] if existing else record["id"]
             if existing:
@@ -334,8 +334,7 @@ class Repository:
                 )
             if record.get("isbn"):
                 isbn10, isbn13 = normalize_isbn(record["isbn"])
-                compact_isbn = re.sub(r"[^0-9Xx]", "", record["isbn"] or "").upper()
-                canonical_isbn = isbn13 or isbn10 or (compact_isbn if len(compact_isbn) in {10, 13} else None)
+                canonical_isbn = isbn13 or isbn10
                 if not canonical_isbn:
                     return book_id
                 connection.execute(
@@ -594,6 +593,88 @@ class Repository:
     def delete_user_account(self, user_id: str, access_token: str | None = None) -> None:
         with self.connect() as connection:
             connection.execute("DELETE FROM users WHERE id=?", (user_id,))
+
+    def export_user_data(self, user_id: str, access_token: str | None = None) -> dict:
+        """Return a portable copy without password hashes, tokens or moderator-only data."""
+        direct_tables = (
+            "user_preferences", "user_books", "user_custom_books", "reading_goals",
+            "reading_activity", "reading_sessions", "book_quotes", "price_alerts",
+            "notifications", "recommendation_feedback", "book_ratings", "book_comments",
+            "comment_helpful_votes", "comment_reports", "user_badges", "user_badge_showcase",
+            "chat_sessions", "chat_messages", "reading_plans", "reading_plan_days",
+            "reminder_deliveries", "action_executions",
+        )
+        with self.connect() as connection:
+            account = connection.execute(
+                """SELECT u.id,u.display_name,u.app_role,u.created_at,a.email
+                   FROM users u JOIN auth_accounts a ON a.user_id=u.id WHERE u.id=?""",
+                (user_id,),
+            ).fetchone()
+            if not account:
+                raise KeyError("Kullanıcı bulunamadı.")
+            available = {
+                row["name"] for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall()
+            }
+            records = {}
+            for table in direct_tables:
+                if table not in available:
+                    continue
+                columns = {
+                    row["name"] for row in connection.execute(f"PRAGMA table_info({table})").fetchall()
+                }
+                if "user_id" in columns:
+                    records[table] = [
+                        dict(row) for row in connection.execute(
+                            f"SELECT * FROM {table} WHERE user_id=?", (user_id,)
+                        ).fetchall()
+                    ]
+            if "user_follows" in available:
+                records["user_follows"] = [
+                    dict(row) for row in connection.execute(
+                        "SELECT * FROM user_follows WHERE follower_id=? OR followed_id=?",
+                        (user_id, user_id),
+                    ).fetchall()
+                ]
+            subscriptions = [dict(row) for row in connection.execute(
+                "SELECT id,user_id,user_agent,created_at,updated_at FROM web_push_subscriptions WHERE user_id=?",
+                (user_id,),
+            ).fetchall()]
+        return {
+            "format": "mihenk-user-export-v1",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "account": dict(account),
+            "records": {**records, "web_push_subscriptions": subscriptions},
+        }
+
+    def purge_expired_data(self, *, audit_days: int, event_days: int,
+                           notification_days: int, chat_days: int) -> dict[str, int]:
+        now = datetime.now(timezone.utc)
+        rules = (
+            ("audit_log", "created_at", audit_days, "1=1"),
+            ("application_events", "created_at", event_days, "1=1"),
+            ("recommendation_events", "created_at", event_days, "1=1"),
+            ("notifications", "created_at", notification_days, "read_at IS NOT NULL"),
+            ("chat_messages", "created_at", chat_days, "1=1"),
+            ("reminder_deliveries", "created_at", event_days, "status IN ('sent','failed','dead_letter')"),
+        )
+        deleted: dict[str, int] = {}
+        with self.connect() as connection:
+            available = {
+                row["name"] for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall()
+            }
+            for table, column, days, predicate in rules:
+                if table not in available:
+                    continue
+                cutoff = (now - timedelta(days=days)).isoformat()
+                cursor = connection.execute(
+                    f"DELETE FROM {table} WHERE {column}<? AND {predicate}", (cutoff,)
+                )
+                deleted[table] = cursor.rowcount
+        return deleted
 
     def audit(self, actor_user_id: str | None, action: str, entity_type: str, entity_id: str | None,
               before: dict | None = None, after: dict | None = None, request_id: str | None = None,
@@ -1234,6 +1315,90 @@ class Repository:
             **dict(row), "payload": json.loads(row["payload_json"] or "{}")
         } for row in rows]
 
+    def upsert_web_push_subscription(self, user_id: str, endpoint: str, p256dh: str,
+                                     auth: str, user_agent: str | None = None,
+                                     access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            connection.execute(
+                """INSERT INTO web_push_subscriptions(id,user_id,endpoint,p256dh,auth,user_agent,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET
+                   user_id=excluded.user_id,p256dh=excluded.p256dh,auth=excluded.auth,
+                   user_agent=excluded.user_agent,updated_at=excluded.updated_at""",
+                (str(uuid4()), user_id, endpoint, p256dh, auth, user_agent, now, now),
+            )
+            row = connection.execute(
+                "SELECT * FROM web_push_subscriptions WHERE endpoint=? AND user_id=?",
+                (endpoint, user_id),
+            ).fetchone()
+        return dict(row)
+
+    def delete_web_push_subscription(self, user_id: str, endpoint: str,
+                                     access_token: str | None = None) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                "DELETE FROM web_push_subscriptions WHERE user_id=? AND endpoint=?",
+                (user_id, endpoint),
+            )
+
+    def list_web_push_subscriptions(self, user_id: str) -> list[dict]:
+        with self.connect() as connection:
+            return [dict(row) for row in connection.execute(
+                "SELECT * FROM web_push_subscriptions WHERE user_id=?", (user_id,)
+            ).fetchall()]
+
+    def user_email(self, user_id: str) -> str | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT email FROM auth_accounts WHERE user_id=?", (user_id,)
+            ).fetchone()
+        return row["email"] if row else None
+
+    def claim_due_reminders(self, now: str, limit: int = 100) -> list[dict]:
+        claimed = []
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM reminder_deliveries WHERE status='pending' AND scheduled_for<=? ORDER BY scheduled_for LIMIT ?",
+                (now, limit),
+            ).fetchall()
+            for row in rows:
+                cursor = connection.execute(
+                    "UPDATE reminder_deliveries SET status='processing',attempts=attempts+1 WHERE id=? AND status='pending'",
+                    (row["id"],),
+                )
+                if cursor.rowcount:
+                    book = connection.execute("SELECT title FROM books WHERE id=?", (row["book_id"],)).fetchone()
+                    claimed.append({**dict(row), "attempts": row["attempts"] + 1,
+                                    "book_title": book["title"] if book else "Kitabın"})
+        return claimed
+
+    def finish_reminder(self, reminder_id: str, success: bool, error: str | None = None) -> None:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT attempts FROM reminder_deliveries WHERE id=? AND status='processing'",
+                (reminder_id,),
+            ).fetchone()
+            if not row:
+                return
+            retry = not success and row["attempts"] < 3
+            next_attempt = (datetime.now(timezone.utc) + timedelta(minutes=5 * (2 ** max(0, row["attempts"] - 1)))).isoformat()
+            connection.execute(
+                "UPDATE reminder_deliveries SET status=?,scheduled_for=?,sent_at=?,last_error=? WHERE id=? AND status='processing'",
+                ("sent" if success else "pending" if retry else "dead_letter",
+                 next_attempt if retry else now, now if success else None,
+                 error[:500] if error else None, reminder_id),
+            )
+
+    def create_reminder_notification(self, user_id: str, book_id: str, title: str, body: str) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                """INSERT INTO notifications(id,user_id,kind,book_id,title,body,payload_json,created_at)
+                   VALUES(?,?,?,?,?,?,'{}',?)""",
+                (str(uuid4()), user_id, "reading_reminder", book_id, title, body,
+                 datetime.now(timezone.utc).isoformat()),
+            )
+
     def mark_notification_read(
         self, user_id: str, notification_id: str, access_token: str | None = None,
     ) -> dict:
@@ -1455,7 +1620,7 @@ class Repository:
                 for day in schedule:
                     key = f"reading:{user_id}:{book_id}:{day['plan_date']}:{reminder_time}:{delivery_channel}"
                     connection.execute("""INSERT OR IGNORE INTO reminder_deliveries(id,user_id,book_id,scheduled_for,channel,status,attempts,idempotency_key,created_at)
-                        VALUES(?,?,?,?,?,'pending',0,?,?)""", (str(uuid4()), user_id, book_id, f"{day['plan_date']}T{reminder_time}:00", delivery_channel, key, now))
+                        VALUES(?,?,?,?,?,'pending',0,?,?)""", (str(uuid4()), user_id, book_id, reminder_datetime_utc(day["plan_date"], reminder_time, timezone), delivery_channel, key, now))
         return {"user_id": user_id, "book_id": book_id, "target_date": target_date, "daily_pages": daily_pages,
                 "reminder_enabled": reminder_enabled, "reminder_time": reminder_time, "timezone": timezone,
                 "delivery_channel": delivery_channel, "schedule": schedule, **schedule_summary(schedule), "updated_at": now}

@@ -37,11 +37,10 @@ test.describe('authenticated reading flow', () => {
     await expect(page.locator('#discover-view')).toBeVisible()
   })
 
-  test('reloading requires an explicit login again', async ({ page }) => {
+  test('reloading restores the authenticated session', async ({ page }) => {
     await page.reload()
-    await expect(page.getByRole('heading', { name: /Bir sonraki kitabın seni bekliyor/ })).toBeVisible()
-    await expect(page.locator('#auth-form')).not.toBeVisible()
-    await expect(page.locator('#app')).toHaveClass(/hidden/)
+    await expect(page.locator('#app-shell')).toBeVisible()
+    await expect(page.locator('#app')).not.toHaveClass(/hidden/)
   })
 
 })

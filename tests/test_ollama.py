@@ -240,3 +240,30 @@ def test_general_book_answer_sends_strict_scope_prompt(monkeypatch) -> None:
     assert captured["options"]["temperature"] == 0.65
     assert captured["messages"][-2]["content"] == "Edebî akımları konuşalım."
     assert answer.startswith("Modernizm")
+
+
+def test_ollama_records_token_usage_and_estimated_cost(monkeypatch) -> None:
+    events = []
+
+    def fake_post(*args, **kwargs):
+        return httpx.Response(
+            200, request=httpx.Request("POST", args[0]),
+            json={
+                "message": {"content": "Kitaplar hakkında kısa yanıt."},
+                "prompt_eval_count": 1_000,
+                "eval_count": 500,
+            },
+        )
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    answer = asyncio.run(OllamaExplainer(
+        "http://127.0.0.1:11434", "test-model", True,
+        events.append, 2.0, 4.0,
+    ).answer_book_question("Ne okuyayım?"))
+
+    assert answer.startswith("Kitaplar")
+    assert events[0]["provider"] == "ollama"
+    assert events[0]["operation"] == "chat"
+    assert events[0]["prompt_tokens"] == 1_000
+    assert events[0]["output_tokens"] == 500
+    assert events[0]["estimated_cost_usd"] == 0.004

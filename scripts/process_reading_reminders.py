@@ -1,35 +1,47 @@
-"""Claim due reading reminders and deliver in-app notifications idempotently."""
+"""Claim and deliver reading reminders through configured production adapters."""
+
 from datetime import datetime, timezone
+
 from app.config import settings
 from app.repository_factory import create_repository
+from app.services.notification_delivery import SMTPDelivery, WebPushDelivery
 
 
 def main() -> None:
     repository = create_repository(settings)
-    now = datetime.now(timezone.utc).isoformat()
-    if settings.data_backend == "sqlite":
-        with repository.connect() as connection:
-            rows = connection.execute("SELECT * FROM reminder_deliveries WHERE status='pending' AND scheduled_for<=? ORDER BY scheduled_for LIMIT 100", (now,)).fetchall()
-            for row in rows:
-                connection.execute("UPDATE reminder_deliveries SET status='processing',attempts=attempts+1 WHERE id=? AND status='pending'", (row["id"],))
-                book = connection.execute("SELECT title FROM books WHERE id=?", (row["book_id"],)).fetchone()
-                if row["channel"] == "in_app":
-                    connection.execute("""INSERT INTO notifications(id,user_id,kind,book_id,title,body,payload_json,created_at)
-                        VALUES(lower(hex(randomblob(16))),?,'reading_reminder',?,?,?, '{}',?)""",
-                        (row["user_id"], row["book_id"], "Okuma zamanı", f"{book['title']} için bugünkü hedefin hazır.", now))
-                    connection.execute("UPDATE reminder_deliveries SET status='sent',sent_at=? WHERE id=?", (now, row["id"]))
-                else:
-                    connection.execute("UPDATE reminder_deliveries SET status='failed',last_error=? WHERE id=?", ("Teslimat sağlayıcısı yapılandırılmadı.", row["id"]))
-        print(f"Processed {len(rows)} reminder(s).")
-        return
-    rows = repository._request("GET", "/rest/v1/reminder_deliveries", admin=True,
-                               params={"select": "*", "status": "eq.pending", "scheduled_for": f"lte.{now}", "order": "scheduled_for", "limit": 100}).json()
+    email = SMTPDelivery(
+        settings.smtp_host, settings.smtp_port, settings.smtp_username,
+        settings.smtp_password, settings.smtp_from_email, settings.smtp_starttls,
+    ) if settings.reminder_provider in {"smtp", "multi"} else None
+    push = WebPushDelivery(
+        settings.web_push_vapid_private_key, settings.web_push_vapid_subject
+    ) if settings.reminder_provider in {"webpush", "multi"} else None
+    rows = repository.claim_due_reminders(datetime.now(timezone.utc).isoformat(), 100)
+    sent = failed = 0
     for row in rows:
-        # External email/push adapters deliberately fail closed until provider credentials exist.
-        status, error = ("sent", None) if row["channel"] == "in_app" else ("failed", "Teslimat sağlayıcısı yapılandırılmadı.")
-        repository._request("PATCH", "/rest/v1/reminder_deliveries", admin=True, params={"id": f"eq.{row['id']}", "status": "eq.pending"},
-                            json_body={"status": status, "attempts": row["attempts"] + 1, "sent_at": now if status == "sent" else None, "last_error": error})
-    print(f"Processed {len(rows)} reminder(s).")
+        title = "Okuma zamanı"
+        body = f"{row['book_title']} için bugünkü hedefin hazır."
+        try:
+            if row["channel"] == "in_app":
+                repository.create_reminder_notification(row["user_id"], row["book_id"], title, body)
+            elif row["channel"] == "email":
+                recipient = repository.user_email(row["user_id"])
+                if not email or not recipient:
+                    raise RuntimeError("E-posta teslimat sağlayıcısı veya alıcı adresi bulunamadı.")
+                email.send(recipient, f"Mihenk · {title}", body)
+            elif row["channel"] == "push":
+                subscriptions = repository.list_web_push_subscriptions(row["user_id"])
+                if not push or not subscriptions:
+                    raise RuntimeError("Etkin bir push aboneliği bulunamadı.")
+                for subscription in subscriptions:
+                    push.send(subscription, title, body, "/?view=reading-mode")
+            repository.finish_reminder(row["id"], True)
+            sent += 1
+        except Exception as error:
+            repository.finish_reminder(row["id"], False, str(error))
+            failed += 1
+    print(f"processed={len(rows)} sent={sent} failed={failed}")
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()

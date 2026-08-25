@@ -1,5 +1,6 @@
 from typing import Literal
 from uuid import uuid4
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -254,7 +255,21 @@ class ReadingPlanUpsert(BaseModel):
     def validate_weekdays(self):
         if any(day < 0 or day > 6 for day in self.excluded_weekdays) or len(set(self.excluded_weekdays)) != len(self.excluded_weekdays):
             raise ValueError("excluded_weekdays 0-6 arasında tekil günler içermelidir")
+        try:
+            ZoneInfo(self.timezone)
+        except (ZoneInfoNotFoundError, ValueError) as error:
+            raise ValueError("Geçerli bir IANA saat dilimi girilmelidir") from error
         return self
+
+
+class PushSubscriptionUpsert(BaseModel):
+    endpoint: str = Field(min_length=20, max_length=4000, pattern=r"^https://")
+    p256dh: str = Field(min_length=20, max_length=1000)
+    auth: str = Field(min_length=8, max_length=500)
+
+
+class PushSubscriptionDelete(BaseModel):
+    endpoint: str = Field(min_length=20, max_length=4000, pattern=r"^https://")
 
 
 class ReadingGoalUpsert(BaseModel):

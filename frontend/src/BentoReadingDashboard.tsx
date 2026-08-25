@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { lazy, Suspense, useEffect, useState } from 'react'
 import { api } from './api'
 import { ReadingTimer } from './ReadingTimer'
 import { ReadingHeatmap } from './ReadingHeatmap'
-import { ISBNScannerModal } from './ISBNScannerModal'
+
+const ISBNScannerModal = lazy(() => import('./ISBNScannerModal').then(module => ({ default: module.ISBNScannerModal })))
 
 interface BookItem {
   id: string
@@ -145,10 +146,12 @@ export function BentoReadingDashboard() {
 
       {/* ISBN Scanner & Search Modal */}
       {showISBNModal && (
-        <ISBNScannerModal
-          onClose={() => setShowISBNModal(false)}
-          onBookAdded={fetchData}
-        />
+        <Suspense fallback={<p role="status">ISBN tarayıcı yükleniyor…</p>}>
+          <ISBNScannerModal
+            onClose={() => setShowISBNModal(false)}
+            onBookAdded={fetchData}
+          />
+        </Suspense>
       )}
     </section>
   )
