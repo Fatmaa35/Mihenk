@@ -1,4 +1,7 @@
 # Mihenk 
+<p align="center">
+  <img src="./asset/logo.png" alt="Mihenk Logo" width="200">
+</p>
 Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek kitap önerileri sunan, kitaplık ve okuma takibi yapmanızı sağlayan bir web uygulamasıdır.
 
 ## Özellikler
