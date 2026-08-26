@@ -1,4 +1,4 @@
-# Mihenk - Akıllı Kitap Danışmanı
+# Mihenk
 
 Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek kitap önerileri sunan, kitaplık ve okuma takibi yapmanızı sağlayan bir web uygulamasıdır.
 
