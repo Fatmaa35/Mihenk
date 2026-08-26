@@ -12,6 +12,7 @@ from uuid import uuid4
 from app.services.catalog_quality import canonical_work_key, deduplicate_library_entries, enrich_book_record, normalize_isbn
 from app.services.gamification import BADGE_RULES, build_gamification_summary, earned_badge_codes
 from app.services.reading_planner import build_schedule, reminder_datetime_utc, schedule_summary
+from app.services.product_growth import funnel_metrics, weekly_window
 
 
 class Repository:
@@ -77,12 +78,18 @@ class Repository:
                 "chat_sessions": {"is_pinned": "INTEGER NOT NULL DEFAULT 0", "is_archived": "INTEGER NOT NULL DEFAULT 0"},
                 "chat_messages": {"citations_json": "TEXT NOT NULL DEFAULT '[]'", "edited_at": "TEXT", "deleted_at": "TEXT"},
                 "reading_plans": {"reminder_time": "TEXT NOT NULL DEFAULT '20:00'", "timezone": "TEXT NOT NULL DEFAULT 'Europe/Istanbul'", "excluded_weekdays_json": "TEXT NOT NULL DEFAULT '[]'", "weekday_pages": "INTEGER", "weekend_pages": "INTEGER", "delivery_channel": "TEXT NOT NULL DEFAULT 'in_app'", "status": "TEXT NOT NULL DEFAULT 'active'"},
+                "book_clubs": {"rules": "TEXT NOT NULL DEFAULT ''"},
+                "book_club_progress": {"daily_target_pages": "INTEGER NOT NULL DEFAULT 10"},
+                "book_club_discussions": {"chapter_title": "TEXT", "discussion_type": "TEXT NOT NULL DEFAULT 'discussion'", "parent_id": "TEXT"},
             }
             for table, fields in upgrades.items():
                 existing = {row["name"] for row in connection.execute(f"PRAGMA table_info({table})")}
                 for name, sql_type in fields.items():
                     if name not in existing:
                         connection.execute(f"ALTER TABLE {table} ADD COLUMN {name} {sql_type}")
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_book_club_discussions_parent ON book_club_discussions(parent_id)"
+            )
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS idx_books_canonical_work ON books(canonical_work_key)"
             )
@@ -153,11 +160,11 @@ class Repository:
                     "CREATE INDEX idx_reading_activity_user_date ON reading_activity(user_id,activity_date)"
                 )
             notifications_sql = connection.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='notifications'").fetchone()["sql"]
-            if "comment_reply" not in notifications_sql:
+            if "edition_update" not in notifications_sql:
                 connection.execute("ALTER TABLE notifications RENAME TO notifications_legacy")
                 connection.execute("""CREATE TABLE notifications (
                     id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    kind TEXT NOT NULL CHECK(kind IN ('price_drop','reading_reminder','comment_reply','comment_helpful','new_follower','badge_earned')),
+                    kind TEXT NOT NULL CHECK(kind IN ('price_drop','reading_reminder','comment_reply','comment_helpful','new_follower','badge_earned','edition_update')),
                     book_id TEXT REFERENCES books(id) ON DELETE CASCADE,
                     title TEXT NOT NULL,body TEXT NOT NULL,payload_json TEXT NOT NULL DEFAULT '{}',read_at TEXT,created_at TEXT NOT NULL)""")
                 connection.execute("INSERT INTO notifications SELECT * FROM notifications_legacy")
@@ -374,6 +381,7 @@ class Repository:
 
     def save_verified_edition(self, edition: dict) -> dict:
         with self.connect() as connection:
+            was_new = not connection.execute("SELECT 1 FROM editions WHERE isbn=?", (edition["isbn"],)).fetchone()
             connection.execute(
                 """INSERT INTO editions(isbn,book_id,title,author,publisher,language,published_date,source_name,source_url,verification_status,verified_at)
                    VALUES(:isbn,:book_id,:title,:author,:publisher,:language,:published_date,:source_name,:source_url,:verification_status,:verified_at)
@@ -383,6 +391,8 @@ class Repository:
                    verification_status=excluded.verification_status,verified_at=excluded.verified_at""",
                 edition,
             )
+        if was_new and edition.get("book_id"):
+            self.notify_edition_subscribers(edition["book_id"], "new_edition", edition.get("title") or "Yeni baskı")
         return edition
 
     def list_verified_editions(self, limit: int = 200) -> list[dict]:
@@ -1826,6 +1836,8 @@ class Repository:
 
     def save_retail_offer(self, offer: dict) -> dict:
         """Fiyatı ve baskı metadata'sını saklar; mağaza açıklamasını saklamaz."""
+        restocked = False
+        matched_book_id = None
         with self.connect() as connection:
             book = None
             if offer.get("book_id"):
@@ -1834,6 +1846,14 @@ class Repository:
                 book = connection.execute(
                     "SELECT id FROM books WHERE lower(title)=lower(?) LIMIT 1", (offer["canonical_title"],),
                 ).fetchone()
+            matched_book_id = book["id"] if book else None
+            previous_offer = connection.execute(
+                "SELECT stock_status FROM offers WHERE edition_isbn=? AND retailer_id=?",
+                (offer["isbn"], offer["retailer_id"]),
+            ).fetchone()
+            restocked = offer["stock_status"] == "in_stock" and bool(
+                previous_offer and previous_offer["stock_status"] != "in_stock"
+            )
             connection.execute(
                 """INSERT INTO retailers(id,name,base_url,robots_url,content_policy) VALUES(?,?,?,?,?)
                    ON CONFLICT(id) DO UPDATE SET name=excluded.name, base_url=excluded.base_url,
@@ -1847,7 +1867,7 @@ class Repository:
                    title=excluded.title, author=excluded.author, publisher=excluded.publisher,
                    language='tur',source_name=excluded.source_name,source_url=excluded.source_url,
                    verification_status='retailer_verified',verified_at=excluded.verified_at""",
-                (offer["isbn"], book["id"] if book else None, offer["canonical_title"], offer["author"], offer["publisher"],
+                (offer["isbn"], matched_book_id, offer["canonical_title"], offer["author"], offer["publisher"],
                  offer["retailer_name"], offer["product_url"], offer["checked_at"]),
             )
             connection.execute(
@@ -1872,6 +1892,8 @@ class Repository:
                     "INSERT INTO price_history(offer_id,price_minor,stock_status,observed_at) VALUES(?,?,?,?)",
                     (row["id"], offer["price_minor"], offer["stock_status"], offer["checked_at"]),
                 )
+        if restocked and matched_book_id:
+            self.notify_edition_subscribers(matched_book_id, "back_in_stock", offer["canonical_title"])
         return {key: offer[key] for key in ("isbn", "canonical_title", "retailer_name", "price_minor", "currency", "stock_status", "product_url", "checked_at")}
 
     def list_retail_offers(self, book_id: str | None = None, isbn: str | None = None) -> list[dict]:
@@ -2505,3 +2527,800 @@ class Repository:
                 item["tags"] = json.loads(item.pop("tags_json", "[]"))
                 res.append(item)
             return res
+
+    # Product growth -----------------------------------------------------
+    def onboarding_profile(self, user_id: str, access_token: str | None = None) -> dict:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM onboarding_profiles WHERE user_id=?", (user_id,)
+            ).fetchone()
+        if not row:
+            return {"user_id": user_id, "liked_book_ids": [], "liked_authors": [], "onboarding_completed": False}
+        item = dict(row)
+        item["liked_book_ids"] = json.loads(item.pop("liked_book_ids_json", "[]"))
+        item["liked_authors"] = json.loads(item.pop("liked_authors_json", "[]"))
+        item["onboarding_completed"] = bool(item["onboarding_completed"])
+        return item
+
+    def upsert_onboarding_profile(self, user_id: str, liked_book_ids: list[str], liked_authors: list[str],
+                                  completed: bool, access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            valid_ids = [row["id"] for row in connection.execute(
+                f"SELECT id FROM books WHERE id IN ({','.join('?' for _ in liked_book_ids)})",
+                liked_book_ids,
+            )] if liked_book_ids else []
+            connection.execute(
+                """INSERT INTO onboarding_profiles(user_id,liked_book_ids_json,liked_authors_json,onboarding_completed,completed_at,updated_at)
+                   VALUES(?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET
+                   liked_book_ids_json=excluded.liked_book_ids_json,liked_authors_json=excluded.liked_authors_json,
+                   onboarding_completed=excluded.onboarding_completed,completed_at=excluded.completed_at,updated_at=excluded.updated_at""",
+                (user_id, json.dumps(valid_ids), json.dumps(liked_authors[:20], ensure_ascii=False), int(completed), now if completed else None, now),
+            )
+        return self.onboarding_profile(user_id)
+
+    def import_library_records(self, user_id: str, records: list[dict], access_token: str | None = None) -> dict:
+        imported = matched = custom = 0
+        errors: list[str] = []
+        for record in records:
+            try:
+                book_id = None
+                with self.connect() as connection:
+                    if record.get("isbn"):
+                        row = connection.execute(
+                            "SELECT book_id FROM editions WHERE isbn=? OR isbn10=? OR isbn13=? LIMIT 1",
+                            (record["isbn"], record["isbn"], record["isbn"]),
+                        ).fetchone()
+                        book_id = row["book_id"] if row else None
+                    if not book_id:
+                        row = connection.execute(
+                            "SELECT id FROM books WHERE lower(title)=lower(?) AND lower(author)=lower(?) LIMIT 1",
+                            (record["title"], record["author"]),
+                        ).fetchone()
+                        book_id = row["id"] if row else None
+                if book_id:
+                    self.upsert_library_entry(user_id, book_id, record["shelf"], False, access_token=access_token)
+                    matched += 1
+                else:
+                    self.save_custom_book(user_id, title=record["title"], author=record["author"], genre="Genel",
+                                          cover_url=None, shelf=record["shelf"], is_favorite=False,
+                                          access_token=access_token)
+                    custom += 1
+                imported += 1
+            except Exception as error:
+                errors.append(f"{record.get('title', 'Kayıt')}: {error}")
+        return {"processed": len(records), "imported": imported, "catalog_matches": matched,
+                "custom_books": custom, "errors": errors[:30]}
+
+    def log_recommendation_interaction(self, user_id: str | None, payload: dict,
+                                       access_token: str | None = None) -> dict:
+        interaction_id = str(uuid4())
+        with self.connect() as connection:
+            connection.execute(
+                """INSERT INTO recommendation_interactions(id,recommendation_id,user_id,book_id,event_type,position,
+                   experiment_variant,query_text,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                (interaction_id, payload["recommendation_id"], user_id, payload.get("book_id"), payload["event_type"],
+                 payload.get("position"), payload["experiment_variant"], payload.get("query_text"),
+                 json.dumps(payload.get("metadata") or {}, ensure_ascii=False), datetime.now(timezone.utc).isoformat()),
+            )
+        return {"id": interaction_id, **payload}
+
+    def recommendation_funnel(self, days: int = 30, access_token: str | None = None) -> dict:
+        since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        with self.connect() as connection:
+            rows = [dict(row) for row in connection.execute(
+                "SELECT experiment_variant,event_type FROM recommendation_interactions WHERE created_at>=?", (since,)
+            )]
+        return {"days": days, "variants": funnel_metrics(rows)}
+
+    def notification_preferences(self, user_id: str, access_token: str | None = None) -> dict:
+        with self.connect() as connection:
+            row = connection.execute("SELECT * FROM notification_preferences WHERE user_id=?", (user_id,)).fetchone()
+        if not row:
+            return {"user_id": user_id, "consent_granted": False, "weekly_digest": True, "recommendations": True,
+                    "price_drops": True, "stock_updates": False, "social_updates": True, "frequency": "weekly",
+                    "quiet_hours_start": None, "quiet_hours_end": None}
+        result = dict(row)
+        for key in ("consent_granted", "weekly_digest", "recommendations", "price_drops", "stock_updates", "social_updates"):
+            result[key] = bool(result[key])
+        return result
+
+    def upsert_notification_preferences(self, user_id: str, values: dict, access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        keys = ("consent_granted", "weekly_digest", "recommendations", "price_drops", "stock_updates", "social_updates",
+                "frequency", "quiet_hours_start", "quiet_hours_end")
+        params = [int(values[key]) if isinstance(values[key], bool) else values[key] for key in keys]
+        with self.connect() as connection:
+            connection.execute(
+                f"""INSERT INTO notification_preferences(user_id,{','.join(keys)},updated_at)
+                    VALUES({','.join('?' for _ in range(len(keys)+2))}) ON CONFLICT(user_id) DO UPDATE SET
+                    {','.join(f'{key}=excluded.{key}' for key in keys)},updated_at=excluded.updated_at""",
+                [user_id, *params, now],
+            )
+        return self.notification_preferences(user_id)
+
+    def upsert_edition_subscription(self, user_id: str, book_id: str, event_type: str, is_active: bool,
+                                    access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            connection.execute(
+                """INSERT INTO edition_subscriptions(user_id,book_id,event_type,is_active,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?) ON CONFLICT(user_id,book_id,event_type) DO UPDATE SET
+                   is_active=excluded.is_active,updated_at=excluded.updated_at""",
+                (user_id, book_id, event_type, int(is_active), now, now),
+            )
+            row = connection.execute(
+                "SELECT * FROM edition_subscriptions WHERE user_id=? AND book_id=? AND event_type=?",
+                (user_id, book_id, event_type),
+            ).fetchone()
+        return {**dict(row), "is_active": bool(row["is_active"])}
+
+    def list_edition_subscriptions(self, user_id: str, access_token: str | None = None) -> list[dict]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                """SELECT s.*,b.title,b.author FROM edition_subscriptions s JOIN books b ON b.id=s.book_id
+                   WHERE s.user_id=? ORDER BY s.updated_at DESC""", (user_id,)
+            ).fetchall()
+        return [{**dict(row), "is_active": bool(row["is_active"])} for row in rows]
+
+    def weekly_summary(self, user_id: str, access_token: str | None = None) -> dict:
+        start, end = weekly_window()
+        with self.connect() as connection:
+            stats = connection.execute(
+                """SELECT coalesce(sum(duration_minutes),0) minutes,coalesce(sum(end_page-start_page),0) pages,
+                   count(*) sessions FROM reading_sessions WHERE user_id=? AND session_date BETWEEN ? AND ?""",
+                (user_id, start, end),
+            ).fetchone()
+            finished = connection.execute(
+                "SELECT count(*) n FROM user_books WHERE user_id=? AND shelf='read' AND substr(finished_at,1,10) BETWEEN ? AND ?",
+                (user_id, start, end),
+            ).fetchone()["n"]
+            picks = [self._book(row) for row in connection.execute(
+                """SELECT b.* FROM books b WHERE b.is_recommendable=1 AND NOT EXISTS(
+                   SELECT 1 FROM user_books ub WHERE ub.user_id=? AND ub.book_id=b.id)
+                   ORDER BY b.quality_score DESC,b.popularity_score DESC LIMIT 5""", (user_id,)
+            )]
+        return {"start_date": start, "end_date": end, "minutes_read": stats["minutes"], "pages_read": stats["pages"],
+                "sessions": stats["sessions"], "books_finished": finished, "recommendations": picks}
+
+    def create_reading_list(self, user_id: str, title: str, description: str, visibility: str,
+                            access_token: str | None = None) -> dict:
+        list_id, token, now = str(uuid4()), str(uuid4()), datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO reading_lists(id,owner_id,title,description,visibility,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)",
+                (list_id, user_id, title, description, visibility, token, now, now),
+            )
+        return {"id": list_id, "owner_id": user_id, "title": title, "description": description,
+                "visibility": visibility, "share_token": token, "items": [], "created_at": now, "updated_at": now}
+
+    def list_reading_lists(self, user_id: str, access_token: str | None = None) -> list[dict]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                """SELECT l.*,count(i.book_id) item_count FROM reading_lists l LEFT JOIN reading_list_items i ON i.list_id=l.id
+                   WHERE l.owner_id=? GROUP BY l.id ORDER BY l.updated_at DESC""", (user_id,)
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def upsert_reading_list_item(self, user_id: str, list_id: str, book_id: str, note: str, position: int,
+                                 access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            if not connection.execute("SELECT 1 FROM reading_lists WHERE id=? AND owner_id=?", (list_id, user_id)).fetchone():
+                raise KeyError("Okuma listesi bulunamadı.")
+            connection.execute(
+                """INSERT INTO reading_list_items(list_id,book_id,note,position,added_at) VALUES(?,?,?,?,?)
+                   ON CONFLICT(list_id,book_id) DO UPDATE SET note=excluded.note,position=excluded.position""",
+                (list_id, book_id, note, position, now),
+            )
+            connection.execute("UPDATE reading_lists SET updated_at=? WHERE id=?", (now, list_id))
+        return self.reading_list_detail(list_id, user_id=user_id)
+
+    def reading_list_detail(self, list_id: str | None = None, *, user_id: str | None = None,
+                            share_token: str | None = None, access_token: str | None = None) -> dict:
+        with self.connect() as connection:
+            if share_token:
+                row = connection.execute("SELECT * FROM reading_lists WHERE share_token=? AND visibility<>'private'", (share_token,)).fetchone()
+            else:
+                row = connection.execute("SELECT * FROM reading_lists WHERE id=? AND owner_id=?", (list_id, user_id)).fetchone()
+            if not row:
+                raise KeyError("Okuma listesi bulunamadı.")
+            items = connection.execute(
+                """SELECT i.note,i.position,i.added_at,b.* FROM reading_list_items i JOIN books b ON b.id=i.book_id
+                   WHERE i.list_id=? ORDER BY i.position,i.added_at""", (row["id"],)
+            ).fetchall()
+        return {**dict(row), "items": [{"note": item["note"], "position": item["position"], "added_at": item["added_at"],
+                                         "book": self._book(item)} for item in items]}
+
+    def create_book_club(self, user_id: str, name: str, description: str, visibility: str,
+                         rules: str = "", access_token: str | None = None) -> dict:
+        club_id, code, now = str(uuid4()), str(uuid4()), datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO book_clubs(id,owner_id,name,description,rules,visibility,invite_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)",
+                (club_id, user_id, name.strip(), description.strip(), rules.strip(), visibility, code, now, now),
+            )
+            connection.execute("INSERT INTO book_club_members(club_id,user_id,role,joined_at) VALUES(?,?,?,?)",
+                               (club_id, user_id, "owner", now))
+        return self.book_club_detail(user_id, club_id)
+
+    def update_book_club(self, user_id: str, club_id: str, values: dict,
+                         access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            member = connection.execute(
+                "SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)
+            ).fetchone()
+            if not member or member["role"] not in {"owner", "moderator"}:
+                raise PermissionError("Kulüp ayarlarını yalnızca yönetici düzenleyebilir.")
+            club = connection.execute("SELECT * FROM book_clubs WHERE id=?", (club_id,)).fetchone()
+            if not club:
+                raise KeyError("Kitap kulübü bulunamadı.")
+            name = values.get("name", club["name"]).strip()
+            description = values.get("description", club["description"]).strip()
+            rules = values.get("rules", club["rules"]).strip()
+            visibility = values.get("visibility", club["visibility"])
+            connection.execute(
+                "UPDATE book_clubs SET name=?, description=?, rules=?, visibility=?, updated_at=? WHERE id=?",
+                (name, description, rules, visibility, now, club_id),
+            )
+        return self.book_club_detail(user_id, club_id)
+
+    def update_book_club_member_role(self, user_id: str, club_id: str, target_user_id: str, role: str,
+                                     access_token: str | None = None) -> dict:
+        with self.connect() as connection:
+            member = connection.execute(
+                "SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)
+            ).fetchone()
+            if not member or member["role"] != "owner":
+                raise PermissionError("Yalnızca kulüp sahibi üye rollerini değiştirebilir.")
+            if user_id == target_user_id and role != "owner":
+                raise ValueError("Kulüp sahibi kendi rolünü düşüremez.")
+            target = connection.execute(
+                "SELECT 1 FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, target_user_id)
+            ).fetchone()
+            if not target:
+                raise KeyError("Üye bulunamadı.")
+            connection.execute("UPDATE book_club_members SET role=? WHERE club_id=? AND user_id=?", (role, club_id, target_user_id))
+        return self.book_club_detail(user_id, club_id)
+
+    def join_book_club(self, user_id: str, invite_code: str, access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            club = connection.execute("SELECT * FROM book_clubs WHERE invite_code=?", (invite_code,)).fetchone()
+            if not club:
+                raise KeyError("Davet kodu geçersiz.")
+            connection.execute("INSERT OR IGNORE INTO book_club_members(club_id,user_id,role,joined_at) VALUES(?,?,?,?)",
+                               (club["id"], user_id, "member", now))
+        return self.book_club_detail(user_id, club["id"])
+
+    def list_book_clubs(self, user_id: str, access_token: str | None = None) -> list[dict]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                """SELECT c.*,m.role,(SELECT count(*) FROM book_club_members x WHERE x.club_id=c.id) member_count
+                   FROM book_clubs c JOIN book_club_members m ON m.club_id=c.id WHERE m.user_id=? ORDER BY c.updated_at DESC""",
+                (user_id,),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def join_reading(self, user_id: str, club_id: str, book_id: str, daily_target_pages: int = 10,
+                     shelf: str = "reading", access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        today = date.today().isoformat()
+        with self.connect() as connection:
+            member = connection.execute("SELECT 1 FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)).fetchone()
+            if not member:
+                raise KeyError("Kulüp üyeliği gerekiyor.")
+            book = connection.execute("SELECT * FROM books WHERE id=?", (book_id,)).fetchone()
+            if not book:
+                raise KeyError("Kitap bulunamadı.")
+            total_pages = book["page_count"]
+            connection.execute(
+                """INSERT INTO user_books(user_id,book_id,shelf,is_favorite,current_page,total_pages,started_at,updated_at)
+                   VALUES(?,?,?,0,0,?,?,?) ON CONFLICT(user_id,book_id) DO UPDATE SET
+                   shelf=excluded.shelf,total_pages=coalesce(user_books.total_pages,excluded.total_pages),
+                   started_at=coalesce(user_books.started_at,excluded.started_at),updated_at=excluded.updated_at""",
+                (user_id, book_id, shelf, total_pages, today, now),
+            )
+            connection.execute(
+                """INSERT INTO book_club_progress(club_id,user_id,book_id,current_page,total_pages,daily_target_pages,updated_at)
+                   VALUES(?,?,?,0,?,?,?) ON CONFLICT(club_id,user_id,book_id) DO UPDATE SET
+                   total_pages=coalesce(book_club_progress.total_pages,excluded.total_pages),
+                   daily_target_pages=excluded.daily_target_pages,updated_at=excluded.updated_at""",
+                (club_id, user_id, book_id, total_pages, max(1, daily_target_pages), now),
+            )
+        return self.book_club_detail(user_id, club_id)
+
+    def upsert_book_club_progress(self, user_id: str, club_id: str, values: dict,
+                                  access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        book_id = values["book_id"]
+        current_page = values["current_page"]
+        daily_target = values.get("daily_target_pages")
+        with self.connect() as connection:
+            if not connection.execute("SELECT 1 FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)).fetchone():
+                raise KeyError("Kitap kulübü bulunamadı.")
+            book = connection.execute("SELECT * FROM books WHERE id=?", (book_id,)).fetchone()
+            total_pages = values.get("total_pages") or (book["page_count"] if book else None)
+            connection.execute(
+                """INSERT INTO book_club_progress(club_id,user_id,book_id,current_page,total_pages,daily_target_pages,updated_at)
+                   VALUES(?,?,?,?,?,?,?) ON CONFLICT(club_id,user_id,book_id) DO UPDATE SET
+                   current_page=excluded.current_page,total_pages=coalesce(excluded.total_pages,book_club_progress.total_pages),
+                   daily_target_pages=coalesce(excluded.daily_target_pages,book_club_progress.daily_target_pages),updated_at=excluded.updated_at""",
+                (club_id, user_id, book_id, current_page, total_pages, daily_target or 10, now),
+            )
+            shelf = "read" if (total_pages and current_page >= total_pages) else "reading"
+            finished_at = now if shelf == "read" else None
+            connection.execute(
+                """INSERT INTO user_books(user_id,book_id,shelf,is_favorite,current_page,total_pages,finished_at,updated_at)
+                   VALUES(?,?,?,0,?,?,?,?) ON CONFLICT(user_id,book_id) DO UPDATE SET
+                   current_page=excluded.current_page,total_pages=coalesce(excluded.total_pages,user_books.total_pages),
+                   shelf=CASE WHEN excluded.current_page>=coalesce(user_books.total_pages,excluded.total_pages,0) AND coalesce(user_books.total_pages,excluded.total_pages,0)>0 THEN 'read' ELSE user_books.shelf END,
+                   finished_at=CASE WHEN excluded.current_page>=coalesce(user_books.total_pages,excluded.total_pages,0) AND coalesce(user_books.total_pages,excluded.total_pages,0)>0 THEN coalesce(user_books.finished_at,excluded.finished_at) ELSE user_books.finished_at END,
+                   updated_at=excluded.updated_at""",
+                (user_id, book_id, shelf, current_page, total_pages, finished_at, now),
+            )
+        return self.book_club_detail(user_id, club_id)
+
+    def create_book_club_discussion(self, user_id: str, club_id: str, values: dict,
+                                    access_token: str | None = None) -> dict:
+        with self.connect() as connection:
+            membership = connection.execute("SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)).fetchone()
+            if not membership:
+                raise PermissionError("Kulüp üyeliği gerekiyor.")
+            progress = connection.execute(
+                "SELECT current_page FROM book_club_progress WHERE club_id=? AND user_id=? AND book_id=?",
+                (club_id, user_id, values["book_id"]),
+            ).fetchone()
+            curr = progress["current_page"] if progress else 0
+            if values.get("page_number") and values["page_number"] > curr:
+                raise PermissionError("Henüz ulaşmadığın sayfa için tartışma açamazsın.")
+            discussion_id, now = str(uuid4()), datetime.now(timezone.utc).isoformat()
+            connection.execute(
+                """INSERT INTO book_club_discussions(id,club_id,user_id,book_id,content,page_number,chapter_title,discussion_type,parent_id,created_at)
+                   VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                (discussion_id, club_id, user_id, values["book_id"], values["content"].strip(),
+                 values.get("page_number"), values.get("chapter_title"), values.get("discussion_type", "discussion"),
+                 values.get("parent_id"), now),
+            )
+        return self.book_club_detail(user_id, club_id)
+
+    def toggle_book_club_reaction(self, user_id: str, club_id: str, discussion_id: str, reaction_type: str,
+                                  access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            member = connection.execute("SELECT 1 FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)).fetchone()
+            if not member:
+                raise PermissionError("Kulüp üyeliği gerekiyor.")
+            disc = connection.execute("SELECT 1 FROM book_club_discussions WHERE id=? AND club_id=?", (discussion_id, club_id)).fetchone()
+            if not disc:
+                raise KeyError("Tartışma bulunamadı.")
+            existing = connection.execute(
+                "SELECT id FROM book_club_reactions WHERE discussion_id=? AND user_id=? AND reaction_type=?",
+                (discussion_id, user_id, reaction_type),
+            ).fetchone()
+            if existing:
+                connection.execute("DELETE FROM book_club_reactions WHERE id=?", (existing["id"],))
+            else:
+                connection.execute(
+                    "INSERT INTO book_club_reactions(id,discussion_id,user_id,reaction_type,created_at) VALUES(?,?,?,?,?)",
+                    (str(uuid4()), discussion_id, user_id, reaction_type, now),
+                )
+        return self.book_club_detail(user_id, club_id)
+
+    def create_book_club_event(self, user_id: str, club_id: str, values: dict,
+                               access_token: str | None = None) -> dict:
+        event_id, now = str(uuid4()), datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            member = connection.execute("SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)).fetchone()
+            if not member or member["role"] not in {"owner", "moderator"}:
+                raise PermissionError("Etkinlikleri yalnızca kulüp yöneticisi oluşturabilir.")
+            connection.execute(
+                """INSERT INTO book_club_events(id,club_id,title,description,event_type,event_date,location,created_by,created_at)
+                   VALUES(?,?,?,?,?,?,?,?,?)""",
+                (event_id, club_id, values["title"].strip(), values.get("description", "").strip(),
+                 values.get("event_type", "general"), values["event_date"], values.get("location", "").strip(), user_id, now),
+            )
+            connection.execute(
+                "INSERT INTO book_club_event_rsvps(event_id,user_id,status,created_at) VALUES(?,?,'attending',?)",
+                (event_id, user_id, now),
+            )
+        return self.book_club_detail(user_id, club_id)
+
+    def rsvp_book_club_event(self, user_id: str, club_id: str, event_id: str, status: str,
+                             access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            member = connection.execute("SELECT 1 FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)).fetchone()
+            if not member:
+                raise PermissionError("Kulüp üyeliği gerekiyor.")
+            event = connection.execute("SELECT 1 FROM book_club_events WHERE id=? AND club_id=?", (event_id, club_id)).fetchone()
+            if not event:
+                raise KeyError("Etkinlik bulunamadı.")
+            connection.execute(
+                """INSERT INTO book_club_event_rsvps(event_id,user_id,status,created_at) VALUES(?,?,?,?)
+                   ON CONFLICT(event_id,user_id) DO UPDATE SET status=excluded.status,created_at=excluded.created_at""",
+                (event_id, user_id, status, now),
+            )
+        return self.book_club_detail(user_id, club_id)
+
+    def create_book_club_poll(self, user_id: str, club_id: str, title: str, option_book_ids: list[str],
+                              access_token: str | None = None) -> dict:
+        poll_id, now = str(uuid4()), datetime.now(timezone.utc).isoformat()
+        unique_ids = list(dict.fromkeys(option_book_ids))
+        with self.connect() as connection:
+            membership = connection.execute("SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)).fetchone()
+            if not membership or membership["role"] not in {"owner", "moderator"}:
+                raise PermissionError("Oylamayı yalnızca kulüp yöneticisi açabilir.")
+            connection.execute("INSERT INTO book_club_polls(id,club_id,title,status,created_by,created_at) VALUES(?,?,?,'open',?,?)",
+                               (poll_id, club_id, title.strip(), user_id, now))
+            connection.executemany("INSERT INTO book_club_poll_options(id,poll_id,book_id) VALUES(?,?,?)",
+                                   [(str(uuid4()), poll_id, book_id) for book_id in unique_ids])
+        return self.book_club_detail(user_id, club_id)
+
+    def vote_book_club_poll(self, user_id: str, club_id: str, poll_id: str, option_id: str,
+                            access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            valid = connection.execute(
+                """SELECT 1 FROM book_club_members m JOIN book_club_polls p ON p.club_id=m.club_id
+                   JOIN book_club_poll_options o ON o.poll_id=p.id
+                   WHERE m.club_id=? AND m.user_id=? AND p.id=? AND p.status='open' AND o.id=?""",
+                (club_id, user_id, poll_id, option_id),
+            ).fetchone()
+            if not valid:
+                raise KeyError("Oylama seçeneği bulunamadı.")
+            connection.execute(
+                """INSERT INTO book_club_votes(poll_id,user_id,option_id,voted_at) VALUES(?,?,?,?)
+                   ON CONFLICT(poll_id,user_id) DO UPDATE SET option_id=excluded.option_id,voted_at=excluded.voted_at""",
+                (poll_id, user_id, option_id, now),
+            )
+        return self.book_club_detail(user_id, club_id)
+
+    def upsert_book_club_read(self, user_id: str, club_id: str, values: dict,
+                              access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            membership = connection.execute(
+                "SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)
+            ).fetchone()
+            if not membership or membership["role"] not in {"owner", "moderator"}:
+                raise PermissionError("Kulüp okumasını yalnızca yönetici düzenleyebilir.")
+            connection.execute(
+                """INSERT INTO book_club_reads(club_id,book_id,start_date,target_date,status,created_at) VALUES(?,?,?,?,?,?)
+                   ON CONFLICT(club_id,book_id) DO UPDATE SET start_date=excluded.start_date,target_date=excluded.target_date,status=excluded.status""",
+                (club_id, values["book_id"], values.get("start_date"), values.get("target_date"), values["status"], now),
+            )
+            connection.execute("UPDATE book_clubs SET updated_at=? WHERE id=?", (now, club_id))
+        return self.book_club_detail(user_id, club_id)
+
+    def book_club_detail(self, user_id: str, club_id: str, access_token: str | None = None) -> dict:
+        with self.connect() as connection:
+            club = connection.execute(
+                """SELECT c.*,m.role FROM book_clubs c JOIN book_club_members m ON m.club_id=c.id
+                   WHERE c.id=? AND m.user_id=?""", (club_id, user_id)
+            ).fetchone()
+            if not club:
+                raise KeyError("Kitap kulübü bulunamadı.")
+            club_dict = dict(club)
+            user_role = club_dict.get("role", "member")
+
+            # Members
+            members_rows = connection.execute(
+                """SELECT m.user_id, m.role, m.joined_at, u.display_name
+                   FROM book_club_members m JOIN users u ON u.id=m.user_id
+                   WHERE m.club_id=? ORDER BY CASE m.role WHEN 'owner' THEN 1 WHEN 'moderator' THEN 2 ELSE 3 END, m.joined_at ASC""",
+                (club_id,),
+            ).fetchall()
+            members = [dict(m) for m in members_rows]
+
+            # Reads
+            reads_rows = connection.execute(
+                """SELECT r.*,b.title,b.author,b.cover_url,b.page_count FROM book_club_reads r JOIN books b ON b.id=r.book_id
+                   WHERE r.club_id=? ORDER BY CASE r.status WHEN 'reading' THEN 1 WHEN 'planned' THEN 2 ELSE 3 END, r.created_at DESC""",
+                (club_id,),
+            ).fetchall()
+            reads = []
+            active_read = None
+            for r in reads_rows:
+                rd = dict(r)
+                book_id = rd["book_id"]
+                # Calculate joint progress
+                member_progress_rows = connection.execute(
+                    "SELECT current_page, total_pages FROM book_club_progress WHERE club_id=? AND book_id=?",
+                    (club_id, book_id),
+                ).fetchall()
+                if member_progress_rows:
+                    percents = [min(100.0, (row["current_page"] / (row["total_pages"] or rd["page_count"] or 100)) * 100)
+                                for row in member_progress_rows if (row["total_pages"] or rd["page_count"])]
+                    rd["joint_progress_percent"] = round(sum(percents) / len(percents), 1) if percents else 0
+                    rd["active_readers_count"] = len(member_progress_rows)
+                else:
+                    rd["joint_progress_percent"] = 0
+                    rd["active_readers_count"] = 0
+                reads.append(rd)
+                if not active_read and rd["status"] == "reading":
+                    active_read = rd
+            if not active_read and reads:
+                active_read = reads[0]
+
+            # User progress & roadmap
+            progress_rows = connection.execute(
+                "SELECT * FROM book_club_progress WHERE club_id=? AND user_id=?", (club_id, user_id)
+            ).fetchall()
+            user_progress_map = {row["book_id"]: dict(row) for row in progress_rows}
+
+            user_progress_list = []
+            for rd in reads:
+                b_id = rd["book_id"]
+                p = user_progress_map.get(b_id, {
+                    "club_id": club_id, "user_id": user_id, "book_id": b_id,
+                    "current_page": 0, "total_pages": rd["page_count"], "daily_target_pages": 10
+                })
+                total = p.get("total_pages") or rd["page_count"] or 200
+                curr = p.get("current_page", 0)
+                daily = max(1, p.get("daily_target_pages") or 10)
+                pct = min(100.0, round((curr / total) * 100, 1)) if total else 0
+                pages_left = max(0, total - curr)
+                days_left = max(1, (pages_left + daily - 1) // daily) if pages_left > 0 else 0
+                finish_date = (date.today() + timedelta(days=days_left)).isoformat() if pages_left > 0 else date.today().isoformat()
+                milestones = [
+                    {"percent": 25, "page": round(total * 0.25), "title": "Giriş ve Karakterler", "reached": curr >= round(total * 0.25)},
+                    {"percent": 50, "page": round(total * 0.50), "title": "Ara Değerlendirme", "reached": curr >= round(total * 0.50)},
+                    {"percent": 75, "page": round(total * 0.75), "title": "Düğüm ve Çatışma", "reached": curr >= round(total * 0.75)},
+                    {"percent": 100, "page": total, "title": "Final ve Kapanış", "reached": curr >= total},
+                ]
+                in_lib = connection.execute("SELECT 1 FROM user_books WHERE user_id=? AND book_id=?", (user_id, b_id)).fetchone() is not None
+                user_progress_list.append({
+                    **p, "percent": pct, "total_pages": total, "daily_target_pages": daily,
+                    "days_left": days_left, "projected_finish_date": finish_date,
+                    "milestones": milestones, "in_library": in_lib,
+                })
+
+            # Discussions (with replies, reactions, and spoiler handling)
+            user_curr_pages = {p["book_id"]: p.get("current_page", 0) for p in user_progress_list}
+            disc_rows = connection.execute(
+                """SELECT d.*, u.display_name, b.title book_title FROM book_club_discussions d
+                   JOIN users u ON u.id=d.user_id JOIN books b ON b.id=d.book_id
+                   WHERE d.club_id=? ORDER BY d.created_at DESC LIMIT 150""",
+                (club_id,),
+            ).fetchall()
+
+            reactions_rows = connection.execute(
+                """SELECT r.discussion_id, r.user_id, r.reaction_type FROM book_club_reactions r
+                   JOIN book_club_discussions d ON d.id=r.discussion_id WHERE d.club_id=?""",
+                (club_id,),
+            ).fetchall()
+            reactions_by_disc = {}
+            user_reactions_by_disc = {}
+            for rx in reactions_rows:
+                d_id = rx["discussion_id"]
+                r_type = rx["reaction_type"]
+                reactions_by_disc.setdefault(d_id, {"thoughtful": 0, "agree": 0, "heart": 0, "bookmark": 0})
+                if r_type in reactions_by_disc[d_id]:
+                    reactions_by_disc[d_id][r_type] += 1
+                if rx["user_id"] == user_id:
+                    user_reactions_by_disc.setdefault(d_id, []).append(r_type)
+
+            discussions_list = []
+            upcoming_spoilers = 0
+            for d in disc_rows:
+                dd = dict(d)
+                d_id = dd["id"]
+                b_id = dd["book_id"]
+                p_num = dd.get("page_number")
+                user_page = user_curr_pages.get(b_id, 0)
+                is_locked = bool(p_num and p_num > user_page and user_role not in {"owner", "moderator"})
+                if is_locked:
+                    upcoming_spoilers += 1
+                    discussions_list.append({
+                        "id": d_id, "club_id": club_id, "book_id": b_id, "book_title": dd["book_title"],
+                        "page_number": p_num, "chapter_title": dd.get("chapter_title"),
+                        "discussion_type": dd.get("discussion_type", "discussion"),
+                        "is_spoiler_locked": True, "created_at": dd["created_at"],
+                    })
+                else:
+                    dd["is_spoiler_locked"] = False
+                    dd["reactions"] = reactions_by_disc.get(d_id, {"thoughtful": 0, "agree": 0, "heart": 0, "bookmark": 0})
+                    dd["user_reactions"] = user_reactions_by_disc.get(d_id, [])
+                    discussions_list.append(dd)
+
+            # Events & RSVPs
+            events_rows = connection.execute(
+                """SELECT e.*, u.display_name creator_name FROM book_club_events e
+                   JOIN users u ON u.id=e.created_by WHERE e.club_id=? ORDER BY e.event_date ASC""",
+                (club_id,),
+            ).fetchall()
+            events = []
+            for ev in events_rows:
+                evd = dict(ev)
+                ev_id = evd["id"]
+                rsvps = connection.execute("SELECT status, count(*) cnt FROM book_club_event_rsvps WHERE event_id=? GROUP BY status", (ev_id,)).fetchall()
+                rsvp_counts = {r["status"]: r["cnt"] for r in rsvps}
+                my_rsvp = connection.execute("SELECT status FROM book_club_event_rsvps WHERE event_id=? AND user_id=?", (ev_id, user_id)).fetchone()
+                evd["rsvp_counts"] = {"attending": rsvp_counts.get("attending", 0), "maybe": rsvp_counts.get("maybe", 0), "declined": rsvp_counts.get("declined", 0)}
+                evd["user_rsvp"] = my_rsvp["status"] if my_rsvp else None
+                events.append(evd)
+
+            # Polls
+            polls = connection.execute(
+                "SELECT * FROM book_club_polls WHERE club_id=? ORDER BY created_at DESC", (club_id,)
+            ).fetchall()
+            poll_items = []
+            for poll in polls:
+                options = connection.execute(
+                    """SELECT o.id,o.book_id,b.title,b.author,b.cover_url,count(v.user_id) vote_count,
+                       max(CASE WHEN v.user_id=? THEN 1 ELSE 0 END) selected
+                       FROM book_club_poll_options o JOIN books b ON b.id=o.book_id
+                       LEFT JOIN book_club_votes v ON v.option_id=o.id WHERE o.poll_id=?
+                       GROUP BY o.id,o.book_id,b.title,b.author ORDER BY vote_count DESC,b.title""",
+                    (user_id, poll["id"]),
+                ).fetchall()
+                poll_items.append({**dict(poll), "options": [{**dict(o), "selected": bool(o["selected"])} for o in options]})
+
+            # Badges and stats
+            completed_reads_count = len([r for r in reads if r["status"] == "completed"])
+            user_disc_count = len([d for d in disc_rows if d["user_id"] == user_id])
+            user_rx_count = len([rx for rx in reactions_rows if rx["user_id"] == user_id])
+            user_is_pioneer = any(m["user_id"] == user_id and (m["role"] == "owner" or idx < 5) for idx, m in enumerate(members))
+            user_active_progress = next((p for p in user_progress_list if active_read and p["book_id"] == active_read["book_id"]), None)
+            user_has_read_active = bool(user_active_progress and user_active_progress["current_page"] >= 30)
+            user_finished_any = bool(user_active_progress and user_active_progress["percent"] >= 100) or completed_reads_count > 0
+
+            badges = []
+            if user_is_pioneer:
+                badges.append({"code": "club_pioneer", "title": "Kulüp Öncüsü", "description": "Kulübün ilk kurucu veya öncü üyelerinden biri.", "icon": "👑"})
+            if user_disc_count >= 3:
+                badges.append({"code": "discussion_starter", "title": "Tartışma Ustası", "description": "Kulüpte 3 ve üzeri tartışma/alıntı paylaştı.", "icon": "💬"})
+            if user_has_read_active:
+                badges.append({"code": "pace_keeper", "title": "Sadık Okur", "description": "Aktif okumada istikrarlı ilerleme kaydetti.", "icon": "🔥"})
+            if user_rx_count >= 5:
+                badges.append({"code": "thought_spark", "title": "Fikir Lideri", "description": "Tartışma ve alıntıları topluluktan ilgi gördü.", "icon": "✨"})
+            if user_finished_any:
+                badges.append({"code": "classic_explorer", "title": "Klasik Kaşifi", "description": "Kulüple birlikte bir kitabı başarıyla tamamladı.", "icon": "🏆"})
+
+        return {
+            **club_dict,
+            "members": members,
+            "reads": reads,
+            "active_read": active_read,
+            "progress": user_progress_list,
+            "user_progress": user_progress_list,
+            "discussions": discussions_list,
+            "upcoming_spoilers_count": upcoming_spoilers,
+            "events": events,
+            "polls": poll_items,
+            "stats": {
+                "member_count": len(members),
+                "total_discussions": len(disc_rows),
+                "completed_books_count": completed_reads_count,
+            },
+            "badges": badges,
+        }
+
+    def get_or_create_club_room(self, user_id: str, club_id: str, title: str | None = None,
+                                book_id: str | None = None, duration_minutes: int = 25,
+                                access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            member = connection.execute(
+                "SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)
+            ).fetchone()
+            if not member:
+                raise PermissionError("Kulüp üyeliği gerekiyor.")
+            room = connection.execute(
+                "SELECT * FROM book_club_rooms WHERE club_id=? ORDER BY created_at DESC LIMIT 1", (club_id,)
+            ).fetchone()
+            if not room:
+                room_id = str(uuid4())
+                room_title = title or "Birlikte Okuyoruz Odası"
+                connection.execute(
+                    """INSERT INTO book_club_rooms(id,club_id,title,book_id,phase,duration_minutes,created_by,created_at)
+                       VALUES(?,?,?,?,?,?,?,?)""",
+                    (room_id, club_id, room_title, book_id, "reading", duration_minutes, user_id, now),
+                )
+                room = connection.execute("SELECT * FROM book_club_rooms WHERE id=?", (room_id,)).fetchone()
+            
+            # Active participants in this club
+            members = connection.execute(
+                """SELECT m.user_id, u.display_name, m.role,
+                          p.current_page, p.daily_target_pages, b.title as reading_book_title
+                   FROM book_club_members m
+                   JOIN users u ON u.id = m.user_id
+                   LEFT JOIN book_club_progress p ON p.club_id = m.club_id AND p.user_id = m.user_id
+                   LEFT JOIN books b ON b.id = p.book_id
+                   WHERE m.club_id = ?
+                   ORDER BY m.joined_at ASC""",
+                (club_id,),
+            ).fetchall()
+
+            messages = connection.execute(
+                """SELECT msg.id, msg.room_id, msg.user_id, u.display_name, msg.content, msg.created_at
+                   FROM book_club_room_messages msg
+                   JOIN users u ON u.id = msg.user_id
+                   WHERE msg.room_id = ?
+                   ORDER BY msg.created_at ASC LIMIT 50""",
+                (room["id"],),
+            ).fetchall()
+
+            return {
+                **dict(room),
+                "participants": [dict(m) for m in members],
+                "messages": [dict(msg) for msg in messages],
+            }
+
+    def complete_room_session(self, user_id: str, club_id: str, values: dict,
+                              access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        today = date.today().isoformat()
+        minutes_read = values.get("minutes_read", 25)
+        pages_read = values.get("pages_read", 0)
+        book_id = values.get("book_id")
+        current_page = values.get("current_page")
+        notes = values.get("notes")
+
+        with self.connect() as connection:
+            member = connection.execute(
+                "SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)
+            ).fetchone()
+            if not member:
+                raise PermissionError("Kulüp üyeliği gerekiyor.")
+
+            # 1. Log reading activity if pages read
+            if book_id and pages_read > 0:
+                connection.execute(
+                    """INSERT INTO reading_activity(id, user_id, book_id, activity_date, pages_read, created_at)
+                       VALUES(?,?,?,?,?,?)""",
+                    (str(uuid4()), user_id, book_id, today, pages_read, now),
+                )
+
+            # 2. Update user_books & club progress if page given
+            if book_id and current_page is not None:
+                book = connection.execute("SELECT page_count FROM books WHERE id=?", (book_id,)).fetchone()
+                total_pages = book["page_count"] if book else None
+                shelf = "read" if (total_pages and current_page >= total_pages) else "reading"
+                finished_at = now if shelf == "read" else None
+                connection.execute(
+                    """INSERT INTO user_books(user_id,book_id,shelf,current_page,total_pages,finished_at,updated_at)
+                       VALUES(?,?,?,?,?,?,?)
+                       ON CONFLICT(user_id,book_id) DO UPDATE SET
+                       shelf=excluded.shelf, current_page=excluded.current_page,
+                       total_pages=COALESCE(excluded.total_pages, user_books.total_pages),
+                       finished_at=excluded.finished_at, updated_at=excluded.updated_at""",
+                    (user_id, book_id, shelf, current_page, total_pages, finished_at, now),
+                )
+                connection.execute(
+                    """INSERT INTO book_club_progress(club_id,user_id,book_id,current_page,total_pages,daily_target_pages,updated_at)
+                       VALUES(?,?,?,?,?,?,?)
+                       ON CONFLICT(club_id,user_id,book_id) DO UPDATE SET
+                       current_page=excluded.current_page, total_pages=COALESCE(excluded.total_pages, book_club_progress.total_pages),
+                       updated_at=excluded.updated_at""",
+                    (club_id, user_id, book_id, current_page, total_pages, 10, now),
+                )
+
+            # 3. If note/quote was entered in session, save to book_club_discussions
+            if notes and notes.strip() and book_id:
+                connection.execute(
+                    """INSERT INTO book_club_discussions(id,club_id,user_id,book_id,content,page_number,discussion_type,created_at)
+                       VALUES(?,?,?,?,?,?,?,?)""",
+                    (str(uuid4()), club_id, user_id, book_id, notes.strip(), current_page, "quote", now),
+                )
+
+        return self.get_or_create_club_room(user_id, club_id)
+
+    def send_room_message(self, user_id: str, club_id: str, room_id: str, content: str,
+                          access_token: str | None = None) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as connection:
+            member = connection.execute(
+                "SELECT role FROM book_club_members WHERE club_id=? AND user_id=?", (club_id, user_id)
+            ).fetchone()
+            if not member:
+                raise PermissionError("Kulüp üyeliği gerekiyor.")
+            msg_id = str(uuid4())
+            connection.execute(
+                "INSERT INTO book_club_room_messages(id,room_id,user_id,content,created_at) VALUES(?,?,?,?,?)",
+                (msg_id, room_id, user_id, content.strip(), now),
+            )
+        return self.get_or_create_club_room(user_id, club_id)
+

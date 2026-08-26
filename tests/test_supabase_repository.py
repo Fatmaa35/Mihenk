@@ -188,3 +188,44 @@ def test_reading_session_stats_falls_back_to_reading_activity() -> None:
     assert stats["total_pages_read"] == 45
     assert stats["total_minutes"] == 0
     assert stats["heatmap_data"] == {"2026-08-19": 20, "2026-08-20": 25}
+
+
+def test_product_growth_relations_match_sqlite_response_shape() -> None:
+    user_id = "00000000-0000-0000-0000-000000000001"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/rest/v1/reading_lists":
+            if "share_token" in request.url.params:
+                return httpx.Response(200, json=[{
+                    "id": "list-1", "title": "Liste", "reading_list_items": [{
+                        "note": "Önce bunu oku", "position": 1, "added_at": "2026-08-26T00:00:00Z",
+                        "books": {"id": "book-1", "title": "Kitap", "author": "Yazar", "genre": "Roman", "themes": [], "character_traits": []},
+                    }],
+                }])
+            return httpx.Response(200, json=[{
+                "id": "list-1", "title": "Liste", "reading_list_items": [{"count": 2}],
+            }])
+        if request.url.path == "/rest/v1/book_club_members":
+            return httpx.Response(200, json=[{"user_id": user_id, "role": "owner", "joined_at": "2026-08-26T00:00:00Z", "profiles": {"display_name": "Okur"}}])
+        if request.url.path == "/rest/v1/book_clubs":
+            return httpx.Response(200, json=[{
+                "id": "club-1", "name": "Kulüp", "book_club_reads": [{
+                    "book_id": "book-1", "status": "reading",
+                    "books": {"title": "Kitap", "author": "Yazar", "cover_url": None},
+                }],
+            }])
+        if request.url.path == "/rest/v1/profiles":
+            return httpx.Response(200, json=[{"id": user_id, "display_name": "Okur"}])
+        if request.url.path in {"/rest/v1/book_club_progress", "/rest/v1/book_club_discussions", "/rest/v1/book_club_polls", "/rest/v1/book_club_events", "/rest/v1/book_club_reactions", "/rest/v1/book_club_event_rsvps", "/rest/v1/user_books"}:
+            return httpx.Response(200, json=[])
+        raise AssertionError(f"Beklenmeyen istek: {request.url}")
+
+    repository = SupabaseRepository("https://project.supabase.co", "sb_publishable_test", "sb_secret_test")
+    repository.client.close()
+    repository.client = httpx.Client(transport=httpx.MockTransport(handler))
+
+    assert repository.list_reading_lists(user_id)[0]["item_count"] == 2
+    detail = repository.reading_list_detail(share_token="share-token")
+    assert detail["items"][0]["book"]["title"] == "Kitap"
+    club = repository.book_club_detail(user_id, "club-1")
+    assert club["reads"][0]["title"] == "Kitap"

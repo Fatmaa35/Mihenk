@@ -40,8 +40,8 @@ jobs:
         run: python -m uvicorn app.main:app --host 127.0.0.1 --port 8010 &
       - name: Wait for test server
         run: curl --retry 30 --retry-delay 1 --retry-connrefused --fail --silent http://127.0.0.1:8010/ready
-      - name: Run public browser smoke tests
-        run: npm run test:e2e -- --project=desktop
+      - name: Run desktop and mobile browser smoke tests
+        run: npm run test:e2e
         working-directory: frontend
       - run: node --check app/static/app.js
       - run: python -m compileall -q app scripts

@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import ROOT, settings
 from app.repository_factory import create_repository, create_search_index
+from app.routers.product import create_product_router
 from app.schemas import (
     BookView,
     CharacterSearchRequest,
@@ -74,6 +75,7 @@ from app.services.security import SecurityMiddleware
 from app.services.observability import ObservabilityMiddleware, metrics, recent_events
 from app.services.price_forecasting import price_intelligence
 from app.services.price_pipeline import run_full_price_pipeline
+from app.services.product_growth import experiment_variant
 from app.supabase_repository import SupabaseRequestError
 
 
@@ -774,8 +776,8 @@ def read_all_my_notifications(request: Request, response: Response) -> dict:
     )}
 
 
-@app.post("/me/recommendations", response_model=CharacterRecommendationResponse)
-async def my_recommendations(payload: CharacterSearchRequest, request: Request, response: Response) -> CharacterRecommendationResponse:
+@app.post("/me/recommendations")
+async def my_recommendations(payload: CharacterSearchRequest, request: Request, response: Response) -> dict:
     started = perf_counter()
     session = current_session(request, response)
     user = session["user"]
@@ -785,16 +787,34 @@ async def my_recommendations(payload: CharacterSearchRequest, request: Request, 
         payload.character_description, profile, 50,
         access_token=session["access_token"],
     )
-    fallback_used = False
-    try:
-        result = await explainer.explain(profile, payload.character_description, summary, candidates, payload.limit)
-    except GeminiUnavailable:
-        fallback_used = True
-        result = await GeminiExplainer("", settings.gemini_model, False).explain(profile, payload.character_description, summary, candidates, payload.limit)
+    variant = experiment_variant(user["id"])
+    fallback_used = variant == "catalog_control"
+    if variant == "catalog_control":
+        result = await GeminiExplainer("", settings.gemini_model, False).explain(
+            profile, payload.character_description, summary, candidates, payload.limit
+        )
+    else:
+        try:
+            result = await explainer.explain(profile, payload.character_description, summary, candidates, payload.limit)
+        except GeminiUnavailable:
+            fallback_used = True
+            result = await GeminiExplainer("", settings.gemini_model, False).explain(profile, payload.character_description, summary, candidates, payload.limit)
+    recommendation_id = str(uuid4())
+    title_to_id = {book["title"].casefold(): book["id"] for book in catalog}
+    for position, item in enumerate(result.recommended_books, start=1):
+        repository.log_recommendation_interaction(user["id"], {
+            "recommendation_id": recommendation_id,
+            "book_id": title_to_id.get(item.book_title.casefold()),
+            "event_type": "impression",
+            "position": position,
+            "experiment_variant": variant,
+            "query_text": payload.character_description,
+            "metadata": {"match_score": item.match_score},
+        }, session["access_token"])
     repository.log_recommendation_event(user["id"], payload.character_description, len(result.recommended_books),
                                         fallback_used, round((perf_counter() - started) * 1000), session["access_token"])
     response.headers["X-Search-Explanation"] = json.dumps(recommender.last_query_explanation, ensure_ascii=True, separators=(",", ":"))[:4000]
-    return result
+    return {**result.model_dump(), "recommendation_id": recommendation_id, "experiment_variant": variant}
 
 
 @app.get("/me/recommendations/explanation")
@@ -1447,3 +1467,12 @@ async def character_recommendations(
         # LLM erişimi ürünün temel öneri akışını kesmemelidir.
         fallback = GeminiExplainer("", settings.gemini_model, False)
         return await fallback.explain(profile, payload.character_description, summary, candidates)
+
+
+app.include_router(create_product_router(
+    repository=repository,
+    recommender=recommender,
+    settings=settings,
+    current_session=current_session,
+    require_role=require_role,
+))

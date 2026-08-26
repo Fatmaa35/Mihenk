@@ -237,7 +237,7 @@ ON price_alerts(is_active, book_id);
 CREATE TABLE IF NOT EXISTS notifications (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    kind TEXT NOT NULL CHECK (kind IN ('price_drop','reading_reminder','comment_reply','comment_helpful','new_follower','badge_earned')),
+    kind TEXT NOT NULL CHECK (kind IN ('price_drop','reading_reminder','comment_reply','comment_helpful','new_follower','badge_earned','edition_update')),
     book_id TEXT REFERENCES books(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     body TEXT NOT NULL,
@@ -567,4 +567,220 @@ CREATE TABLE IF NOT EXISTS book_quotes (
     CHECK ((book_id IS NOT NULL) != (custom_book_id IS NOT NULL))
 );
 CREATE INDEX IF NOT EXISTS idx_book_quotes_user_created ON book_quotes(user_id, created_at DESC);
+
+-- Product growth: onboarding, measurable recommendations and retention loops.
+CREATE TABLE IF NOT EXISTS onboarding_profiles (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    liked_book_ids_json TEXT NOT NULL DEFAULT '[]',
+    liked_authors_json TEXT NOT NULL DEFAULT '[]',
+    onboarding_completed INTEGER NOT NULL DEFAULT 0 CHECK(onboarding_completed IN (0,1)),
+    completed_at TEXT,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS recommendation_interactions (
+    id TEXT PRIMARY KEY,
+    recommendation_id TEXT NOT NULL,
+    user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+    book_id TEXT REFERENCES books(id) ON DELETE SET NULL,
+    event_type TEXT NOT NULL CHECK(event_type IN ('impression','click','library_add','reading_start','reading_finish','like','dislike')),
+    position INTEGER CHECK(position IS NULL OR position > 0),
+    experiment_variant TEXT NOT NULL CHECK(experiment_variant IN ('catalog_control','ai_assisted')),
+    query_text TEXT,
+    metadata_json TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_recommendation_interactions_funnel
+ON recommendation_interactions(experiment_variant,event_type,created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_recommendation_interactions_user
+ON recommendation_interactions(user_id,created_at DESC);
+
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    consent_granted INTEGER NOT NULL DEFAULT 0 CHECK(consent_granted IN (0,1)),
+    weekly_digest INTEGER NOT NULL DEFAULT 1 CHECK(weekly_digest IN (0,1)),
+    recommendations INTEGER NOT NULL DEFAULT 1 CHECK(recommendations IN (0,1)),
+    price_drops INTEGER NOT NULL DEFAULT 1 CHECK(price_drops IN (0,1)),
+    stock_updates INTEGER NOT NULL DEFAULT 0 CHECK(stock_updates IN (0,1)),
+    social_updates INTEGER NOT NULL DEFAULT 1 CHECK(social_updates IN (0,1)),
+    frequency TEXT NOT NULL DEFAULT 'weekly' CHECK(frequency IN ('instant','daily','weekly','off')),
+    quiet_hours_start TEXT,
+    quiet_hours_end TEXT,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS edition_subscriptions (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL CHECK(event_type IN ('new_edition','back_in_stock')),
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0,1)),
+    last_notified_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY(user_id,book_id,event_type)
+);
+CREATE INDEX IF NOT EXISTS idx_edition_subscriptions_active
+ON edition_subscriptions(book_id,event_type,is_active);
+
+CREATE TABLE IF NOT EXISTS reading_lists (
+    id TEXT PRIMARY KEY,
+    owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 1 AND 120),
+    description TEXT NOT NULL DEFAULT '',
+    visibility TEXT NOT NULL DEFAULT 'private' CHECK(visibility IN ('private','unlisted','public')),
+    share_token TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_reading_lists_owner ON reading_lists(owner_id,updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS reading_list_items (
+    list_id TEXT NOT NULL REFERENCES reading_lists(id) ON DELETE CASCADE,
+    book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    note TEXT NOT NULL DEFAULT '',
+    position INTEGER NOT NULL DEFAULT 1 CHECK(position > 0),
+    added_at TEXT NOT NULL,
+    PRIMARY KEY(list_id,book_id)
+);
+CREATE INDEX IF NOT EXISTS idx_reading_list_items_order ON reading_list_items(list_id,position,added_at);
+
+CREATE TABLE IF NOT EXISTS book_clubs (
+    id TEXT PRIMARY KEY,
+    owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL CHECK(length(trim(name)) BETWEEN 2 AND 120),
+    description TEXT NOT NULL DEFAULT '',
+    rules TEXT NOT NULL DEFAULT '',
+    visibility TEXT NOT NULL DEFAULT 'private' CHECK(visibility IN ('private','unlisted','public')),
+    invite_code TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS book_club_members (
+    club_id TEXT NOT NULL REFERENCES book_clubs(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('owner','moderator','member')),
+    joined_at TEXT NOT NULL,
+    PRIMARY KEY(club_id,user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_members_user ON book_club_members(user_id,joined_at DESC);
+
+CREATE TABLE IF NOT EXISTS book_club_reads (
+    club_id TEXT NOT NULL REFERENCES book_clubs(id) ON DELETE CASCADE,
+    book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    start_date TEXT,
+    target_date TEXT,
+    status TEXT NOT NULL DEFAULT 'planned' CHECK(status IN ('planned','reading','completed')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY(club_id,book_id)
+);
+
+CREATE TABLE IF NOT EXISTS book_club_progress (
+    club_id TEXT NOT NULL REFERENCES book_clubs(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    current_page INTEGER NOT NULL DEFAULT 0 CHECK(current_page >= 0),
+    total_pages INTEGER CHECK(total_pages IS NULL OR total_pages > 0),
+    daily_target_pages INTEGER NOT NULL DEFAULT 10 CHECK(daily_target_pages > 0),
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY(club_id,user_id,book_id)
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_progress_book ON book_club_progress(book_id);
+
+CREATE TABLE IF NOT EXISTS book_club_discussions (
+    id TEXT PRIMARY KEY,
+    club_id TEXT NOT NULL REFERENCES book_clubs(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    content TEXT NOT NULL CHECK(length(trim(content)) BETWEEN 2 AND 2000),
+    page_number INTEGER CHECK(page_number IS NULL OR page_number > 0),
+    chapter_title TEXT,
+    discussion_type TEXT NOT NULL DEFAULT 'discussion' CHECK(discussion_type IN ('discussion','quote','question','analysis')),
+    parent_id TEXT REFERENCES book_club_discussions(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_discussions_feed ON book_club_discussions(club_id,book_id,page_number,created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_book_club_discussions_user ON book_club_discussions(user_id);
+
+CREATE TABLE IF NOT EXISTS book_club_reactions (
+    id TEXT PRIMARY KEY,
+    discussion_id TEXT NOT NULL REFERENCES book_club_discussions(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reaction_type TEXT NOT NULL CHECK(reaction_type IN ('thoughtful','agree','heart','bookmark')),
+    created_at TEXT NOT NULL,
+    UNIQUE(discussion_id, user_id, reaction_type)
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_reactions_disc ON book_club_reactions(discussion_id);
+CREATE INDEX IF NOT EXISTS idx_book_club_reactions_user ON book_club_reactions(user_id);
+
+CREATE TABLE IF NOT EXISTS book_club_events (
+    id TEXT PRIMARY KEY,
+    club_id TEXT NOT NULL REFERENCES book_clubs(id) ON DELETE CASCADE,
+    title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 2 AND 160),
+    description TEXT NOT NULL DEFAULT '',
+    event_type TEXT NOT NULL DEFAULT 'general' CHECK(event_type IN ('kickoff','midpoint','final','general')),
+    event_date TEXT NOT NULL,
+    location TEXT NOT NULL DEFAULT '',
+    created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_events_club ON book_club_events(club_id,event_date ASC);
+
+CREATE TABLE IF NOT EXISTS book_club_event_rsvps (
+    event_id TEXT NOT NULL REFERENCES book_club_events(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'attending' CHECK(status IN ('attending','maybe','declined')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY(event_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_event_rsvps_user ON book_club_event_rsvps(user_id);
+
+CREATE TABLE IF NOT EXISTS book_club_polls (
+    id TEXT PRIMARY KEY,
+    club_id TEXT NOT NULL REFERENCES book_clubs(id) ON DELETE CASCADE,
+    title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 2 AND 160),
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','closed')),
+    created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_polls_club ON book_club_polls(club_id,status,created_at DESC);
+
+CREATE TABLE IF NOT EXISTS book_club_poll_options (
+    id TEXT PRIMARY KEY,
+    poll_id TEXT NOT NULL REFERENCES book_club_polls(id) ON DELETE CASCADE,
+    book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    UNIQUE(poll_id,book_id)
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_poll_options_book ON book_club_poll_options(book_id);
+
+CREATE TABLE IF NOT EXISTS book_club_votes (
+    poll_id TEXT NOT NULL REFERENCES book_club_polls(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    option_id TEXT NOT NULL REFERENCES book_club_poll_options(id) ON DELETE CASCADE,
+    voted_at TEXT NOT NULL,
+    PRIMARY KEY(poll_id,user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_votes_option ON book_club_votes(option_id);
+
+CREATE TABLE IF NOT EXISTS book_club_rooms (
+    id TEXT PRIMARY KEY,
+    club_id TEXT NOT NULL REFERENCES book_clubs(id) ON DELETE CASCADE,
+    title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 2 AND 160),
+    book_id TEXT REFERENCES books(id) ON DELETE SET NULL,
+    phase TEXT NOT NULL DEFAULT 'reading' CHECK(phase IN ('reading','break','discussion')),
+    duration_minutes INTEGER NOT NULL DEFAULT 25 CHECK(duration_minutes > 0),
+    created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_rooms_club ON book_club_rooms(club_id);
+
+CREATE TABLE IF NOT EXISTS book_club_room_messages (
+    id TEXT PRIMARY KEY,
+    room_id TEXT NOT NULL REFERENCES book_club_rooms(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL CHECK(length(trim(content)) BETWEEN 1 AND 1000),
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_book_club_room_messages_room ON book_club_room_messages(room_id, created_at ASC);
+
 
