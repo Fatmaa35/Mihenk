@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useRef, useState } from 'react'
+import React, { Component, ErrorInfo, FormEvent, ReactNode, useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { api } from './api'
 import { t } from './i18n'
@@ -11,6 +11,13 @@ declare global { interface Window { BookPusulasiUI: {
   confirmAction(action: Action): Promise<Record<string, unknown> | null>
   openReadingPlan(book: Book): Promise<Record<string, unknown> | null>
 } } }
+
+class ProductErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('Ürün arayüzü hatası', error, info) }
+  render() { return this.state.failed ? <section className="product-error-state" role="alert"><h2>Bu bölüm yüklenemedi</h2><p>Diğer bölümleri kullanmaya devam edebilirsin.</p><button onClick={() => this.setState({ failed: false })}>Yeniden dene</button></section> : this.props.children }
+}
 
 function AppRoot() {
   const [action, setAction] = useState<Action | null>(null)
@@ -81,7 +88,22 @@ function initMounts() {
   if (!document.getElementById('app')?.classList.contains('hidden')) mountPkm()
 
   const host = document.getElementById('product-ui-root')
-  if (host) createRoot(host).render(<AppRoot />)
+  if (host) createRoot(host).render(<ProductErrorBoundary><AppRoot /></ProductErrorBoundary>)
+
+  const growthMount = document.getElementById('growth-hub-mount')
+  let growthMounted = false
+  const mountGrowth = async () => {
+    if (!growthMount || growthMounted) return
+    growthMounted = true
+    try {
+      const { ProductGrowthHub } = await import('./ProductGrowthHub')
+      createRoot(growthMount).render(<ProductErrorBoundary><ProductGrowthHub /></ProductErrorBoundary>)
+    } catch {
+      growthMounted = false
+      growthMount.textContent = 'Okur merkezi yüklenemedi. Lütfen tekrar deneyin.'
+    }
+  }
+  window.addEventListener('growth-refresh', mountGrowth)
 
 }
 

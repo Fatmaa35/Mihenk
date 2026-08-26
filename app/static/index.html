@@ -9,10 +9,10 @@
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
   <link rel="icon" href="/static/favicon.svg?v=2" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/styles.css?v=20260826_release_v1">
-  <link rel="stylesheet" href="/static/generated/product-ui.css?v=20260826_release_v1">
-  <script src="/static/app.js?v=20260826_release_v1" defer></script>
-  <script type="module" src="/static/generated/product-ui.js?v=20260826_release_v1"></script>
+  <link rel="stylesheet" href="/static/styles.css?v=20260826_release_v2">
+  <link rel="stylesheet" href="/static/generated/product-ui.css?v=20260826_release_v2">
+  <script src="/static/app.js?v=20260826_release_v2" defer></script>
+  <script type="module" src="/static/generated/product-ui.js?v=20260826_release_v2"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">İçeriğe geç</a>
@@ -37,8 +37,13 @@
         <p class="landing-lead">Mihenk, okuma geçmişini ve zevklerini analiz ederek sana en uygun kitapları keşfetmene yardımcı olur.</p>
         <div class="landing-actions">
           <button class="landing-primary" type="button" data-open-login>Hemen keşfet <span aria-hidden="true">→</span></button>
-          <a class="landing-secondary" href="#landing-features"><span class="play-mark" aria-hidden="true">▶</span> Nasıl çalışır?</a>
+          <button id="demo-open" class="landing-secondary" type="button"><span class="play-mark" aria-hidden="true">▶</span> Kayıt olmadan dene</button>
         </div>
+        <form id="demo-form" class="landing-demo hidden">
+          <label for="demo-query">Nasıl bir kitap arıyorsun?</label>
+          <div><input id="demo-query" minlength="3" maxlength="1500" placeholder="Kısa, gizemli ve sürükleyici…" required><button type="submit">Öner</button></div>
+          <p id="demo-status" role="status" aria-live="polite"></p><div id="demo-results"></div>
+        </form>
       </div>
 
       <figure class="landing-visual" aria-hidden="true">
@@ -128,6 +133,7 @@
         <div class="stats-mini"><div><b id="stat-reading">0</b><span>Okuyorum</span></div><div><b id="stat-read">0</b><span>Okudum</span></div><div><b id="stat-fav">0</b><span>Favori</span></div></div>
         <nav>
           <button class="nav-button active" data-view="discover" title="Keşfet"><span class="nav-icon">✦</span><span class="nav-label">Keşfet</span></button>
+          <button class="nav-button" data-view="growth" title="Okur Merkezi"><span class="nav-icon">◉</span><span class="nav-label">Okur Merkezi</span></button>
           <button class="nav-button" data-view="reading-mode" title="Okuma Modu"><span class="nav-icon">📖</span><span class="nav-label">Okuma Modu (PKM)</span></button>
           <button class="nav-button" data-view="catalog" title="Katalog"><span class="nav-icon">⌕</span><span class="nav-label">Katalog</span></button>
           <button class="nav-button" data-view="community" title="Topluluk"><span class="nav-icon">◎</span><span class="nav-label">Topluluk</span></button>
@@ -140,6 +146,7 @@
       <button id="sidebar-backdrop" class="sidebar-backdrop" type="button" aria-label="Menüyü kapat" tabindex="-1"></button>
 
       <main id="main-content" class="content" tabindex="-1">
+        <section id="growth-view" class="view hidden"><div id="growth-hub-mount"></div></section>
         <section id="reading-mode-view" class="view hidden">
           <div id="pkm-dashboard-mount"></div>
         </section>

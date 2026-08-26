@@ -481,3 +481,154 @@ class ISBNBookLookupResponse(BaseModel):
     publisher: str | None = None
     catalog_saved: bool = False
     catalog_book_id: str | None = None
+
+
+class OnboardingUpsert(BaseModel):
+    liked_book_ids: list[str] = Field(default_factory=list, max_length=20)
+    liked_authors: list[str] = Field(default_factory=list, max_length=20)
+    preferred_genres: list[str] = Field(default_factory=list, max_length=20)
+    pace_preference: Literal["slow", "medium", "fast", "mixed"] | None = None
+    tone_preference: Literal["dark", "hopeful", "balanced"] | None = None
+    focus_preference: Literal["character", "plot", "balanced"] | None = None
+    completed: bool = True
+
+
+class LibraryCSVImport(BaseModel):
+    csv_text: str = Field(min_length=1, max_length=2_000_000)
+
+
+class RecommendationInteractionCreate(BaseModel):
+    recommendation_id: str = Field(min_length=8, max_length=80)
+    book_id: str | None = Field(default=None, max_length=200)
+    event_type: Literal["impression", "click", "library_add", "reading_start", "reading_finish", "like", "dislike"]
+    position: int | None = Field(default=None, ge=1, le=100)
+    experiment_variant: Literal["catalog_control", "ai_assisted"]
+    query_text: str | None = Field(default=None, max_length=1_500)
+    metadata: dict = Field(default_factory=dict)
+
+
+class NotificationPreferencesUpsert(BaseModel):
+    consent_granted: bool = False
+    weekly_digest: bool = True
+    recommendations: bool = True
+    price_drops: bool = True
+    stock_updates: bool = False
+    social_updates: bool = True
+    frequency: Literal["instant", "daily", "weekly", "off"] = "weekly"
+    quiet_hours_start: str | None = Field(default=None, pattern=r"^(?:[01]\d|2[0-3]):[0-5]\d$")
+    quiet_hours_end: str | None = Field(default=None, pattern=r"^(?:[01]\d|2[0-3]):[0-5]\d$")
+
+
+class EditionSubscriptionUpsert(BaseModel):
+    book_id: str
+    event_type: Literal["new_edition", "back_in_stock"]
+    is_active: bool = True
+
+
+class ReadingListCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+    description: str = Field(default="", max_length=1_000)
+    visibility: Literal["private", "unlisted", "public"] = "private"
+
+
+class ReadingListItemUpsert(BaseModel):
+    book_id: str
+    note: str = Field(default="", max_length=500)
+    position: int = Field(default=1, ge=1, le=10_000)
+
+
+class BookClubCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    description: str = Field(default="", max_length=1_000)
+    rules: str = Field(default="", max_length=2_000)
+    visibility: Literal["private", "unlisted", "public"] = "private"
+
+
+class BookClubPatch(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=120)
+    description: str | None = Field(default=None, max_length=1_000)
+    rules: str | None = Field(default=None, max_length=2_000)
+    visibility: Literal["private", "unlisted", "public"] | None = None
+
+
+class BookClubJoin(BaseModel):
+    invite_code: str = Field(min_length=8, max_length=80)
+
+
+class BookClubJoinReading(BaseModel):
+    book_id: str
+    daily_target_pages: int = Field(default=10, ge=1, le=1000)
+    shelf: Literal["reading", "to_read"] = "reading"
+
+
+class BookClubReadUpsert(BaseModel):
+    book_id: str
+    start_date: str | None = None
+    target_date: str | None = None
+    status: Literal["planned", "reading", "completed"] = "planned"
+
+
+class BookClubProgressUpsert(BaseModel):
+    book_id: str
+    current_page: int = Field(ge=0, le=100_000)
+    total_pages: int | None = Field(default=None, ge=1, le=100_000)
+    daily_target_pages: int | None = Field(default=10, ge=1, le=1000)
+
+
+class BookClubDiscussionCreate(BaseModel):
+    book_id: str
+    content: str = Field(min_length=2, max_length=2_000)
+    page_number: int | None = Field(default=None, ge=1, le=100_000)
+    chapter_title: str | None = Field(default=None, max_length=200)
+    discussion_type: Literal["discussion", "quote", "question", "analysis"] = "discussion"
+    parent_id: str | None = Field(default=None, max_length=100)
+
+
+class BookClubReactionToggle(BaseModel):
+    reaction_type: Literal["thoughtful", "agree", "heart", "bookmark"]
+
+
+class BookClubEventCreate(BaseModel):
+    title: str = Field(min_length=2, max_length=160)
+    description: str = Field(default="", max_length=2_000)
+    event_type: Literal["kickoff", "midpoint", "final", "general"] = "general"
+    event_date: str = Field(min_length=8, max_length=64)
+    location: str = Field(default="", max_length=500)
+
+
+class BookClubEventRSVPUpsert(BaseModel):
+    status: Literal["attending", "maybe", "declined"] = "attending"
+
+
+class BookClubMemberRoleUpdate(BaseModel):
+    role: Literal["moderator", "member"]
+
+
+class BookClubPollCreate(BaseModel):
+    title: str = Field(min_length=2, max_length=160)
+    option_book_ids: list[str] = Field(min_length=2, max_length=8)
+
+
+class BookClubVoteUpsert(BaseModel):
+    option_id: str
+
+
+class BookClubRoomCreate(BaseModel):
+    title: str = Field(default="Birlikte Okuyoruz Seansı", min_length=2, max_length=160)
+    book_id: str | None = None
+    duration_minutes: int = Field(default=25, ge=5, le=120)
+
+
+class BookClubRoomSessionComplete(BaseModel):
+    room_id: str | None = None
+    book_id: str | None = None
+    minutes_read: int = Field(ge=1, le=240)
+    pages_read: int = Field(default=0, ge=0, le=500)
+    current_page: int | None = Field(default=None, ge=0)
+    notes: str | None = Field(default="", max_length=2000)
+
+
+class BookClubRoomMessageCreate(BaseModel):
+    content: str = Field(min_length=1, max_length=1000)
+
+
