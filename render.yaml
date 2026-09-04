@@ -1,13 +1,22 @@
 services:
+  - type: keyvalue
+    name: mihenk-cache-production
+    plan: free
+    region: frankfurt
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+    persistenceMode: "off"
+
   - type: web
-    name: mihenk
+    name: mihenk-web-production
     runtime: docker
     plan: free
     region: frankfurt
+    repo: https://github.com/Fatmaa35/Mihenk
     branch: main
     dockerfilePath: ./Dockerfile
     healthCheckPath: /ready
-    autoDeployTrigger: checksPass
+    autoDeployTrigger: commit
     maxShutdownDelaySeconds: 30
     envVars:
       - key: APP_ENVIRONMENT
@@ -23,15 +32,19 @@ services:
       - key: WEB_CONCURRENCY
         value: "1"
       - key: APP_DOMAIN
-        value: mihenk.onrender.com
-      - key: RECOVERY_REDIRECT_URL
-        value: https://mihenk.onrender.com/
-      - key: ALLOWED_ORIGINS
-        value: https://mihenk.onrender.com
+        fromService:
+          type: web
+          name: mihenk-web-production
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: mihenk-cache-production
+          property: connectionString
       - key: REDIS_KEY_PREFIX
         value: mihenk:production
       - key: REMINDER_PROVIDER
-        value: multi
+        value: smtp
       - key: SMTP_HOST
         value: smtp-relay.brevo.com
       - key: SMTP_PORT
@@ -50,27 +63,17 @@ services:
         sync: false
       - key: SUPABASE_SECRET_KEY
         sync: false
-      - key: SUPABASE_JWKS_URL
-        sync: false
-      - key: REDIS_URL
-        sync: false
       - key: PIPELINE_WEBHOOK_SECRET
         generateValue: true
       - key: LEGAL_ENTITY_NAME
-        sync: false
+        value: Mihenk
       - key: PRIVACY_CONTACT_EMAIL
         sync: false
       - key: SECRETS_ROTATED_AT
-        sync: false
+        value: "2026-09-04"
       - key: SMTP_USERNAME
         sync: false
       - key: SMTP_PASSWORD
         sync: false
       - key: SMTP_FROM_EMAIL
-        sync: false
-      - key: WEB_PUSH_VAPID_PUBLIC_KEY
-        sync: false
-      - key: WEB_PUSH_VAPID_PRIVATE_KEY
-        sync: false
-      - key: WEB_PUSH_VAPID_SUBJECT
         sync: false

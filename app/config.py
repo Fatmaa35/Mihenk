@@ -9,6 +9,25 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env", override=False)
 
+RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip()
+DEFAULT_PUBLIC_ORIGIN = (
+    f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    if RENDER_EXTERNAL_HOSTNAME
+    else "http://127.0.0.1:8010"
+)
+RECOVERY_REDIRECT_URL = (
+    os.getenv("RECOVERY_REDIRECT_URL", "").strip()
+    or f"{DEFAULT_PUBLIC_ORIGIN}/"
+)
+ALLOWED_ORIGINS = (
+    os.getenv("ALLOWED_ORIGINS", "").strip()
+    or (
+        DEFAULT_PUBLIC_ORIGIN
+        if RENDER_EXTERNAL_HOSTNAME
+        else "http://127.0.0.1:8010,http://localhost:8010"
+    )
+)
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -19,9 +38,7 @@ class Settings:
     supabase_publishable_key: str = os.getenv("SUPABASE_PUBLISHABLE_KEY", "").strip()
     supabase_secret_key: str = os.getenv("SUPABASE_SECRET_KEY", "").strip()
     cookie_secure: bool = os.getenv("COOKIE_SECURE", "false").lower() == "true"
-    recovery_redirect_url: str = os.getenv(
-        "RECOVERY_REDIRECT_URL", "http://127.0.0.1:8010/"
-    ).strip()
+    recovery_redirect_url: str = RECOVERY_REDIRECT_URL
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     google_books_api_key: str = os.getenv("GOOGLE_BOOKS_API_KEY", "")
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
@@ -35,9 +52,7 @@ class Settings:
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "gemini-embedding-001").strip()
     embedding_dimensions: int = int(os.getenv("EMBEDDING_DIMENSIONS", "768"))
     allowed_origins: tuple[str, ...] = tuple(
-        value.strip() for value in os.getenv(
-            "ALLOWED_ORIGINS", "http://127.0.0.1:8010,http://localhost:8010"
-        ).split(",") if value.strip()
+        value.strip() for value in ALLOWED_ORIGINS.split(",") if value.strip()
     )
     rate_limit_enabled: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
     allow_registration: bool = os.getenv("ALLOW_REGISTRATION", "true").lower() == "true"
