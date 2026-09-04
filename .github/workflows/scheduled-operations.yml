@@ -37,8 +37,7 @@ jobs:
       APP_DOMAIN: ${{ vars.APP_DOMAIN }}
       LEGAL_ENTITY_NAME: ${{ vars.LEGAL_ENTITY_NAME }}
       PRIVACY_CONTACT_EMAIL: ${{ vars.PRIVACY_CONTACT_EMAIL }}
-      SECRETS_ROTATED_AT: ${{ vars.SECRETS_ROTATED_AT }}
-      REMINDER_PROVIDER: multi
+      REMINDER_PROVIDER: smtp
       SMTP_HOST: smtp-relay.brevo.com
       SMTP_PORT: "587"
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
