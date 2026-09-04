@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env", override=False)
-load_dotenv(ROOT / ".env.pipeline", override=False)
 
 
 @dataclass(frozen=True)
@@ -41,6 +40,7 @@ class Settings:
         ).split(",") if value.strip()
     )
     rate_limit_enabled: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
+    allow_registration: bool = os.getenv("ALLOW_REGISTRATION", "true").lower() == "true"
     redis_url: str = os.getenv("REDIS_URL", "").strip()
     redis_key_prefix: str = os.getenv("REDIS_KEY_PREFIX", "mihenk").strip() or "mihenk"
     admin_emails: tuple[str, ...] = tuple(

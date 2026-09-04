@@ -351,6 +351,33 @@ CREATE TABLE IF NOT EXISTS application_events (
 );
 CREATE INDEX IF NOT EXISTS idx_application_events_recent ON application_events(created_at DESC);
 
+CREATE TABLE IF NOT EXISTS product_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_name TEXT NOT NULL CHECK(event_name IN (
+        'session_started','view_opened','onboarding_started','onboarding_completed',
+        'notification_opt_in','feedback_submitted'
+    )),
+    properties_json TEXT NOT NULL DEFAULT '{}',
+    occurred_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_product_events_user_time ON product_events(user_id,occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_product_events_name_time ON product_events(event_name,occurred_at DESC);
+
+CREATE TABLE IF NOT EXISTS beta_feedback (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category TEXT NOT NULL CHECK(category IN ('bug','idea','usability','content','other')),
+    rating INTEGER CHECK(rating BETWEEN 0 AND 10),
+    message TEXT NOT NULL CHECK(length(trim(message)) BETWEEN 5 AND 2000),
+    context_json TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'new' CHECK(status IN ('new','reviewing','planned','resolved','closed')),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_beta_feedback_status_time ON beta_feedback(status,created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_beta_feedback_user_time ON beta_feedback(user_id,created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_recommendation_feedback_user
 ON recommendation_feedback(user_id, feedback_type, updated_at DESC);
 
@@ -782,5 +809,4 @@ CREATE TABLE IF NOT EXISTS book_club_room_messages (
     created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_book_club_room_messages_room ON book_club_room_messages(room_id, created_at ASC);
-
 

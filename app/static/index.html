@@ -9,9 +9,8 @@
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
   <link rel="icon" href="/static/favicon.svg?v=2" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/styles.css?v=20260826_release_v2">
+  <link rel="stylesheet" href="/static/styles.css?v=20260904_beta_admin">
   <link rel="stylesheet" href="/static/generated/product-ui.css?v=20260826_release_v2">
-  <script src="/static/app.js?v=20260826_release_v2" defer></script>
   <script type="module" src="/static/generated/product-ui.js?v=20260826_release_v2"></script>
 </head>
 <body>
@@ -95,7 +94,7 @@
     <header class="topbar">
       <div class="topbar-start">
         <button id="sidebar-toggle" class="icon-button sidebar-toggle" type="button" aria-controls="primary-sidebar" aria-expanded="true" aria-label="Menüyü daralt"><span aria-hidden="true">☰</span></button>
-        <button id="home-brand" class="brand" type="button" aria-label="Mihenk ana sayfasına git"><span class="brand-mark" aria-hidden="true"><img src="/static/brand-logo.svg" alt=""></span><span>Mihenk</span></button>
+        <button id="home-brand" class="brand" type="button" aria-label="Mihenk ana sayfasına git"><span class="brand-mark" aria-hidden="true"><img src="/static/favicon.svg" alt=""></span><span>Mihenk</span></button>
       </div>
       <div class="top-actions">
         <button id="notification-button" class="icon-button" data-view="alerts" aria-label="Bildirimler">♢<b id="notification-count" class="badge hidden">0</b></button>
@@ -130,8 +129,10 @@
       <aside id="primary-sidebar" class="sidebar" aria-label="Ana menü">
         <div class="profile-block"><div id="side-avatar" class="avatar large"></div><div class="profile-identity"><strong id="side-name"></strong><small id="side-email"></small></div></div>
         <button id="side-level-card" class="side-level-card" type="button" data-view="insights" aria-label="Okur seviyesini ve rozetleri gör"><span class="side-level-orbit"><i id="side-level-number">1</i><b aria-hidden="true">✦</b></span><span class="side-level-copy"><strong id="side-level">Seviye 1 · Okur</strong><span class="side-xp-track"><i id="side-xp-fill"></i></span><small id="side-level-next">Sonraki seviyeye ilerliyorsun</small></span><span class="side-level-arrow" aria-hidden="true">›</span></button>
+        <p class="sidebar-kicker">HIZLI BAKIŞ</p>
         <div class="stats-mini"><div><b id="stat-reading">0</b><span>Okuyorum</span></div><div><b id="stat-read">0</b><span>Okudum</span></div><div><b id="stat-fav">0</b><span>Favori</span></div></div>
         <nav>
+          <button id="admin-nav" class="nav-button hidden" data-view="quality" title="Yönetim"><span class="nav-icon">⌘</span><span class="nav-label">Yönetim</span></button>
           <button class="nav-button active" data-view="discover" title="Keşfet"><span class="nav-icon">✦</span><span class="nav-label">Keşfet</span></button>
           <button class="nav-button" data-view="growth" title="Okur Merkezi"><span class="nav-icon">◉</span><span class="nav-label">Okur Merkezi</span></button>
           <button class="nav-button" data-view="reading-mode" title="Okuma Modu"><span class="nav-icon">📖</span><span class="nav-label">Okuma Modu (PKM)</span></button>
@@ -140,8 +141,17 @@
           <button class="nav-button" data-view="library" title="Kitaplığım"><span class="nav-icon">▤</span><span class="nav-label">Kitaplığım</span></button>
           <button class="nav-button" data-view="insights" title="Okuma analizi"><span class="nav-icon">◫</span><span class="nav-label">Okuma analizi</span></button>
           <button class="nav-button" data-view="alerts" title="Fiyat alarmları"><span class="nav-icon">♢</span><span class="nav-label">Fiyat alarmları</span></button>
-          <button id="admin-nav" class="nav-button hidden" data-view="quality" title="Yönetim"><span class="nav-icon">◎</span><span class="nav-label">Yönetim</span></button>
         </nav>
+        <div class="sidebar-promo" aria-label="Mihenk keşif alanı">
+          <img src="/static/favicon.svg" alt="" aria-hidden="true">
+          <strong>Okuma yolculuğunda<br>Mihenk seninle.</strong>
+          <p>Yeni kitaplar ve güçlü okur sinyalleri seni bekliyor.</p>
+          <button type="button" data-view="discover">Keşfet <span aria-hidden="true">→</span></button>
+        </div>
+        <div class="sidebar-utilities">
+          <button id="sidebar-settings" type="button" data-view="settings"><span aria-hidden="true">⚙</span>Ayarlar</button>
+          <button id="sidebar-logout" type="button"><span aria-hidden="true">↪</span>Çıkış yap</button>
+        </div>
       </aside>
       <button id="sidebar-backdrop" class="sidebar-backdrop" type="button" aria-label="Menüyü kapat" tabindex="-1"></button>
 
@@ -201,8 +211,41 @@
           <div class="dashboard-grid"><article class="card"><div class="section-title compact"><div><p class="eyebrow">ALARMLAR</p><h2>Takip edilen kitaplar</h2></div></div><div id="alerts-list"></div></article><article class="card"><div class="section-title compact"><div><p class="eyebrow">BİLDİRİMLER</p><h2>Son gelişmeler</h2></div><div><button id="enable-push" class="text-button hidden" type="button">Push'ı aç</button><button id="read-all" class="text-button">Okundu işaretle</button></div></div><div id="notifications-list"></div></article></div>
         </section>
 
+        <section id="settings-view" class="view hidden settings-view">
+          <div class="view-head settings-head"><div><p class="eyebrow">UYGULAMA AYARLARI</p><h1>Deneyimini düzenle</h1><p>Hesap, görünüm ve gizlilik seçeneklerini tek yerden yönet.</p></div></div>
+          <div class="settings-grid">
+            <article class="card settings-card settings-account-card">
+              <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">◎</span><div><p class="eyebrow">HESAP</p><h2>Profil bilgileri</h2></div></div>
+              <div class="settings-identity"><span id="settings-avatar" class="avatar large" aria-hidden="true"></span><div><strong id="settings-name"></strong><small id="settings-email"></small></div></div>
+              <button id="settings-password" class="ghost settings-action" type="button">Şifremi değiştir <span aria-hidden="true">→</span></button>
+            </article>
+            <article class="card settings-card">
+              <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">◫</span><div><p class="eyebrow">ARAYÜZ</p><h2>Görünüm tercihleri</h2></div></div>
+              <label class="settings-toggle"><span><strong>Kompakt yan menü</strong><small>Geniş ekranlarda içerik için daha fazla alan açar.</small></span><input id="settings-compact" type="checkbox" role="switch"></label>
+              <label class="settings-toggle"><span><strong>Hareketleri azalt</strong><small>Geçiş ve dekoratif animasyonları en aza indirir.</small></span><input id="settings-reduced-motion" type="checkbox" role="switch"></label>
+            </article>
+            <article class="card settings-card">
+              <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">◇</span><div><p class="eyebrow">GİZLİLİK</p><h2>Verilerin ve hakların</h2></div></div>
+              <p class="settings-copy">Mihenk'te tuttuğun hesap ve okuma verilerinin bir kopyasını indirebilir, gizlilik metnini inceleyebilirsin.</p>
+              <div class="settings-links"><a href="/me/data-export">Verilerimi indir <span aria-hidden="true">↓</span></a><a href="/privacy" target="_blank" rel="noopener">Gizlilik ve KVKK <span aria-hidden="true">↗</span></a></div>
+            </article>
+            <article class="card settings-card">
+              <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">♢</span><div><p class="eyebrow">BİLDİRİMLER</p><h2>Takip ve oturum</h2></div></div>
+              <p class="settings-copy">Fiyat alarmlarını ve son bildirimleri görüntüle veya bu cihazdaki oturumunu güvenle kapat.</p>
+              <div class="settings-row-actions"><button class="ghost" type="button" data-view="alerts">Bildirimleri yönet</button><button id="settings-logout" class="settings-danger" type="button">Çıkış yap</button></div>
+            </article>
+            <form id="beta-feedback-form" class="card settings-card settings-feedback-card">
+              <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">✦</span><div><p class="eyebrow">KAPALI BETA</p><h2>Mihenk'i birlikte geliştirelim</h2></div></div>
+              <p class="settings-copy">Bir hata, kullanım zorluğu veya fikrini doğrudan ürün ekibine gönder.</p>
+              <div class="settings-feedback-fields"><label>Konu<select id="beta-feedback-category"><option value="bug">Hata</option><option value="usability">Kullanım deneyimi</option><option value="idea">Yeni fikir</option><option value="content">Katalog/içerik</option><option value="other">Diğer</option></select></label><label>Puan<select id="beta-feedback-rating"><option value="">Puan vermeden gönder</option><option value="10">10 · Çok iyi</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0 · Çok kötü</option></select></label></div>
+              <label class="settings-feedback-message">Mesaj<textarea id="beta-feedback-message" minlength="5" maxlength="2000" required placeholder="Neyi iyileştirebiliriz?"></textarea></label>
+              <div class="settings-row-actions"><button class="primary" type="submit">Geri bildirim gönder</button><span id="beta-feedback-status" class="muted" role="status" aria-live="polite"></span></div>
+            </form>
+          </div>
+        </section>
+
         <section id="quality-view" class="view hidden quality-view">
-          <div class="view-head admin-view-head"><div><p class="eyebrow">YÖNETİM MERKEZİ</p><h1>Mihenk kontrol paneli</h1></div><p>Önemli sinyaller tek bakışta; ayrıntılar gerektiğinde aşağıda.</p></div>
+          <div class="view-head admin-view-head"><div><p class="eyebrow">YÖNETİM MERKEZİ</p><h1>Mihenk kontrol paneli</h1><p>Önemli sinyaller tek bakışta; ayrıntılar gerektiğinde aşağıda.</p></div><div class="admin-head-actions"><span class="admin-live"><i></i>Sistem çevrimiçi</span><button id="admin-refresh" class="ghost" type="button"><span aria-hidden="true">↻</span> Verileri yenile</button></div></div>
           <div id="quality-metrics" class="metric-grid admin-kpi-grid" aria-label="Katalog özeti"></div>
           <div class="admin-visual-grid">
             <article class="card admin-chart-card"><div class="admin-chart-heading"><div><p class="eyebrow">KATALOG</p><h2>Veri bütünlüğü</h2></div><span class="status-chip status-good">Canlı</span></div><div id="catalog-health-chart" class="donut-layout" aria-label="Katalog bütünlük grafiği"></div><div id="catalog-risk-chart" class="compact-bars" aria-label="Katalog sorun dağılımı"></div></article>
@@ -210,6 +253,11 @@
             <article class="card admin-chart-card"><div class="admin-chart-heading"><div><p class="eyebrow">SİSTEM</p><h2>Operasyon sağlığı</h2></div><span id="admin-alert-count" class="status-chip">0 uyarı</span></div><div id="admin-ops-health" class="ops-health" aria-label="Operasyon sağlık göstergeleri"></div></article>
           </div>
           <div id="admin-social-metrics" class="metric-grid admin-kpi-grid admin-community-kpis"></div>
+          <article class="card admin-beta-card">
+            <div class="admin-chart-heading"><div><p class="eyebrow">KAPALI BETA</p><h2>30 günlük ürün sinyalleri</h2></div><span class="chart-period">Canlı</span></div>
+            <div id="admin-beta-metrics" class="beta-metric-grid" aria-label="Kapalı beta metrikleri"></div>
+            <div class="beta-dashboard-grid"><div><h3>Davranış olayları</h3><div id="admin-beta-events" class="compact-bars"></div></div><div><h3>Son geri bildirimler</h3><div id="admin-beta-feedback" class="admin-list"></div></div></div>
+          </article>
           <div class="dashboard-grid admin-dashboard-grid"><article class="card series-card"><p class="eyebrow">OKUR İLGİSİ</p><h2>Öne çıkan kitaplar</h2><div id="admin-top-books" class="rank-chart"></div></article><article class="card series-card"><div class="admin-chart-heading"><div><p class="eyebrow">İSTEK TRAFİĞİ</p><h2>Sistem kayıtları</h2></div><span class="chart-period">Son 30</span></div><div id="admin-log-chart" class="log-health-chart"></div><div id="system-logs" class="admin-list compact-log-list"></div></article></div>
           <div class="admin-tools-heading"><div><p class="eyebrow">YÖNETİM ARAÇLARI</p><h2>Ayrıntılı işlemler</h2></div><p>İhtiyacın olan bölümü aç.</p></div>
           <details class="card admin-tool-panel"><summary><span><b>Veri boru hattı</b><small>Fiyat toplama ve tahminler</small></span><span class="summary-action">Aç</span></summary><div class="admin-tool-content pipeline-card"><div class="section-title compact"><div><p class="eyebrow">VERİ BORU HATTI</p><h2>Fiyat toplama ve tahminler</h2></div><button id="run-price-pipeline" class="primary" type="button">Şimdi çalıştır</button></div><div id="pipeline-summary" class="pipeline-summary"></div><div class="dashboard-grid"><div><h3>Son çalışmalar</h3><div id="pipeline-runs" class="admin-list"></div></div><div><h3>Pipeline logları</h3><div id="pipeline-logs" class="admin-list"></div></div></div></div></details>

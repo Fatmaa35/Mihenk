@@ -4,8 +4,14 @@ import math
 import re
 from typing import Protocol
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+except (ImportError, OSError):
+    # Managed Windows installations can block SciPy's native DLLs. Keep the
+    # application usable by falling back to the pure-Python implementation.
+    TfidfVectorizer = None
+    cosine_similarity = None
 
 
 @dataclass(frozen=True)
@@ -50,6 +56,24 @@ def expand_query(query: str) -> str:
     return " ".join(expanded)
 
 
+def character_ngrams(text: str, minimum: int = 3, maximum: int = 5) -> Counter:
+    normalized = f" {text.casefold()} "
+    return Counter(
+        normalized[index:index + size]
+        for size in range(minimum, maximum + 1)
+        for index in range(max(0, len(normalized) - size + 1))
+    )
+
+
+def counter_cosine(left: Counter, right: Counter) -> float:
+    if not left or not right:
+        return 0.0
+    numerator = sum(left[item] * right[item] for item in left.keys() & right.keys())
+    left_length = math.sqrt(sum(value * value for value in left.values()))
+    right_length = math.sqrt(sum(value * value for value in right.values()))
+    return numerator / (left_length * right_length) if left_length and right_length else 0.0
+
+
 class BM25Index:
     def __init__(self, documents: list[str], k1: float = 1.5, b: float = 0.75) -> None:
         self.k1, self.b = k1, b
@@ -85,8 +109,14 @@ class LocalVectorIndex:
     def __init__(self, books: list[dict]) -> None:
         self.books = books
         documents = [self._document(book) for book in books]
-        self.vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), lowercase=True)
-        self.matrix = self.vectorizer.fit_transform(documents)
+        self.vectorizer = None
+        self.matrix = None
+        self.document_vectors = None
+        if TfidfVectorizer is not None:
+            self.vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), lowercase=True)
+            self.matrix = self.vectorizer.fit_transform(documents)
+        else:
+            self.document_vectors = [character_ngrams(document) for document in documents]
         self.bm25 = BM25Index(documents)
 
     @staticmethod
@@ -105,8 +135,12 @@ class LocalVectorIndex:
         self, query: str, limit: int = 20, access_token: str | None = None,
     ) -> list[VectorCandidate]:
         expanded_query = expand_query(query)
-        query_vector = self.vectorizer.transform([expanded_query])
-        semantic_scores = cosine_similarity(query_vector, self.matrix)[0]
+        if self.vectorizer is not None:
+            query_vector = self.vectorizer.transform([expanded_query])
+            semantic_scores = cosine_similarity(query_vector, self.matrix)[0]
+        else:
+            query_vector = character_ngrams(expanded_query)
+            semantic_scores = [counter_cosine(query_vector, document) for document in self.document_vectors]
         lexical_scores = self.bm25.scores(query)
         hybrid_scores = [0.55 * float(semantic_scores[index]) + 0.45 * lexical_scores[index] for index in range(len(self.books))]
         order = sorted(range(len(self.books)), key=lambda index: hybrid_scores[index], reverse=True)[:limit]

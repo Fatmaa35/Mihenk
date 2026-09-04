@@ -83,5 +83,6 @@ def test_frontend_accessibility_and_asset_budgets() -> None:
     assert html.count('class="card admin-tool-panel"') == 3
     assert "Mihenk kontrol paneli" in html
     assert '<link rel="manifest"' in html
-    assert (root / "app.js").stat().st_size < 180_000
+    assert not (root / "app.js").exists()
+    assert (Path(__file__).parents[1] / "frontend" / "src" / "app-shell.ts").exists()
     assert (root / "styles.css").stat().st_size < 120_000

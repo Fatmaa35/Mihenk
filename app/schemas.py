@@ -519,6 +519,21 @@ class NotificationPreferencesUpsert(BaseModel):
     quiet_hours_end: str | None = Field(default=None, pattern=r"^(?:[01]\d|2[0-3]):[0-5]\d$")
 
 
+class ProductEventCreate(BaseModel):
+    event_name: Literal[
+        "session_started", "view_opened", "onboarding_started",
+        "onboarding_completed", "notification_opt_in", "feedback_submitted",
+    ]
+    properties: dict = Field(default_factory=dict)
+
+
+class BetaFeedbackCreate(BaseModel):
+    category: Literal["bug", "idea", "usability", "content", "other"]
+    rating: int | None = Field(default=None, ge=0, le=10)
+    message: str = Field(min_length=5, max_length=2_000)
+    context: dict = Field(default_factory=dict)
+
+
 class EditionSubscriptionUpsert(BaseModel):
     book_id: str
     event_type: Literal["new_edition", "back_in_stock"]
@@ -630,5 +645,4 @@ class BookClubRoomSessionComplete(BaseModel):
 
 class BookClubRoomMessageCreate(BaseModel):
     content: str = Field(min_length=1, max_length=1000)
-
 

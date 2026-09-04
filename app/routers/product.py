@@ -93,6 +93,10 @@ def create_product_router(*, repository, recommender, settings,
         saved = repository.upsert_onboarding_profile(
             user_id, payload.liked_book_ids, payload.liked_authors, payload.completed, token
         )
+        repository.track_product_event(
+            user_id, "onboarding_completed" if payload.completed else "onboarding_started",
+            {"genres": len(payload.preferred_genres), "authors": len(payload.liked_authors)}, token,
+        )
         profile = repository.user_profile(user_id, token)
         return {
             **saved,
@@ -139,9 +143,15 @@ def create_product_router(*, repository, recommender, settings,
     def save_notification_preferences(payload: NotificationPreferencesUpsert,
                                       request: Request, response: Response) -> dict:
         session = session_for(request, response)
-        return repository.upsert_notification_preferences(
+        saved = repository.upsert_notification_preferences(
             session["user"]["id"], payload.model_dump(), session["access_token"]
         )
+        if payload.consent_granted:
+            repository.track_product_event(
+                session["user"]["id"], "notification_opt_in",
+                {"frequency": payload.frequency}, session["access_token"],
+            )
+        return saved
 
     @router.get("/me/weekly-summary")
     def weekly_summary(request: Request, response: Response) -> dict:

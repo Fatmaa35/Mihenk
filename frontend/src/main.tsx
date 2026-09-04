@@ -32,6 +32,7 @@ function AppRoot() {
       confirmAction(next) { setError(''); setAction(next); return new Promise(resolve => { actionResolve.current = resolve }) },
       openReadingPlan(next) { setError(''); setBook(next); return new Promise(resolve => { planResolve.current = resolve }) }
     }
+    void import('./app-shell').then(({ initializeAppShell }) => initializeAppShell())
   }, [])
 
   async function executeAction() {

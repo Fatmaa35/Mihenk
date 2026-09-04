@@ -1,0 +1,55 @@
+name: encrypted-supabase-backup
+
+on:
+  schedule:
+    # 00:00 UTC = 03:00 Europe/Istanbul
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate backup secrets
+        shell: bash
+        run: |
+          test -n "$SUPABASE_DB_URL"
+          test ${#BACKUP_ENCRYPTION_PASSPHRASE} -ge 24
+      - name: Export logical backup
+        shell: bash
+        run: |
+          mkdir -p backup
+          npx --yes supabase@2.116.0 db dump --db-url "$SUPABASE_DB_URL" -f backup/roles.sql --role-only
+          npx --yes supabase@2.116.0 db dump --db-url "$SUPABASE_DB_URL" -f backup/schema.sql
+          npx --yes supabase@2.116.0 db dump --db-url "$SUPABASE_DB_URL" -f backup/data.sql --use-copy --data-only -x storage.buckets_vectors -x storage.vector_indexes
+      - name: Encrypt and checksum
+        shell: bash
+        run: |
+          tar -C backup -czf mihenk-supabase-backup.tar.gz roles.sql schema.sql data.sql
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_ENCRYPTION_PASSPHRASE" --symmetric --cipher-algo AES256 --output mihenk-supabase-backup.tar.gz.gpg mihenk-supabase-backup.tar.gz
+          sha256sum mihenk-supabase-backup.tar.gz.gpg > mihenk-supabase-backup.sha256
+          rm -rf backup mihenk-supabase-backup.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: |
+            mihenk-supabase-backup.tar.gz.gpg
+            mihenk-supabase-backup.sha256
+          retention-days: 14
+          if-no-files-found: error

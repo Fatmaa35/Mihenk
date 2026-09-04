@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from uuid import uuid4
 
 from app.database import Repository
 
@@ -39,3 +40,29 @@ def test_retention_deletes_only_expired_read_notifications(tmp_path: Path) -> No
     assert deleted["notifications"] == 1
     with repository.connect() as connection:
         assert connection.execute("SELECT id FROM notifications").fetchone()["id"] == "old-unread"
+
+
+def test_retention_removes_old_product_events_but_keeps_open_feedback(tmp_path: Path) -> None:
+    repository = Repository(tmp_path / "beta-retention.db")
+    user = repository.create_user("Beta Saklama")
+    old = (datetime.now(timezone.utc) - timedelta(days=120)).isoformat()
+    with repository.connect() as connection:
+        connection.execute(
+            "INSERT INTO product_events(user_id,event_name,properties_json,occurred_at) VALUES(?,?,?,?)",
+            (user["id"], "session_started", "{}", old),
+        )
+        for status in ("new", "resolved"):
+            connection.execute(
+                """INSERT INTO beta_feedback(id,user_id,category,rating,message,context_json,status,created_at,updated_at)
+                   VALUES(?,?,?,?,?,'{}',?,?,?)""",
+                (str(uuid4()), user["id"], "bug", 7, "Eski beta geri bildirimi", status, old, old),
+            )
+
+    deleted = repository.purge_expired_data(
+        audit_days=365, event_days=90, notification_days=180, chat_days=365
+    )
+
+    assert deleted["product_events"] == 1
+    assert deleted["beta_feedback"] == 1
+    with repository.connect() as connection:
+        assert connection.execute("SELECT status FROM beta_feedback").fetchone()["status"] == "new"

@@ -7,7 +7,7 @@ from app.supabase_repository import SupabaseRepository, SupabaseRequestError
 
 
 def repository_with(handler) -> SupabaseRepository:
-    repository = SupabaseRepository("https://project.supabase.co", "sb_publishable_test")
+    repository = SupabaseRepository("https://project.supabase.co", "test-publishable-key")
     repository.client.close()
     repository.client = httpx.Client(transport=httpx.MockTransport(handler))
     return repository
@@ -15,7 +15,7 @@ def repository_with(handler) -> SupabaseRepository:
 
 def test_public_catalog_uses_publishable_key_and_maps_arrays() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
-        assert request.headers["apikey"] == "sb_publishable_test"
+        assert request.headers["apikey"] == "test-publishable-key"
         assert "authorization" not in request.headers
         return httpx.Response(
             200,
@@ -127,7 +127,7 @@ def test_admin_dashboard_uses_single_aggregate_rpc_call() -> None:
         assert json.loads(request.content) == {}
         return httpx.Response(200, json=dashboard)
 
-    repository = SupabaseRepository("https://project.supabase.co", "sb_publishable_test", "sb_secret_test")
+    repository = SupabaseRepository("https://project.supabase.co", "test-publishable-key", "test-secret-key")
     repository.client.close()
     repository.client = httpx.Client(transport=httpx.MockTransport(handler))
     assert repository.admin_dashboard() == dashboard
@@ -220,7 +220,7 @@ def test_product_growth_relations_match_sqlite_response_shape() -> None:
             return httpx.Response(200, json=[])
         raise AssertionError(f"Beklenmeyen istek: {request.url}")
 
-    repository = SupabaseRepository("https://project.supabase.co", "sb_publishable_test", "sb_secret_test")
+    repository = SupabaseRepository("https://project.supabase.co", "test-publishable-key", "test-secret-key")
     repository.client.close()
     repository.client = httpx.Client(transport=httpx.MockTransport(handler))
 

@@ -10,7 +10,7 @@
 ## Günlük fiyat veri hattı
 
 `n8n/mihenk-daily-price-pipeline.json` n8n'e aktarılır. n8n ortamındaki
-`MIHENK_PIPELINE_SECRET` ile uygulamadaki `PIPELINE_WEBHOOK_SECRET` aynı olmalıdır.
+Uygulama ve n8n aynı `PIPELINE_WEBHOOK_SECRET` ortam değişkenini kullanmalıdır.
 Docker içinden yerel uygulamanın varsayılan adresi `http://host.docker.internal:8010`'dur.
 n8n yalnızca zamanlama ve yeniden denemeyi yönetir; doğrulama, idempotency, loglama ve
 tahmin Python servisinde kalır. Elle çalıştırmak için:

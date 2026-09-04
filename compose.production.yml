@@ -7,8 +7,8 @@ services:
       APP_ENVIRONMENT: production
       COOKIE_SECURE: "true"
       REDIS_URL: redis://redis:6379/0
-    ports:
-      - "127.0.0.1:8010:8010"
+    expose:
+      - "8010"
     depends_on:
       redis:
         condition: service_healthy
@@ -47,5 +47,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  proxy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    env_file: .env.production
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
 volumes:
   redis-production:
+  caddy-data:
+  caddy-config:
