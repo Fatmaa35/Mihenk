@@ -1,19 +1,19 @@
-import { a as g } from "./main-BcGABlrt.js";
-const t = (e) => document.querySelector(e), A = (e) => [...document.querySelectorAll(e)], l = { mode: "login", user: null, profile: null, books: [], offers: [], preferences: null, dashboard: null, gamification: null, alerts: [], notifications: [], shelf: "reading", chatHistory: [], chatSessionId: null, compareIds: /* @__PURE__ */ new Set(), lastRecommendations: [], lastDiscoveryQuery: "", recommendationId: null, recommendationVariant: null, catalog: { offset: 0, limit: 12, total: 0, timer: null, coverage: null, items: [] } }, Xe = ["İçe dönük", "Analitik", "Stratejik", "Melankolik", "Maceracı", "İdealist", "Meraklı", "Bağımsız", "Duygusal"];
+import { a as g } from "./main-C_P-n60J.js";
+const t = (e) => document.querySelector(e), P = (e) => [...document.querySelectorAll(e)], l = { mode: "login", user: null, profile: null, books: [], offers: [], preferences: null, dashboard: null, gamification: null, alerts: [], notifications: [], shelf: "reading", chatHistory: [], chatSessionId: null, compareIds: /* @__PURE__ */ new Set(), lastRecommendations: [], lastDiscoveryQuery: "", recommendationId: null, recommendationVariant: null, catalog: { offset: 0, limit: 12, total: 0, timer: null, coverage: null, items: [] } }, Xe = ["İçe dönük", "Analitik", "Stratejik", "Melankolik", "Maceracı", "İdealist", "Meraklı", "Bağımsız", "Duygusal"];
 function n(e, a = "", i = "") {
   const r = document.createElement(e);
   return r.textContent = a, i && (r.className = i), r;
 }
-function Ne(e) {
+function ze(e) {
   return e.split(/\s+/).slice(0, 2).map((a) => a[0]).join("").toLocaleUpperCase("tr");
 }
 function N(e, a = "TRY") {
   return e == null ? "—" : `${(e / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${a}`;
 }
-let Ce;
+let Se;
 function f(e, a = !1) {
   const i = t("#toast");
-  i.textContent = e, i.className = `toast show${a ? " error" : ""}`, clearTimeout(Ce), Ce = setTimeout(() => i.className = "toast", 3200);
+  i.textContent = e, i.className = `toast show${a ? " error" : ""}`, clearTimeout(Se), Se = setTimeout(() => i.className = "toast", 3200);
 }
 function ue(e, a = {}) {
   return l.user ? g("/me/product-events", { method: "POST", body: JSON.stringify({ event_name: e, properties: a }) }).catch(() => {
@@ -31,12 +31,12 @@ function Ze() {
   document.body.classList.toggle("reduce-motion", localStorage.getItem("mihenk-reduced-motion") === "true"), !H.matches && localStorage.getItem("mihenk-sidebar-collapsed") === "true" && document.body.classList.add("sidebar-collapsed"), t("#sidebar-toggle").onclick = () => {
     H.matches ? document.body.classList.toggle("sidebar-open") : (document.body.classList.toggle("sidebar-collapsed"), localStorage.setItem("mihenk-sidebar-collapsed", String(document.body.classList.contains("sidebar-collapsed")))), j();
   }, t("#sidebar-backdrop").onclick = pe, H.addEventListener("change", () => {
-    document.body.classList.remove("sidebar-open"), document.body.classList.toggle("sidebar-collapsed", !H.matches && localStorage.getItem("mihenk-sidebar-collapsed") === "true"), j(), be();
+    document.body.classList.remove("sidebar-open"), document.body.classList.toggle("sidebar-collapsed", !H.matches && localStorage.getItem("mihenk-sidebar-collapsed") === "true"), j(), ve();
   }), document.addEventListener("keydown", (e) => {
     e.key === "Escape" && document.body.classList.contains("sidebar-open") && pe();
   }), j();
 }
-function Se(e) {
+function Te(e) {
   const a = n("span", "", `cover-fallback cover-theme-${et(e.genre)}`), i = n("span", (e.genre || "Edebiyat").split("/")[0].trim(), "cover-genre"), r = n("strong", e.title), s = n("small", e.author || "");
   return a.append(i, r, s), a;
 }
@@ -48,8 +48,8 @@ function F(e, a = "cover-wrap") {
   const i = n("div", "", a);
   if (e.cover_url) {
     const r = new Image();
-    r.src = e.cover_url, r.alt = `${e.title} kapağı`, r.loading = "lazy", r.referrerPolicy = "no-referrer", r.onerror = () => i.replaceChildren(Se(e)), i.append(r);
-  } else i.append(Se(e));
+    r.src = e.cover_url, r.alt = `${e.title} kapağı`, r.loading = "lazy", r.referrerPolicy = "no-referrer", r.onerror = () => i.replaceChildren(Te(e)), i.append(r);
+  } else i.append(Te(e));
   return i;
 }
 function Q(e) {
@@ -63,7 +63,7 @@ function tt() {
   const e = t("#login-dialog");
   e.open || e.showModal(), setTimeout(() => t("#auth-email").focus(), 0);
 }
-A("[data-open-login]").forEach((e) => e.onclick = tt);
+P("[data-open-login]").forEach((e) => e.onclick = tt);
 t("#demo-open").onclick = () => {
   t("#demo-form").classList.toggle("hidden"), t("#demo-form").classList.contains("hidden") || t("#demo-query").focus();
 };
@@ -110,8 +110,11 @@ t("#recovery-form").onsubmit = async (e) => {
     a.disabled = !1, a.textContent = "Bağlantı gönder";
   }
 };
-const ze = new URLSearchParams(location.hash.replace(/^#/, "")), Re = ze.get("access_token") || new URLSearchParams(location.search).get("recovery_token");
-Re && (ze.get("type") === "recovery" || location.search.includes("recovery_token=")) && setTimeout(() => t("#password-reset-dialog").showModal(), 0);
+const be = new URLSearchParams(location.hash.replace(/^#/, "")), Re = be.get("access_token") || new URLSearchParams(location.search).get("recovery_token");
+be.has("error") && (history.replaceState({}, "", location.pathname), setTimeout(() => {
+  t("#recovery-status").textContent = "Bağlantı geçersiz veya süresi dolmuş. Yeni bir sıfırlama bağlantısı isteyin.", t("#recovery-dialog").showModal();
+}, 0));
+Re && (be.get("type") === "recovery" || location.search.includes("recovery_token=")) && setTimeout(() => t("#password-reset-dialog").showModal(), 0);
 t("#password-reset-form").onsubmit = async (e) => {
   e.preventDefault();
   const a = t("#new-password").value, i = t("#new-password-confirm").value, r = e.submitter;
@@ -217,24 +220,24 @@ async function Ie(e = !1) {
   t("#login-dialog").open && t("#login-dialog").close(), t("#auth-screen").classList.add("hidden"), t("#app").classList.remove("hidden"), t("#chat-toggle").classList.remove("hidden"), t("#admin-nav").classList.toggle("hidden", !["editor", "admin"].includes(l.user.app_role)), nt(), W(), re(), le(), ye(), Rt(), Bt(), rt(), z(!0).catch(() => {
   }), ue("session_started", { source: "web" });
   const a = await Promise.allSettled([g("/books"), g("/market/offers"), g(`/me/reading-dashboard?year=${(/* @__PURE__ */ new Date()).getFullYear()}`), g("/me/price-alerts"), g("/me/onboarding")]);
-  a[0].status === "fulfilled" && (l.books = a[0].value), a[1].status === "fulfilled" && (l.offers = a[1].value), a[2].status === "fulfilled" && (l.dashboard = a[2].value), a[3].status === "fulfilled" && (l.alerts = a[3].value), W(), re(), Ue(), ye(), Pt(), a[4].status === "fulfilled" && !a[4].value.onboarding_completed && (q("growth"), ue("onboarding_started", { source: "first_session" }), f("Önce birkaç tercihini seç; önerilerin sana göre şekillensin.")), window.dispatchEvent(new CustomEvent("pkm-refresh"));
+  a[0].status === "fulfilled" && (l.books = a[0].value), a[1].status === "fulfilled" && (l.offers = a[1].value), a[2].status === "fulfilled" && (l.dashboard = a[2].value), a[3].status === "fulfilled" && (l.alerts = a[3].value), W(), re(), Ue(), ye(), Mt(), a[4].status === "fulfilled" && !a[4].value.onboarding_completed && (q("growth"), ue("onboarding_started", { source: "first_session" }), f("Önce birkaç tercihini seç; önerilerin sana göre şekillensin.")), window.dispatchEvent(new CustomEvent("pkm-refresh"));
 }
 function nt() {
   var a, i;
   const e = new Set(((a = l.preferences) == null ? void 0 : a.selected_traits) || []);
-  A("#traits .tag").forEach((r) => r.classList.toggle("active", e.has(r.textContent))), (i = l.preferences) != null && i.personality_text && (t("#character").value = l.preferences.personality_text), X();
+  P("#traits .tag").forEach((r) => r.classList.toggle("active", e.has(r.textContent))), (i = l.preferences) != null && i.personality_text && (t("#character").value = l.preferences.personality_text), X();
 }
 function W() {
-  const e = l.user.display_name || "Okur", a = l.user.email || "", i = Ne(e), r = l.gamification;
+  const e = l.user.display_name || "Okur", a = l.user.email || "", i = ze(e), r = l.gamification;
   t("#top-name").textContent = e, t("#profile-menu-name").textContent = e, t("#profile-menu-email").textContent = a, t("#side-name").textContent = e, t("#side-email").textContent = a, t("#recovery-email").value = a, t("#side-level").textContent = r ? `Seviye ${r.level.number} · ${r.level.name}` : "", t("#side-level-number").textContent = (r == null ? void 0 : r.level.number) || 1, t("#side-xp-fill").style.width = `${(r == null ? void 0 : r.level.progress_percent) || 0}%`, t("#side-level-card").style.setProperty("--level-progress", `${((r == null ? void 0 : r.level.progress_percent) || 0) * 3.6}deg`), t("#side-level-next").textContent = (r == null ? void 0 : r.level.next_xp) == null ? "En yüksek okur seviyesindesin" : `${(r.level.next_xp - r.xp).toLocaleString("tr-TR")} XP sonra yeni seviye`, t("#welcome-name").textContent = e.split(/\s+/)[0], t("#top-avatar").textContent = i, t("#profile-menu-avatar").textContent = i, t("#side-avatar").textContent = i, t("#stat-reading").textContent = l.profile.reading_books.length, t("#stat-read").textContent = l.profile.read_books.length, t("#stat-fav").textContent = l.profile.favorite_books.length;
   const s = l.notifications.filter((o) => !o.read_at).length;
-  t("#notification-count").textContent = s, t("#notification-count").classList.toggle("hidden", !s), be(), it();
+  t("#notification-count").textContent = s, t("#notification-count").classList.toggle("hidden", !s), ve(), it();
 }
-function be() {
+function ve() {
   var i, r;
   if (!t("#settings-view")) return;
   const e = ((i = l.user) == null ? void 0 : i.display_name) || "Okur", a = ((r = l.user) == null ? void 0 : r.email) || "";
-  t("#settings-name").textContent = e, t("#settings-email").textContent = a, t("#settings-avatar").textContent = Ne(e), t("#settings-compact").checked = localStorage.getItem("mihenk-sidebar-collapsed") === "true", t("#settings-reduced-motion").checked = document.body.classList.contains("reduce-motion");
+  t("#settings-name").textContent = e, t("#settings-email").textContent = a, t("#settings-avatar").textContent = ze(e), t("#settings-compact").checked = localStorage.getItem("mihenk-sidebar-collapsed") === "true", t("#settings-reduced-motion").checked = document.body.classList.contains("reduce-motion");
 }
 function it() {
   var i, r;
@@ -244,7 +247,7 @@ function it() {
     return p.type = "button", p.title = `${o} bölümünü aç`, p.append(n("b", s), n("span", o)), p.onclick = () => q(c), p;
   })), Ke();
 }
-function Te(e, a) {
+function Le(e, a) {
   const i = n("button", e, "bento-link");
   return i.type = "button", i.onclick = () => q(a), i;
 }
@@ -258,13 +261,13 @@ function Ke() {
     const b = n("div", "", "progress-bar"), v = n("i");
     v.style.width = `${r.progress_percent || 0}%`, b.append(v), o.append(b);
   }
-  o.append(Te(r ? "Okumaya devam et" : "Kataloğu keşfet", r ? "library" : "catalog")), s && e.append(F(s, "bento-cover")), e.append(o);
+  o.append(Le(r ? "Okumaya devam et" : "Kataloğu keşfet", r ? "library" : "catalog")), s && e.append(F(s, "bento-cover")), e.append(o);
   const c = l.gamification.badges.filter((b) => !b.earned).sort((b, v) => v.progress_percent - b.progress_percent || b.goal - v.goal)[0];
   a.replaceChildren();
   const p = n("div", "", "bento-badge-visual");
   p.append(c ? ie(c, !0) : n("span", "🏆", "bento-trophy"));
   const u = n("div", "", "bento-copy");
-  u.append(n("p", c ? "SIRADAKİ BAŞARIM" : "TÜMÜ TAMAM", "eyebrow"), n("h3", c ? c.name : "Edebiyat ustasısın"), n("p", c ? `${Math.max(0, c.goal - c.progress)} adım sonra +${c.xp_reward} XP kazanacaksın.` : "Tüm temel rozetleri kazandın.", "muted"), Te("Rozetlerini gör", "insights")), a.append(p, u);
+  u.append(n("p", c ? "SIRADAKİ BAŞARIM" : "TÜMÜ TAMAM", "eyebrow"), n("h3", c ? c.name : "Edebiyat ustasısın"), n("p", c ? `${Math.max(0, c.goal - c.progress)} adım sonra +${c.xp_reward} XP kazanacaksın.` : "Tüm temel rozetleri kazandın.", "muted"), Le("Rozetlerini gör", "insights")), a.append(p, u);
   const d = (((h = l.preferences) == null ? void 0 : h.selected_traits) || []).slice(0, 3);
   i.replaceChildren(n("div", "✦", "bento-ai-orb"));
   const m = n("div", "", "bento-copy");
@@ -273,17 +276,17 @@ function Ke() {
   y.type = "button", y.onclick = () => t("#chat-toggle").click(), m.append(y), i.append(m);
 }
 const ce = ["Melankolik bir kış akşamı için distopik bir bilim kurgu romanı arıyorum…", "Kısa, atmosferik ve şaşırtıcı sonlu bir polisiye istiyorum…", "İçe dönük bir karakterin umut veren dönüşüm hikâyesini arıyorum…", "Savaş temalı olmayan, kolay okunan bir tarihî roman öner…"];
-let Le = null, ne = 0;
+let Ee = null, ne = 0;
 function rt() {
   const e = t("#character");
-  clearInterval(Le), e.value || (e.placeholder = ce[ne]), Le = setInterval(() => {
+  clearInterval(Ee), e.value || (e.placeholder = ce[ne]), Ee = setInterval(() => {
     document.activeElement === e || e.value || (ne = (ne + 1) % ce.length, e.classList.add("placeholder-shift"), setTimeout(() => {
       e.placeholder = ce[ne], e.classList.remove("placeholder-shift");
     }, 180));
   }, 4400), X();
 }
 function X() {
-  const e = A("#traits .tag.active").map((s) => s.textContent), a = t("#character").value.trim(), i = t("#search-signal-summary");
+  const e = P("#traits .tag.active").map((s) => s.textContent), a = t("#character").value.trim(), i = t("#search-signal-summary");
   if (!i) return;
   const r = [];
   e.length && r.push(`${e.length} karakter sinyali`), a && r.push(`${Math.min(100, Math.max(15, a.length))}% sorgu ayrıntısı`), i.classList.toggle("active", r.length > 0), i.querySelector("p").textContent = r.length ? `${r.join(" · ")} — Gemma ve katalog sıralaması birlikte çalışacak.` : "Tür, atmosfer veya karakter seç; Mihenk sinyalleri birlikte yorumlasın.";
@@ -295,14 +298,14 @@ document.addEventListener("click", (e) => {
 t("#home-brand").onclick = () => q("discover");
 let me = "";
 function q(e) {
-  A(".view").forEach((i) => i.classList.toggle("hidden", i.id !== `${e}-view`)), A(".nav-button").forEach((i) => {
+  P(".view").forEach((i) => i.classList.toggle("hidden", i.id !== `${e}-view`)), P(".nav-button").forEach((i) => {
     const r = i.dataset.view === e;
     i.classList.toggle("active", r), i.setAttribute("aria-current", r ? "page" : "false");
   });
   const a = { discover: "Keşfet", growth: "Okur Merkezi", catalog: "Katalog", community: "Topluluk", library: "Kitaplığım", insights: "Okuma analizi", alerts: "Bildirimler", settings: "Ayarlar", quality: "Kalite", "reading-mode": "Okuma Modu (PKM)" };
-  document.title = `${a[e] || "Mihenk"} · Mihenk`, e === "quality" && Fe(), e === "community" && bt(), e === "settings" && be(), e === "reading-mode" && window.dispatchEvent(new CustomEvent("pkm-refresh")), e === "growth" && window.dispatchEvent(new CustomEvent("growth-refresh")), e !== me && (me = e, ue("view_opened", { view: e })), I(), window.scrollTo({ top: 0, behavior: document.body.classList.contains("reduce-motion") ? "auto" : "smooth" });
+  document.title = `${a[e] || "Mihenk"} · Mihenk`, e === "quality" && Fe(), e === "community" && bt(), e === "settings" && ve(), e === "reading-mode" && window.dispatchEvent(new CustomEvent("pkm-refresh")), e === "growth" && window.dispatchEvent(new CustomEvent("growth-refresh")), e !== me && (me = e, ue("view_opened", { view: e })), I(), window.scrollTo({ top: 0, behavior: document.body.classList.contains("reduce-motion") ? "auto" : "smooth" });
 }
-A("#quick-prompts button").forEach((e) => e.onclick = () => {
+P("#quick-prompts button").forEach((e) => e.onclick = () => {
   const a = t("#character");
   a.value = e.dataset.prompt, a.focus(), a.setSelectionRange(a.value.length, a.value.length), X();
 });
@@ -323,7 +326,7 @@ t("#recommend").onclick = async () => {
     return;
   }
   const a = t("#recommend");
-  a.disabled = !0, t("#recommend-status").textContent = "Katalog ve Gemma 4 birlikte düşünüyor…", xe("Arama sonuçlarını inceliyorum…", !0);
+  a.disabled = !0, t("#recommend-status").textContent = "Katalog ve Gemma 4 birlikte düşünüyor…", Ce("Arama sonuçlarını inceliyorum…", !0);
   try {
     await ot(e);
     const i = await g("/me/recommendations", { method: "POST", body: JSON.stringify({ character_description: e, limit: 6 }) });
@@ -339,7 +342,7 @@ function Be(e = {}) {
   return { personality_text: a.personality_text || "", selected_traits: a.selected_traits || [], preferred_genres: a.preferred_genres || [], disliked_genres: a.disliked_genres || [], liked_styles: a.liked_styles || [], disliked_styles: a.disliked_styles || [], pace_preference: a.pace_preference || "mixed", focus_preference: a.focus_preference || "balanced", tone_preference: a.tone_preference || "balanced", violence_sensitivity: a.violence_sensitivity || 0, romance_sensitivity: a.romance_sensitivity || 0, spoiler_sensitivity: a.spoiler_sensitivity ?? 2, length_preference: a.length_preference || "any", ...e };
 }
 async function ot(e) {
-  l.preferences = await g("/me/preferences", { method: "PUT", body: JSON.stringify(Be({ personality_text: e, selected_traits: A("#traits .active").map((a) => a.textContent) })) }), Ke();
+  l.preferences = await g("/me/preferences", { method: "PUT", body: JSON.stringify(Be({ personality_text: e, selected_traits: P("#traits .active").map((a) => a.textContent) })) }), Ke();
 }
 function J(e, a) {
   const i = n("div", "", "score-component"), r = n("header");
@@ -368,7 +371,7 @@ function lt(e, a) {
     u.matched_signals.forEach((y) => m.append(n("span", `✓ ${y}`))), s.append(m);
   }
   if (i.id) {
-    s.append(ve(i));
+    s.append(ke(i));
     const m = n("div", "", "feedback-actions");
     [["✓ Tam isabet", "great_match"], ["× Bana göre değil", "not_for_me"], ["Biliyorum", "already_know"], ["+ Benzerleri", "more_like_this"]].forEach(([y, h]) => {
       const b = n("button", y);
@@ -403,18 +406,18 @@ function mt(e) {
     s === 0 && p.append(n("small", "EN UCUZ", "cheapest")), p.append(n("b", N(r.price_minor, r.currency))), o.href = r.product_url, o.target = "_blank", o.rel = "noopener noreferrer nofollow", o.title = `${r.stock_status === "in_stock" ? "Stokta" : "Stok durumu belirsiz"} · Son kontrol ${new Date(r.checked_at).toLocaleString("tr-TR")}`, o.append(c, p), a.append(o);
   }), a) : (a.append(n("p", "Henüz doğrulanmış mağaza fiyatı yok.", "muted")), a);
 }
-function ve(e) {
+function ke(e) {
   const a = n("div", "", "book-actions"), i = oe(e) || e, r = { to_read: "Okuyacağım", reading: "Okuyorum", read: "Okudum" }, s = n("details", "", "shelf-picker"), o = n("summary", i != null && i.shelf ? `✓ ${r[i.shelf]}` : "+ Kitaplığa ekle"), c = n("div", "", "shelf-menu");
   o.setAttribute("aria-label", i != null && i.shelf ? `Raf: ${r[i.shelf]}. Değiştir` : `${e.title} kitabını kitaplığa ekle`), s.ontoggle = () => {
-    s.open && A(".shelf-picker[open]").filter((m) => m !== s).forEach((m) => m.open = !1);
+    s.open && P(".shelf-picker[open]").filter((m) => m !== s).forEach((m) => m.open = !1);
   }, [["Okuyacağım", "to_read"], ["Okuyorum", "reading"], ["Okudum", "read"]].forEach(([m, y]) => {
     const h = n("button", `${(i == null ? void 0 : i.shelf) === y ? "✓ " : ""}${m}`);
     h.type = "button", h.onclick = () => {
-      s.open = !1, y === "reading" ? _t(e) : Ee(e, y);
+      s.open = !1, y === "reading" ? _t(e) : Me(e, y);
     }, c.append(h);
   }), s.append(o, c), a.append(s);
   const p = n("div", "", "compact-actions"), u = !!(i != null && i.is_favorite), d = n("button", u ? "♥" : "♡", "compact-action");
-  if (d.type = "button", d.title = u ? "Favorilerden çıkar" : "Favorilere ekle", d.setAttribute("aria-label", d.title), d.setAttribute("aria-pressed", String(u)), d.onclick = () => Ee(e, (i == null ? void 0 : i.shelf) || "to_read", !u), p.append(d), e.is_custom) {
+  if (d.type = "button", d.title = u ? "Favorilerden çıkar" : "Favorilere ekle", d.setAttribute("aria-label", d.title), d.setAttribute("aria-pressed", String(u)), d.onclick = () => Me(e, (i == null ? void 0 : i.shelf) || "to_read", !u), p.append(d), e.is_custom) {
     const m = n("button", "✎", "compact-action");
     m.type = "button", m.title = "Kitabı düzenle", m.setAttribute("aria-label", m.title), m.onclick = () => se(e);
     const y = n("button", "×", "compact-action danger");
@@ -431,7 +434,7 @@ function oe(e) {
 function He(e, a = {}) {
   return { title: e.title, author: e.author || "Bilinmeyen yazar", genre: e.genre || "Genel", cover_url: e.cover_url || null, shelf: e.shelf, is_favorite: e.is_favorite || !1, current_page: e.current_page || 0, total_pages: e.total_pages || null, ...a };
 }
-async function Ee(e, a, i) {
+async function Me(e, a, i) {
   const r = oe(e) || e;
   try {
     if (e.is_custom)
@@ -449,7 +452,7 @@ async function Ee(e, a, i) {
 function gt(e) {
   const a = n("article", "", "catalog-card"), i = n("div", "", "catalog-info"), r = n("button", e.title, "book-title-button");
   r.type = "button", r.onclick = () => ge(e), i.append(r, n("p", `${e.author} · ${e.genre}`, "book-meta"), n("p", e.rating_count ? `★ ${Number(e.rating_average).toFixed(1)} · ${e.rating_count} okur puanı` : "Henüz puanlanmadı", "community-summary"));
-  const s = ve(e), o = n("button", "Ayrıntılar", "detail-button"), c = n("button", "☆ Puanla ve yorumla", "community-button"), p = n("button", l.compareIds.has(e.id) ? "✓ Seçildi" : "⇄ Karşılaştır", "compare-button");
+  const s = ke(e), o = n("button", "Ayrıntılar", "detail-button"), c = n("button", "☆ Puanla ve yorumla", "community-button"), p = n("button", l.compareIds.has(e.id) ? "✓ Seçildi" : "⇄ Karşılaştır", "compare-button");
   return o.type = "button", o.onclick = () => ge(e), c.type = "button", c.onclick = () => ft(e), p.type = "button", p.onclick = () => {
     l.compareIds.has(e.id) ? l.compareIds.delete(e.id) : l.compareIds.size < 4 ? l.compareIds.add(e.id) : f("En fazla dört kitap karşılaştırılabilir.", !0), z(), Ge();
   }, s.append(o, c, p), a.append(F(e), i, n("p", e.description, "summary"), mt(e), s), a;
@@ -602,15 +605,15 @@ function yt(e, a) {
       o.beginPath(), o.moveTo(m.x, T), o.lineTo(r.width - 18, T), o.stroke(), o.fillText(`${Math.round(L / 100)} TL`, 2, T + 4);
     }
     p.length && (o.fillStyle = "rgba(213,154,69,.14)", o.beginPath(), p.forEach((_, T) => o.lineTo($(c.length + T), S(_.high))), [...p].reverse().forEach((_, T) => o.lineTo($(u.length - 1 - T), S(_.low))), o.closePath(), o.fill());
-    const M = (_, T, L, B = !1) => {
+    const A = (_, T, L, B = !1) => {
       o.beginPath(), o.strokeStyle = L, o.lineWidth = 3, o.setLineDash(B ? [7, 6] : []), _.forEach((ee, k) => {
         const x = $(T + k), C = S(ee.value);
         k ? o.lineTo(x, C) : o.moveTo(x, C);
       }), o.stroke(), o.setLineDash([]);
     };
-    if (M(c, 0, "#08745a"), p.length) {
+    if (A(c, 0, "#08745a"), p.length) {
       const _ = c.length ? [c.at(-1), ...p] : p;
-      M(_, Math.max(0, c.length - 1), "#d59a45", !0);
+      A(_, Math.max(0, c.length - 1), "#d59a45", !0);
     }
     o.fillStyle = "#68766f", o.fillText(c.length ? new Date(c[0].label).toLocaleDateString("tr-TR") : "", m.x, r.height - 9), o.textAlign = "right", o.fillText(u.length ? new Date(u.at(-1).label).toLocaleDateString("tr-TR") : "", r.width - 18, r.height - 9);
   }), i;
@@ -633,8 +636,8 @@ ge = async function(e) {
     if (y.append(n("p", "FİYAT ZEKÂSI", "eyebrow"), n("h3", "Geçmiş ve 15 günlük görünüm")), h.status === "ready") {
       const b = n("div", "", "price-signal-grid"), v = ((r = h.windows) == null ? void 0 : r["30"]) || {};
       b.append(n("div", `${N(h.current_price_minor)}|Güncel en düşük`, "price-signal"), n("div", `${N(v.lowest_price_minor)}|30 günün en düşüğü`, "price-signal"), n("div", `${h.deal_score}/100|${h.deal_label}`, "price-signal")), [...b.children].forEach(($) => {
-        const [S, M] = $.textContent.split("|");
-        $.replaceChildren(n("strong", S), n("small", M));
+        const [S, A] = $.textContent.split("|");
+        $.replaceChildren(n("strong", S), n("small", A));
       }), y.append(b, yt(o.price_history || [], o.price_forecasts || []));
       const w = (s = o.price_forecasts) == null ? void 0 : s.at(-1);
       w && y.append(n("p", `Model: ${w.model_name} · Son veri: ${new Date(w.trained_through).toLocaleDateString("tr-TR")} · Tahminler kesin fiyat vaadi değildir.`, "forecast-note"));
@@ -670,8 +673,8 @@ async function bt() {
     e.replaceChildren(n("p", a.message, "error-line"));
   }
 }
-A(".tab").forEach((e) => e.onclick = () => {
-  l.shelf = e.dataset.shelf, A(".tab").forEach((a) => a.classList.toggle("active", a === e)), re();
+P(".tab").forEach((e) => e.onclick = () => {
+  l.shelf = e.dataset.shelf, P(".tab").forEach((a) => a.classList.toggle("active", a === e)), re();
 });
 function qe() {
   return l.shelf === "favorite" ? l.profile.favorite_books : l.profile[`${l.shelf}_books`] || [];
@@ -682,7 +685,7 @@ function vt(e) {
     const s = n("div", "", "progress-bar"), o = n("i");
     o.style.width = `${e.progress_percent}%`, s.append(o), i.append(s, n("p", e.total_pages ? `${e.current_page} / ${e.total_pages} sayfa · %${e.progress_percent}` : `${e.current_page} sayfa`, "muted"));
   }
-  i.append(ve(e));
+  i.append(ke(e));
   const r = n("button", "◷ Okuma planı", "ghost reading-plan-button");
   return r.type = "button", r.onclick = () => kt(e), i.append(r), a.append(F(e), i), a;
 }
@@ -785,8 +788,8 @@ function le() {
     h.append(ie(d, !0), b);
     const v = n("h4", d.name), w = n("span", `+${d.xp_reward} XP`, "badge-reward");
     y.append(h, v, w, n("p", d.description, "muted"));
-    const $ = n("div", "", "badge-progress"), S = n("div", "", "progress-bar"), M = n("i");
-    M.style.width = `${d.progress_percent}%`, S.append(M);
+    const $ = n("div", "", "badge-progress"), S = n("div", "", "progress-bar"), A = n("i");
+    A.style.width = `${d.progress_percent}%`, S.append(A);
     const _ = Math.max(0, d.goal - d.progress), T = d.earned ? "Başarım tamamlandı" : _ === 1 ? "1 adım kaldı" : `${d.progress} / ${d.goal}`;
     if ($.append(S, n("small", T, "muted")), y.append($), d.earned) {
       const L = n("button", d.showcased ? "✓ Vitrinde" : "Vitrinde göster", d.showcased ? "ghost badge-toggle active" : "ghost badge-toggle");
@@ -891,7 +894,7 @@ function Et(e) {
   const a = "=".repeat((4 - e.length % 4) % 4), i = atob((e + a).replace(/-/g, "+").replace(/_/g, "/"));
   return Uint8Array.from([...i].map((r) => r.charCodeAt(0)));
 }
-async function Pt() {
+async function Mt() {
   const e = t("#enable-push");
   if (!(!e || !("serviceWorker" in navigator) || !("PushManager" in window)))
     try {
@@ -913,10 +916,10 @@ async function Pt() {
     } catch {
     }
 }
-function At(e, a) {
+function Pt(e, a) {
   return a > 0 ? Math.max(0, Math.min(100, Math.round(Number(e || 0) / a * 100))) : 0;
 }
-function Mt(e, a, i, r, s = "green") {
+function At(e, a, i, r, s = "green") {
   const o = n("div", "", `donut-chart tone-${s}`), c = n("div"), p = n("div", "", "donut-copy");
   o.style.setProperty("--value", `${a}%`), c.append(n("strong", `%${a}`), n("small", "tam")), o.append(c), p.append(n("b", i), n("p", r, "muted")), e.replaceChildren(o, p);
 }
@@ -936,7 +939,7 @@ async function Fe() {
   e.replaceChildren(n("p", "Kalite metrikleri yükleniyor…", "muted"));
   try {
     const a = await g("/admin/quality"), i = Number(a.books || 0), r = Math.max(0, i - Number(a.missing_covers || 0)), s = [[i, "Katalog", "▦", "green"], [a.verified_turkish_editions, "Doğrulanmış baskı", "◇", "green"], [a.zero_result_queries, "Sonuçsuz arama", "⌕", "red"], [`${a.average_latency_ms} ms`, "Ortalama yanıt", "◷", "blue"]];
-    e.replaceChildren(...s.map((p) => Ye(...p))), Mt(t("#catalog-health-chart"), At(r, i), "Kapak bütünlüğü", `${r} / ${i} kitapta kapak mevcut`), Ot(t("#catalog-risk-chart"), [{ label: "Eksik kapak", value: a.missing_covers, tone: "amber" }, { label: "Tekrar eser", value: a.duplicate_works, tone: "blue" }, { label: "Şüpheli kayıt", value: a.suspicious_records, tone: "red" }]);
+    e.replaceChildren(...s.map((p) => Ye(...p))), At(t("#catalog-health-chart"), Pt(r, i), "Kapak bütünlüğü", `${r} / ${i} kitapta kapak mevcut`), Ot(t("#catalog-risk-chart"), [{ label: "Eksik kapak", value: a.missing_covers, tone: "amber" }, { label: "Tekrar eser", value: a.duplicate_works, tone: "blue" }, { label: "Şüpheli kayıt", value: a.suspicious_records, tone: "red" }]);
     const o = Object.entries(a.feedback || {}), c = Math.max(1, ...o.map(([, p]) => p));
     t("#quality-feedback").replaceChildren(...o.length ? o.map(([p, u]) => {
       const d = n("div", "", "bar-row"), m = n("header"), y = n("div", "", "bar"), h = n("i");
@@ -952,7 +955,7 @@ async function Dt(e) {
 t("#read-all").onclick = async () => {
   await g("/me/notifications/read-all", { method: "PUT" }), await D();
 };
-async function ke() {
+async function _e() {
   try {
     const [e, a] = await Promise.all([g("/admin/catalog/issues"), g("/admin/catalog/jobs")]);
     t("#catalog-issues").replaceChildren(...e.length ? e.map((i) => {
@@ -960,7 +963,7 @@ async function ke() {
       return s.append(n("strong", i.title || i.book_id), n("p", `${i.issue_type} · ${i.severity}`, "muted")), [["Çözüldü", "resolved"], ["Yok say", "dismissed"]].forEach(([c, p]) => {
         const u = n("button", c, "ghost");
         u.onclick = async () => {
-          await g(`/admin/catalog/issues/${i.id}`, { method: "PATCH", body: JSON.stringify({ status: p }) }), await ke();
+          await g(`/admin/catalog/issues/${i.id}`, { method: "PATCH", body: JSON.stringify({ status: p }) }), await _e();
         }, o.append(u);
       }), r.append(s, o), r;
     }) : [n("p", "Açık katalog incelemesi yok.", "muted")]), t("#catalog-jobs").replaceChildren(...a.length ? a.map((i) => n("div", `${i.job_type} · ${i.status} · ${i.attempts}/${i.max_attempts}`, "admin-row")) : [n("p", "Kuyrukta veri işi yok.", "muted")]);
@@ -968,7 +971,7 @@ async function ke() {
     f(e.message, !0);
   }
 }
-t("#admin-nav").addEventListener("click", ke);
+t("#admin-nav").addEventListener("click", _e);
 t("#admin-nav").addEventListener("click", () => Z().catch((e) => f(e.message, !0)));
 t("#admin-nav").addEventListener("click", () => Je().catch((e) => f(e.message, !0)));
 async function Je() {
@@ -1004,10 +1007,10 @@ async function Z() {
     const O = n("div", "", "ops-item"), R = n("div", "", "ops-track"), te = n("i", "", `tone-${E}`);
     return te.style.width = `${C}%`, R.append(te), O.append(n("strong", k), n("span", x), R), O;
   }));
-  const S = i.top_books || [], M = Math.max(1, ...S.map((k) => Number(k.rating_count || 0)));
+  const S = i.top_books || [], A = Math.max(1, ...S.map((k) => Number(k.rating_count || 0)));
   t("#admin-top-books").replaceChildren(...S.length ? S.slice(0, 6).map((k, x) => {
     const C = n("div", "", "rank-row"), E = n("div"), O = n("div", "", "rank-track"), R = n("i");
-    return E.append(n("span", `${x + 1}`, "rank-number"), n("b", k.title), n("small", `★ ${Number(k.rating_average || 0).toFixed(1)} · ${k.rating_count}`)), R.style.width = `${Math.max(4, Number(k.rating_count || 0) / M * 100)}%`, O.append(R), C.append(E, O), C;
+    return E.append(n("span", `${x + 1}`, "rank-number"), n("b", k.title), n("small", `★ ${Number(k.rating_average || 0).toFixed(1)} · ${k.rating_count}`)), R.style.width = `${Math.max(4, Number(k.rating_count || 0) / A * 100)}%`, O.append(R), C.append(E, O), C;
   }) : [n("p", "Henüz topluluk puanı yok.", "muted")]);
   const _ = { success: 0, warning: 0, error: 0 };
   r.forEach((k) => {
@@ -1042,7 +1045,7 @@ async function Z() {
     }), x.append(C, E), x;
   }) : [n("p", "Açık yorum şikâyeti yok.", "muted")]);
 }
-async function _e() {
+async function we() {
   const [e, a] = await Promise.all([g("/admin/pipelines/runs?limit=20"), g("/admin/pipelines/logs?limit=30")]), i = e[0];
   t("#pipeline-summary").replaceChildren(...i ? [["Durum", i.status], ["Kontrol", i.checked_count], ["Başarılı", i.success_count], ["Hata", i.failure_count]].map(([r, s]) => {
     const o = n("div", "", "pipeline-stat");
@@ -1058,12 +1061,12 @@ function Pe(e) {
     return i.append(n("strong", `${a.stage} · ${a.message}`), n("small", new Date(a.created_at).toLocaleString("tr-TR"))), i;
   }) : [n("p", "Pipeline logu yok.", "muted")]);
 }
-t("#admin-nav").addEventListener("click", () => _e().catch((e) => f(e.message, !0)));
+t("#admin-nav").addEventListener("click", () => we().catch((e) => f(e.message, !0)));
 t("#admin-refresh").onclick = async () => {
   const e = t("#admin-refresh");
   e.disabled = !0, e.innerHTML = '<span aria-hidden="true">↻</span> Yenileniyor…';
   try {
-    await Promise.all([Fe(), Z(), Je(), _e()]), f("Yönetim verileri güncellendi.");
+    await Promise.all([Fe(), Z(), Je(), we()]), f("Yönetim verileri güncellendi.");
   } catch (a) {
     f(a.message, !0);
   } finally {
@@ -1075,21 +1078,21 @@ t("#run-price-pipeline").onclick = async () => {
   e.disabled = !0, e.textContent = "Başlatılıyor…";
   try {
     const a = `price-refresh:admin:${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}:${Date.now()}`;
-    await g("/admin/pipelines/prices", { method: "POST", body: JSON.stringify({ idempotency_key: a, limit: 20, discover_books: 5, retailers: ["kitapsec", "kitapsepeti", "bkmkitap"], refresh_existing: !0 }) }), f("Fiyat hattı arka planda başlatıldı."), setTimeout(() => _e().catch((i) => f(i.message, !0)), 1200);
+    await g("/admin/pipelines/prices", { method: "POST", body: JSON.stringify({ idempotency_key: a, limit: 20, discover_books: 5, retailers: ["kitapsec", "kitapsepeti", "bkmkitap"], refresh_existing: !0 }) }), f("Fiyat hattı arka planda başlatıldı."), setTimeout(() => we().catch((i) => f(i.message, !0)), 1200);
   } catch (a) {
     f(a.message, !0);
   } finally {
     e.disabled = !1, e.textContent = "Şimdi çalıştır";
   }
 };
-let P = null;
+let M = null;
 function Nt(e) {
-  P = { ...e }, t("#admin-user-id").value = e.id, t("#admin-user-title").textContent = e.display_name, t("#admin-user-verified").checked = !!e.is_verified, t("#admin-user-label").value = e.verification_label || "", t("#admin-user-banned").checked = !!e.is_banned, t("#admin-user-ban-reason").value = e.ban_reason || "", t("#admin-user-ban-days").value = "", t("#admin-user-error").textContent = "", t("#admin-user-dialog").showModal();
+  M = { ...e }, t("#admin-user-id").value = e.id, t("#admin-user-title").textContent = e.display_name, t("#admin-user-verified").checked = !!e.is_verified, t("#admin-user-label").value = e.verification_label || "", t("#admin-user-banned").checked = !!e.is_banned, t("#admin-user-ban-reason").value = e.ban_reason || "", t("#admin-user-ban-days").value = "", t("#admin-user-error").textContent = "", t("#admin-user-dialog").showModal();
 }
 t("[data-close-admin-user]").onclick = () => t("#admin-user-dialog").close();
 t("#admin-user-form").onsubmit = async (e) => {
   e.preventDefault();
-  const a = e.submitter || e.currentTarget.querySelector('[type="submit"]'), i = t("#admin-user-error"), r = t("#admin-user-id").value, s = t("#admin-user-verified").checked, o = t("#admin-user-label").value.trim(), c = t("#admin-user-banned").checked, p = t("#admin-user-ban-reason").value.trim(), u = t("#admin-user-ban-days").value, d = s !== !!(P != null && P.is_verified) || o !== ((P == null ? void 0 : P.verification_label) || ""), m = c !== !!(P != null && P.is_banned) || c && (p !== ((P == null ? void 0 : P.ban_reason) || "") || !!u);
+  const a = e.submitter || e.currentTarget.querySelector('[type="submit"]'), i = t("#admin-user-error"), r = t("#admin-user-id").value, s = t("#admin-user-verified").checked, o = t("#admin-user-label").value.trim(), c = t("#admin-user-banned").checked, p = t("#admin-user-ban-reason").value.trim(), u = t("#admin-user-ban-days").value, d = s !== !!(M != null && M.is_verified) || o !== ((M == null ? void 0 : M.verification_label) || ""), m = c !== !!(M != null && M.is_banned) || c && (p !== ((M == null ? void 0 : M.ban_reason) || "") || !!u);
   if (i.textContent = "", c && !p) {
     i.textContent = "Ban nedeni zorunludur.";
     return;
@@ -1125,12 +1128,12 @@ t("#run-evaluation").onclick = async () => {
 };
 t("#queue-quality-scan").onclick = async () => {
   try {
-    await g("/admin/catalog/jobs", { method: "POST", body: JSON.stringify({ job_type: "quality_scan", limit: 200 }) }), await ke(), f("Kalite taraması kuyruğa eklendi.");
+    await g("/admin/catalog/jobs", { method: "POST", body: JSON.stringify({ job_type: "quality_scan", limit: 200 }) }), await _e(), f("Kalite taraması kuyruğa eklendi.");
   } catch (e) {
     f(e.message, !0);
   }
 };
-let Me = !1;
+let Oe = !1;
 function G(e, a, i = [], r = !0) {
   const s = n("div", a, `chat-message ${e}`);
   if (i.length) {
@@ -1145,7 +1148,7 @@ function Y(e) {
     return i.type = "button", i.onclick = () => Ve(a), i;
   }));
 }
-async function we() {
+async function $e() {
   try {
     const e = await g("/me/chat/sessions"), a = t("#chat-session-select");
     a.replaceChildren(new Option("Yeni konuşma", ""), ...e.map((i) => new Option(i.title, i.id))), a.value = l.chatSessionId || "", t("#chat-delete").disabled = !l.chatSessionId;
@@ -1153,12 +1156,12 @@ async function we() {
     f(e.message, !0);
   }
 }
-function $e() {
+function xe() {
   l.chatSessionId = null, l.chatHistory = [], t("#chat-messages").replaceChildren(), G("assistant", "Yeni bir konuşma başladı. Nasıl bir kitap aradığını anlatabilirsin.", [], !1), Y(["Kısa ve atmosferik bir roman", "Şu an ne okuyorum?"]), t("#chat-session-select").value = "", t("#chat-delete").disabled = !0;
 }
 async function zt(e) {
   if (!e) {
-    $e();
+    xe();
     return;
   }
   try {
@@ -1169,17 +1172,17 @@ async function zt(e) {
   }
 }
 t("#chat-session-select").onchange = (e) => zt(e.target.value);
-t("#chat-new").onclick = $e;
+t("#chat-new").onclick = xe;
 t("#chat-delete").onclick = async () => {
   if (!(!l.chatSessionId || !confirm("Bu konuşma ve mesajları silinsin mi?")))
     try {
-      await g(`/me/chat/sessions/${encodeURIComponent(l.chatSessionId)}`, { method: "DELETE" }), $e(), await we(), f("Konuşma silindi.");
+      await g(`/me/chat/sessions/${encodeURIComponent(l.chatSessionId)}`, { method: "DELETE" }), xe(), await $e(), f("Konuşma silindi.");
     } catch (e) {
       f(e.message, !0);
     }
 };
 function Rt() {
-  Me || (Me = !0, G("assistant", "Merhaba! Kitaplar, yazarlar ve edebî kavramlar hakkında konuşabilir; ekrandaki sonuçları yorumlayabilir ve okuma yolculuğuna eşlik edebilirim.", [], !1), Y(["Ekrandaki kitapları karşılaştır", "Roman ile novella farkı nedir?", "Yıllık hedefim nasıl gidiyor?"]), we(), I());
+  Oe || (Oe = !0, G("assistant", "Merhaba! Kitaplar, yazarlar ve edebî kavramlar hakkında konuşabilir; ekrandaki sonuçları yorumlayabilir ve okuma yolculuğuna eşlik edebilirim.", [], !1), Y(["Ekrandaki kitapları karşılaştır", "Roman ile novella farkı nedir?", "Yıllık hedefim nasıl gidiyor?"]), $e(), I());
 }
 t("#chat-toggle").onclick = () => {
   const e = t("#chat-panel").classList.toggle("hidden") === !1;
@@ -1201,14 +1204,14 @@ function je() {
   let a = [], i = null;
   return e === "discover" && !t("#recommendations-panel").classList.contains("hidden") ? (a = l.lastRecommendations, i = l.lastDiscoveryQuery) : e === "catalog" ? (a = l.catalog.items, i = t("#catalog-search").value.trim() || null) : e === "library" && (a = qe()), { view: e, query: i, books: a.slice(0, 10).map((r, s) => Kt(r, s + 1)) };
 }
-function xe(e, a = !1) {
+function Ce(e, a = !1) {
   const i = t("#chat-context");
   i && (i.classList.toggle("loading", a), i.querySelector("span").textContent = e);
 }
 function I() {
   if (!t("#chat-context")) return;
   const e = je(), a = { discover: "eşleştirme", catalog: "katalog", library: "kitaplık", insights: "okuma analizi", alerts: "fiyat alarmı", quality: "kalite" };
-  xe(e.books.length ? `${e.books.length} ${a[e.view]} kitabı bu sohbete bağlı.` : `${a[e.view]} ekranını görebiliyorum.`);
+  Ce(e.books.length ? `${e.books.length} ${a[e.view]} kitabı bu sohbete bağlı.` : `${a[e.view]} ekranını görebiliyorum.`);
 }
 let de = !1;
 async function Ve(e) {
@@ -1216,7 +1219,7 @@ async function Ve(e) {
   if (a.length < 2 || de) return;
   de = !0;
   const i = l.chatHistory.slice(-8), r = je(), s = t("#chat-input"), o = t("#chat-form button"), c = new AbortController(), p = setTimeout(() => c.abort(), 3e4);
-  G("user", a), s.value = "", s.disabled = !0, o.disabled = !0, Y([]), xe("Yanıt hazırlanıyor…", !0);
+  G("user", a), s.value = "", s.disabled = !0, o.disabled = !0, Y([]), Ce("Yanıt hazırlanıyor…", !0);
   const u = n("div", r.books.length ? "Ekrandaki kitapları ve konuşmayı inceliyorum…" : "Pusula düşünüyor…", "chat-typing");
   u.setAttribute("role", "status"), t("#chat-messages").append(u), t("#chat-messages").scrollTop = t("#chat-messages").scrollHeight;
   try {
@@ -1229,14 +1232,14 @@ async function Ve(e) {
   }
 }
 t("#chat-form").onsubmit = (e) => {
-  e.preventDefault(), Ve(t("#chat-input").value).finally(we);
+  e.preventDefault(), Ve(t("#chat-input").value).finally($e);
 };
-let Oe = !1;
+let De = !1;
 function Bt() {
-  if (Oe) return;
+  if (De) return;
   const e = t("#ambient-canvas"), a = e == null ? void 0 : e.parentElement;
   if (!e || !a) return;
-  Oe = !0;
+  De = !0;
   const i = e.getContext("2d"), r = matchMedia("(prefers-reduced-motion: reduce)").matches, s = ["#08745a", "#d59a45", "#315f73", "#9a5751", "#907c5b", "#3f9278"];
   let o = 0, c = 0;
   const p = Array.from({ length: 12 }, (y, h) => ({ angle: h / 12 * Math.PI * 2 + 0.18, orbit: h % 3 === 0 ? 1 : 0, speed: (h % 2 ? 1 : -1) * (55e-6 + h * 2e-6), w: 14 + h % 3 * 2, h: 31 + h % 4 * 3, color: s[h % s.length], tilt: (h % 5 - 2) * 0.045 }));
@@ -1253,17 +1256,17 @@ function Bt() {
     d(h, b, o * 0.31, c * 0.25, 0.17, [4, 7]), d(h, b, o * 0.41, c * 0.34, 0.09, [2, 10]), i.save(), i.fillStyle = "rgba(8,116,90,.16)", [[0.12, 0.2], [0.87, 0.3], [0.17, 0.78], [0.82, 0.82]].forEach(([v, w]) => {
       i.beginPath(), i.arc(o * v, c * w, 2.2, 0, Math.PI * 2), i.fill();
     }), i.restore(), p.forEach((v) => {
-      const w = v.angle + (r ? 0 : y * v.speed), $ = v.orbit === 1, S = o * ($ ? 0.39 : 0.3), M = c * ($ ? 0.31 : 0.23), _ = (Math.sin(w) + 1) / 2, T = h + Math.cos(w) * S, L = b + Math.sin(w) * M, B = 0.76 + _ * 0.28;
+      const w = v.angle + (r ? 0 : y * v.speed), $ = v.orbit === 1, S = o * ($ ? 0.39 : 0.3), A = c * ($ ? 0.31 : 0.23), _ = (Math.sin(w) + 1) / 2, T = h + Math.cos(w) * S, L = b + Math.sin(w) * A, B = 0.76 + _ * 0.28;
       i.save(), i.translate(T, L), i.rotate(v.tilt + Math.cos(w) * 0.09), i.scale(B, B), i.globalAlpha = 0.68 + _ * 0.28, i.shadowColor = "rgba(13,49,38,.18)", i.shadowBlur = 12, i.shadowOffsetY = 7, i.fillStyle = v.color, i.beginPath(), i.roundRect(-v.w / 2, -v.h / 2, v.w, v.h, 3), i.fill(), i.strokeStyle = "rgba(255,255,255,.28)", i.lineWidth = 0.8, i.stroke(), i.fillStyle = "rgba(255,255,255,.55)", i.fillRect(-v.w / 2 + 2.5, -v.h / 2 + 4, 1.2, v.h - 8), i.fillStyle = "rgba(255,255,255,.35)", i.fillRect(-v.w / 2 + 5, -v.h / 2 + 7, v.w - 7, 1), i.restore();
     }), i.globalAlpha = 1, r || requestAnimationFrame(m);
   }
   new ResizeObserver(u).observe(a), u(), r || requestAnimationFrame(m);
 }
 document.addEventListener("click", (e) => {
-  e.target.closest(".shelf-picker") || A(".shelf-picker[open]").forEach((a) => a.open = !1);
+  e.target.closest(".shelf-picker") || P(".shelf-picker[open]").forEach((a) => a.open = !1);
 });
 document.addEventListener("keydown", (e) => {
-  e.key === "Escape" && (A(".shelf-picker[open]").forEach((a) => a.open = !1), t("#chat-panel").classList.contains("hidden") || t("#chat-close").click());
+  e.key === "Escape" && (P(".shelf-picker[open]").forEach((a) => a.open = !1), t("#chat-panel").classList.contains("hidden") || t("#chat-close").click());
 });
 "serviceWorker" in navigator && location.protocol !== "file:" && window.addEventListener("load", () => navigator.serviceWorker.register("/static/service-worker.js").catch(() => {
 }));
@@ -1276,9 +1279,9 @@ async function Ht() {
     e.status !== 401 && f("Oturum doğrulanamadı. Giriş yaparak devam edebilirsin.", !0);
   }
 }
-let De = !1;
+let Ne = !1;
 function qt() {
-  De || (De = !0, Ze(), Ht());
+  Ne || (Ne = !0, Ze(), Ht());
 }
 export {
   qt as initializeAppShell

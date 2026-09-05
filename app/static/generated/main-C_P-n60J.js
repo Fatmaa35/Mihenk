@@ -12925,7 +12925,7 @@ function Cv() {
           p.current = pe;
         });
       }
-    }, import("./app-shell-CcuT7h1V.js").then(({ initializeAppShell: ne }) => ne());
+    }, import("./app-shell-CLwsBE01.js").then(({ initializeAppShell: ne }) => ne());
   }, []);
   async function U() {
     if (r) {
@@ -13030,7 +13030,7 @@ function vh() {
     if (!(!r || i)) {
       i = !0;
       try {
-        const { BentoReadingDashboard: R } = await import("./BentoReadingDashboard-DNWsA9Me.js");
+        const { BentoReadingDashboard: R } = await import("./BentoReadingDashboard-Dx-vPayQ.js");
         Bf.createRoot(r).render(/* @__PURE__ */ L.jsx(R, {}));
       } catch {
         i = !1, r.textContent = "Okuma paneli yüklenemedi. Lütfen tekrar deneyin.";
@@ -13046,7 +13046,7 @@ function vh() {
     if (!(!o || h)) {
       h = !0;
       try {
-        const { ProductGrowthHub: R } = await import("./ProductGrowthHub-ekqT1fV5.js");
+        const { ProductGrowthHub: R } = await import("./ProductGrowthHub-B805KjLq.js");
         Bf.createRoot(o).render(/* @__PURE__ */ L.jsx(yh, { children: /* @__PURE__ */ L.jsx(R, {}) }));
       } catch {
         h = !1, o.textContent = "Okur merkezi yüklenemedi. Lütfen tekrar deneyin.";

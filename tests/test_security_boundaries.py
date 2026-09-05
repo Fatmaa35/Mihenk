@@ -23,6 +23,9 @@ def secured_client(*, enabled=False, origin="https://mihenk.test"):
     @app.api_route("/auth/login", methods=["GET", "POST"])
     def login():
         return {"ok": True}
+    @app.api_route("/", methods=["GET", "HEAD", "POST"])
+    def landing():
+        return {"ok": True}
     return TestClient(app, base_url=origin)
 
 
@@ -51,6 +54,21 @@ def test_production_origin_boundary_and_preflight():
                           "Access-Control-Request-Method": "POST"}).status_code == 200
     assert client.get("/auth/login").status_code == 200
     assert client.get("/auth/login", headers={"Sec-Fetch-Site": "cross-site"}).status_code == 403
+
+
+def test_email_redirect_allows_only_public_document_navigation():
+    client = secured_client()
+    headers = {"Sec-Fetch-Site": "cross-site", "Sec-Fetch-Mode": "navigate",
+               "Sec-Fetch-Dest": "document"}
+    for method in ["GET", "HEAD"]:
+        result = client.request(method, "/", headers=headers)
+        assert result.status_code == 200
+        assert "access-control-allow-origin" not in result.headers
+    assert client.post("/", headers=headers).status_code == 403
+    assert client.get("/auth/login", headers=headers).status_code == 403
+    assert client.get("/", headers={**headers, "Origin": "https://evil.test"}).status_code == 403
+    assert client.get("/", headers={**headers, "Sec-Fetch-Dest": "iframe"}).status_code == 403
+    assert client.get("/", headers={**headers, "Sec-Fetch-Mode": "cors"}).status_code == 403
 
 
 def test_cookie_and_forwarded_header_rotation_cannot_evade_ip_limit():
