@@ -1,5 +1,14 @@
 import { expect, test } from '@playwright/test'
 
+test('expired recovery link offers a new link without rendering URL error content', async ({ page }) => {
+  await page.goto('/#error=access_denied&error_code=otp_expired&error_description=untrusted-marker')
+  await expect(page.locator('#recovery-dialog')).toBeVisible()
+  await expect(page.locator('#recovery-status')).toContainText('Yeni bir sıfırlama bağlantısı isteyin.')
+  await expect(page.locator('#password-reset-dialog')).not.toBeVisible()
+  await expect(page.locator('body')).not.toContainText('untrusted-marker')
+  await expect(page).toHaveURL(/\/$/)
+})
+
 test('public landing page presents the Mihenk story and login entry point', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: /Bir sonraki kitabın seni bekliyor/ })).toBeVisible()

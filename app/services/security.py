@@ -168,11 +168,19 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         # Explicit foreign origins are rejected even for reads. A missing Origin
         # is normal for navigation/health checks, but not for browser mutations.
         unsafe = request.method not in {"GET", "HEAD", "OPTIONS"}
+        # Email redirects may retain cross-site Fetch Metadata. Only the public
+        # landing document is exempt, never API reads, writes or iframe loads.
+        public_navigation = (
+            request.method in {"GET", "HEAD"} and request.url.path == "/"
+            and not origin
+            and request.headers.get("sec-fetch-mode") == "navigate"
+            and request.headers.get("sec-fetch-dest") == "document"
+        )
         if (origin and not origin_allowed) or (
             self.strict_origin and unsafe and not origin
             and request.url.path != "/internal/pipelines/prices"
         ) or (self.strict_origin and request.headers.get("sec-fetch-site") == "cross-site"
-              and not origin_allowed):
+              and not origin_allowed and not public_navigation):
             return JSONResponse({"detail": "Geçersiz istek kaynağı."}, status_code=403)
         if self.enabled and not (request.url.path.startswith("/static/") or request.url.path in {"/health", "/ready"}):
             # Never trust an unverified cookie (or raw X-Forwarded-For) as the
