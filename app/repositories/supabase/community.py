@@ -568,6 +568,11 @@ class SupabaseCommunityMixin:
                                    params={"club_id": f"eq.{club_id}", "user_id": f"eq.{user_id}", "select": "user_id", "limit": 1}).json()
         if not membership:
             raise PermissionError("Kulüp üyeliği gerekiyor.")
+        discussion = self._request("GET", "/rest/v1/book_club_discussions", admin=True,
+                                   params={"id": f"eq.{discussion_id}", "club_id": f"eq.{club_id}",
+                                           "select": "id", "limit": 1}).json()
+        if not discussion:
+            raise KeyError("Tartışma bulunamadı.")
         try:
             existing = self._request("GET", "/rest/v1/book_club_reactions", admin=True,
                                     params={"discussion_id": f"eq.{discussion_id}", "user_id": f"eq.{user_id}",
@@ -605,6 +610,11 @@ class SupabaseCommunityMixin:
                                    params={"club_id": f"eq.{club_id}", "user_id": f"eq.{user_id}", "select": "user_id", "limit": 1}).json()
         if not membership:
             raise PermissionError("Kulüp üyeliği gerekiyor.")
+        event = self._request("GET", "/rest/v1/book_club_events", admin=True,
+                              params={"id": f"eq.{event_id}", "club_id": f"eq.{club_id}",
+                                      "select": "id", "limit": 1}).json()
+        if not event:
+            raise KeyError("Etkinlik bulunamadı.")
         try:
             self._request("POST", "/rest/v1/book_club_event_rsvps", admin=True,
                           params={"on_conflict": "event_id,user_id"},
@@ -996,6 +1006,11 @@ class SupabaseCommunityMixin:
                                    params={"club_id": f"eq.{club_id}", "user_id": f"eq.{user_id}", "select": "role", "limit": 1}).json()
         if not membership:
             raise PermissionError("Kulüp üyeliği gerekiyor.")
+        room = self._request("GET", "/rest/v1/book_club_rooms", admin=True,
+                             params={"id": f"eq.{room_id}", "club_id": f"eq.{club_id}",
+                                     "select": "id", "limit": 1}).json()
+        if not room:
+            raise PermissionError("Oda bu kulübe ait değil veya bulunamadı.")
         now = datetime.now(timezone.utc).isoformat()
         try:
             self._request("POST", "/rest/v1/book_club_room_messages", admin=True,

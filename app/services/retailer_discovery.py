@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 
 from app.services.retailer_offers import RETAILERS, USER_AGENT, RetailerPolicyError, fetch_offer
 from app.services.dynamic_browser import render_dynamic_html
+from app.services.outbound_http import safe_get
 
 
 DISCOVERY = {
@@ -55,7 +56,7 @@ def extract_product_links(html: str, search_url: str, retailer_id: str, limit: i
 
 def _allowed_search(url: str, base_url: str) -> None:
     robots_url = base_url + "/robots.txt"
-    response = requests.get(robots_url, timeout=20, headers={"User-Agent": USER_AGENT})
+    response = safe_get(robots_url, allowed_hosts=set(RETAILERS), timeout=20, headers={"User-Agent": USER_AGENT})
     response.raise_for_status()
     parser = RobotFileParser(robots_url)
     parser.parse(response.text.splitlines())
@@ -71,7 +72,7 @@ def search_product_links(retailer_id: str, query: str, max_candidates: int = 8, 
     url = retailer["base_url"] + config["path"].format(query=quote_plus(query))
     _allowed_search(url, retailer["base_url"])
     polite_delay()
-    response = requests.get(url, timeout=30, headers={"User-Agent": USER_AGENT, "Accept-Language": "tr-TR,tr;q=0.9"})
+    response = safe_get(url, allowed_hosts=set(RETAILERS), timeout=30, headers={"User-Agent": USER_AGENT, "Accept-Language": "tr-TR,tr;q=0.9"})
     response.raise_for_status()
     links = extract_product_links(response.text, url, retailer_id, max_candidates)
     if not links and config.get("browser_fallback"):

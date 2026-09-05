@@ -12,6 +12,7 @@ from urllib.parse import urlsplit
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 
 
 @dataclass(frozen=True)
@@ -97,9 +98,14 @@ class RedisSlidingWindowRateLimiter:
     def __init__(self, redis_url: str, key_prefix: str = "mihenk") -> None:
         try:
             import redis
+            from redis.backoff import NoBackoff
+            from redis.retry import Retry
         except ImportError as error:  # pragma: no cover - guarded by production dependencies
             raise RuntimeError("REDIS_URL için redis paketi kurulmalıdır.") from error
-        self.client = redis.Redis.from_url(redis_url, decode_responses=True)
+        self.client = redis.Redis.from_url(
+            redis_url, decode_responses=True, socket_connect_timeout=2, socket_timeout=2,
+            retry=Retry(NoBackoff(), 0),
+        )
         self.key_prefix = key_prefix
         self.script = self.client.register_script(self.SCRIPT)
 
@@ -115,6 +121,20 @@ class RedisSlidingWindowRateLimiter:
         return bool(int(result[0])), int(result[1]), max(1, int(result[2]) // 1000)
 
 
+class EmailSendGuard:
+    """Shared quotas stop IP rotation from generating unlimited auth email."""
+    def __init__(self, redis_url="", key_prefix="mihenk"):
+        self.limiter = (RedisSlidingWindowRateLimiter(redis_url, key_prefix)
+                        if redis_url else SlidingWindowRateLimiter())
+
+    def check(self, email: str) -> tuple[bool, int, int]:
+        identity = hashlib.sha256(email.strip().casefold().encode()).hexdigest()
+        result = self.limiter.check("auth-email-recipient", identity, RatePolicy(3, 3600))
+        if not result[0]:
+            return result
+        return self.limiter.check("auth-email-total", "application", RatePolicy(100, 3600))
+
+
 def route_bucket(request: Request) -> str:
     path = request.url.path
     if path.startswith("/auth/"):
@@ -128,10 +148,12 @@ def route_bucket(request: Request) -> str:
 
 class SecurityMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, allowed_origins: tuple[str, ...], enabled: bool = True,
-                 redis_url: str = "", redis_key_prefix: str = "mihenk") -> None:
+                 redis_url: str = "", redis_key_prefix: str = "mihenk",
+                 strict_origin: bool = False) -> None:
         super().__init__(app)
         self.allowed_origins = set(allowed_origins)
         self.enabled = enabled
+        self.strict_origin = strict_origin
         self.fallback_limiter = SlidingWindowRateLimiter()
         self.limiter = (
             RedisSlidingWindowRateLimiter(redis_url, redis_key_prefix)
@@ -140,20 +162,31 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         origin = request.headers.get("origin")
-        origin_allowed = not origin or origin in self.allowed_origins or _origin_matches_safe_local_request(request, origin)
-        if request.method not in {"GET", "HEAD", "OPTIONS"} and not origin_allowed:
+        origin_allowed = origin in self.allowed_origins or (
+            not self.strict_origin and origin and _origin_matches_safe_local_request(request, origin)
+        )
+        # Explicit foreign origins are rejected even for reads. A missing Origin
+        # is normal for navigation/health checks, but not for browser mutations.
+        unsafe = request.method not in {"GET", "HEAD", "OPTIONS"}
+        if (origin and not origin_allowed) or (
+            self.strict_origin and unsafe and not origin
+            and request.url.path != "/internal/pipelines/prices"
+        ) or (self.strict_origin and request.headers.get("sec-fetch-site") == "cross-site"
+              and not origin_allowed):
             return JSONResponse({"detail": "Geçersiz istek kaynağı."}, status_code=403)
-        if self.enabled and not request.url.path.startswith(("/static/", "/health", "/ready")):
-            session_token = request.cookies.get("book_access_token")
-            identity = ("session:" + hashlib.sha256(session_token.encode()).hexdigest()[:20]) if session_token else (
-                "ip:" + (request.client.host if request.client else "unknown")
-            )
+        if self.enabled and not (request.url.path.startswith("/static/") or request.url.path in {"/health", "/ready"}):
+            # Never trust an unverified cookie (or raw X-Forwarded-For) as the
+            # limiter identity. Uvicorn handles only configured trusted proxies.
+            identity = "ip:" + (request.client.host if request.client else "unknown")
             bucket = route_bucket(request)
             try:
-                allowed, remaining, retry_after = self.limiter.check(
-                    bucket, identity, RATE_POLICIES[bucket]
+                allowed, remaining, retry_after = await run_in_threadpool(
+                    self.limiter.check, bucket, identity, RATE_POLICIES[bucket]
                 )
             except Exception:
+                if self.strict_origin:
+                    return JSONResponse({"detail": "İstek koruması geçici olarak kullanılamıyor."},
+                                        status_code=503, headers={"Retry-After": "30"})
                 # A Redis outage degrades to per-process protection instead of disabling limits.
                 allowed, remaining, retry_after = self.fallback_limiter.check(
                     bucket, identity, RATE_POLICIES[bucket]
@@ -172,9 +205,11 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             "X-Frame-Options": "DENY",
             "Referrer-Policy": "strict-origin-when-cross-origin",
             "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
-            "Content-Security-Policy": "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'",
+            "Content-Security-Policy": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'",
             "X-RateLimit-Remaining": str(remaining),
         })
+        if self.strict_origin:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000"
         if request.url.path.startswith(("/me/", "/admin/", "/auth/")):
             response.headers["Cache-Control"] = "no-store, private"
         return response
