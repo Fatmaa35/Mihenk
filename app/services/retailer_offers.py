@@ -132,13 +132,14 @@ def fetch_offer(url: str) -> dict:
     if retailer["integration_mode"] == "official_api_required":
         raise RetailerPolicyError(f"{retailer['name']} için web scraping yerine resmi API/affiliate feed kimlik bilgileri gereklidir.")
     robots_url = retailer["base_url"] + "/robots.txt"
-    robots_response = requests.get(robots_url, timeout=20, headers={"User-Agent": USER_AGENT})
+    from app.services.outbound_http import safe_get
+    robots_response = safe_get(robots_url, allowed_hosts=set(RETAILERS), timeout=20, headers={"User-Agent": USER_AGENT})
     robots_response.raise_for_status()
     parser = RobotFileParser(robots_url)
     parser.parse(robots_response.text.splitlines())
     if not parser.can_fetch(USER_AGENT, url):
         raise RetailerPolicyError("robots.txt bu ürün adresinin alınmasına izin vermiyor.")
-    response = requests.get(url, timeout=30, headers={"User-Agent": USER_AGENT, "Accept-Language": "tr-TR,tr;q=0.9"})
+    response = safe_get(url, allowed_hosts=set(RETAILERS), timeout=30, headers={"User-Agent": USER_AGENT, "Accept-Language": "tr-TR,tr;q=0.9"})
     response.raise_for_status()
     offer = parse_product_page(response.text, url)
     if offer["price_minor"] is None:

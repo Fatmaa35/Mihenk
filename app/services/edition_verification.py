@@ -5,9 +5,7 @@ from __future__ import annotations
 import re
 from datetime import datetime, timezone
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from app.services.outbound_http import SafeHTTPSession
 
 
 SEARCH_URL = "https://openlibrary.org/search.json"
@@ -53,8 +51,7 @@ def parse_turkish_edition(payload: dict, book: dict) -> dict | None:
 class TurkishEditionVerifier:
     def __init__(self, timeout: int = 12) -> None:
         self.timeout = timeout
-        self.session = requests.Session()
-        self.session.mount("https://", HTTPAdapter(max_retries=Retry(total=2, backoff_factor=0.5, status_forcelist=(429, 500, 502, 503, 504))))
+        self.session = SafeHTTPSession({"openlibrary.org"})
 
     def verify(self, book: dict) -> dict | None:
         query = f'title:"{book["title"]}" author:"{book["author"]}" language:tur'

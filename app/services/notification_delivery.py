@@ -6,6 +6,7 @@ from email.message import EmailMessage
 import json
 import smtplib
 import ssl
+from app.services.outbound_http import PUSH_HOSTS, SafeHTTPSession, validate_push_endpoint
 
 
 class SMTPDelivery:
@@ -32,6 +33,7 @@ class WebPushDelivery:
         self.private_key, self.subject = private_key, subject
 
     def send(self, subscription: dict, title: str, body: str, url: str = "/") -> None:
+        validate_push_endpoint(subscription["endpoint"])
         from pywebpush import webpush
 
         webpush(
@@ -44,4 +46,5 @@ class WebPushDelivery:
             vapid_claims={"sub": self.subject},
             ttl=3600,
             timeout=15,
+            requests_session=SafeHTTPSession(PUSH_HOSTS),
         )

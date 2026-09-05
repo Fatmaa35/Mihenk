@@ -24,6 +24,10 @@ services:
         value: supabase
       - key: COOKIE_SECURE
         value: "true"
+      - key: ALLOWED_ORIGINS
+        value: https://mihenk-web-production.onrender.com
+      - key: RECOVERY_REDIRECT_URL
+        value: https://mihenk-web-production.onrender.com/
       - key: RATE_LIMIT_ENABLED
         value: "true"
       - key: ALLOW_REGISTRATION

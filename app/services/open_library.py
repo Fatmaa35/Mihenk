@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import json
 import time
 from datetime import datetime, timezone
-from urllib.error import URLError
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from requests import RequestException
+from app.services.outbound_http import safe_get
 
 from app.services.google_books import TRAITS, _genre, _plain_text
 
@@ -61,12 +59,11 @@ class OpenLibraryClient:
             "limit": min(limit, 100),
             "fields": "key,title,author_name,language,isbn,subject,cover_i,publisher,number_of_pages_median,first_publish_year",
         }
-        request = Request(
-            f"{API_URL}?{urlencode(params)}",
-            headers={"User-Agent": "AkilliKitapDanismani/1.0 (educational catalog)"},
-        )
-        with urlopen(request, timeout=self.timeout) as response:
-            return json.load(response).get("docs", [])
+        response = safe_get(API_URL, allowed_hosts={"openlibrary.org"}, params=params,
+                            timeout=self.timeout,
+                            headers={"User-Agent": "AkilliKitapDanismani/1.0 (educational catalog)"})
+        response.raise_for_status()
+        return response.json().get("docs", [])
 
     def iter_records(self, queries: list[str], pages: int, page_size: int, delay: float):
         seen: set[str] = set()
@@ -77,7 +74,7 @@ class OpenLibraryClient:
                     try:
                         documents = self.search(query, page, page_size)
                         break
-                    except (TimeoutError, URLError) as error:
+                    except (TimeoutError, RequestException) as error:
                         if attempt == 2:
                             print(f"Open Library sorgusu atlandı: {query!r}, sayfa {page}: {error}")
                         else:

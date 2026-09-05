@@ -87,6 +87,8 @@ class Settings:
         if self.app_environment == "production" and not self.redis_url:
             raise ValueError("Production ortamında REDIS_URL dağıtık limit ve metrikler için zorunludur.")
         if self.app_environment == "production":
+            if not self.rate_limit_enabled:
+                raise ValueError("Production ortamında RATE_LIMIT_ENABLED=true zorunludur.")
             if self.data_backend != "supabase" or not self.supabase_secret_key:
                 raise ValueError("Production ortamında Supabase backend ve secret key zorunludur.")
             if not self.privacy_contact_email or "@" not in self.privacy_contact_email:
@@ -95,10 +97,20 @@ class Settings:
                 raise ValueError("Production parola kurtarma adresi HTTPS olmalıdır.")
             if not self.allowed_origins or any(
                 urlparse(origin).scheme != "https"
+                or not urlparse(origin).hostname
+                or "*" in origin
+                or urlparse(origin).username is not None
+                or urlparse(origin).password is not None
+                or bool(urlparse(origin).path or urlparse(origin).query or urlparse(origin).fragment)
                 or (urlparse(origin).hostname or "").casefold() in {"localhost", "127.0.0.1"}
                 for origin in self.allowed_origins
             ):
                 raise ValueError("Production ALLOWED_ORIGINS yalnızca gerçek HTTPS originleri içermelidir.")
+            redirect = urlparse(self.recovery_redirect_url)
+            if f"{redirect.scheme}://{redirect.netloc}" not in self.allowed_origins:
+                raise ValueError("Parola kurtarma adresi izinli site originlerinden birine ait olmalıdır.")
+            if self.reminder_provider in {"smtp", "multi"} and not self.smtp_starttls:
+                raise ValueError("Production SMTP bağlantısında STARTTLS zorunludur.")
         if self.data_backend not in {"sqlite", "supabase"}:
             raise ValueError("DATA_BACKEND yalnızca 'sqlite' veya 'supabase' olabilir.")
         if self.data_backend == "supabase" and not (self.supabase_url and self.supabase_publishable_key):

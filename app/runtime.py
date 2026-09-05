@@ -80,7 +80,10 @@ from app.services.product_growth import experiment_variant
 from app.supabase_repository import SupabaseRequestError
 
 
-app = FastAPI(title="Akıllı Kitap Danışmanı", version="1.0.0")
+app = FastAPI(title="Akıllı Kitap Danışmanı", version="1.0.0",
+              docs_url=None if settings.app_environment == "production" else "/docs",
+              redoc_url=None if settings.app_environment == "production" else "/redoc",
+              openapi_url=None if settings.app_environment == "production" else "/openapi.json")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(settings.allowed_origins),
@@ -95,6 +98,7 @@ app.add_middleware(
     enabled=settings.rate_limit_enabled,
     redis_url=settings.redis_url,
     redis_key_prefix=settings.redis_key_prefix,
+    strict_origin=settings.app_environment == "production",
 )
 app.add_middleware(ObservabilityMiddleware)
 repository = create_repository(settings)

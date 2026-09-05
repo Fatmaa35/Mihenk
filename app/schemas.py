@@ -2,7 +2,9 @@ from typing import Literal
 from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
+from app.services.plain_text import clean_comment
+from app.services.outbound_http import validate_push_endpoint
 
 
 Shelf = Literal["read", "reading", "to_read", "abandoned"]
@@ -181,14 +183,21 @@ class BookRatingUpsert(BaseModel):
     rating: int = Field(ge=1, le=5)
 
 
-class BookCommentCreate(BaseModel):
+class PlainCommentModel(BaseModel):
+    @field_validator("content", mode="before", check_fields=False)
+    @classmethod
+    def sanitize_content(cls, value):
+        return clean_comment(value) if isinstance(value, str) else value
+
+
+class BookCommentCreate(PlainCommentModel):
     book_id: str = Field(min_length=1, max_length=255)
     content: str = Field(min_length=2, max_length=2_000)
     contains_spoiler: bool = False
     parent_comment_id: str | None = Field(default=None, max_length=100)
 
 
-class BookCommentPatch(BaseModel):
+class BookCommentPatch(PlainCommentModel):
     content: str | None = Field(default=None, min_length=2, max_length=2_000)
     contains_spoiler: bool | None = None
 
@@ -266,6 +275,11 @@ class PushSubscriptionUpsert(BaseModel):
     endpoint: str = Field(min_length=20, max_length=4000, pattern=r"^https://")
     p256dh: str = Field(min_length=20, max_length=1000)
     auth: str = Field(min_length=8, max_length=500)
+
+    @field_validator("endpoint")
+    @classmethod
+    def allowed_endpoint(cls, value):
+        return validate_push_endpoint(value)
 
 
 class PushSubscriptionDelete(BaseModel):
@@ -590,7 +604,7 @@ class BookClubProgressUpsert(BaseModel):
     daily_target_pages: int | None = Field(default=10, ge=1, le=1000)
 
 
-class BookClubDiscussionCreate(BaseModel):
+class BookClubDiscussionCreate(PlainCommentModel):
     book_id: str
     content: str = Field(min_length=2, max_length=2_000)
     page_number: int | None = Field(default=None, ge=1, le=100_000)
@@ -643,6 +657,5 @@ class BookClubRoomSessionComplete(BaseModel):
     notes: str | None = Field(default="", max_length=2000)
 
 
-class BookClubRoomMessageCreate(BaseModel):
+class BookClubRoomMessageCreate(PlainCommentModel):
     content: str = Field(min_length=1, max_length=1000)
-

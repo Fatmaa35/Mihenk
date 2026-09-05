@@ -3378,6 +3378,11 @@ class Repository:
             ).fetchone()
             if not member:
                 raise PermissionError("Kulüp üyeliği gerekiyor.")
+            room = connection.execute(
+                "SELECT 1 FROM book_club_rooms WHERE id=? AND club_id=?", (room_id, club_id)
+            ).fetchone()
+            if not room:
+                raise PermissionError("Oda bu kulübe ait değil veya bulunamadı.")
             msg_id = str(uuid4())
             connection.execute(
                 "INSERT INTO book_club_room_messages(id,room_id,user_id,content,created_at) VALUES(?,?,?,?,?)",

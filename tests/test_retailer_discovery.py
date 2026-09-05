@@ -41,7 +41,7 @@ def test_bkm_uses_dynamic_renderer_only_after_empty_static_result(monkeypatch) -
 
     monkeypatch.setattr(retailer_discovery, "_allowed_search", lambda *_: None)
     monkeypatch.setattr(retailer_discovery, "polite_delay", lambda *_: None)
-    monkeypatch.setattr(retailer_discovery.requests, "get", lambda *_, **__: Response())
+    monkeypatch.setattr(retailer_discovery, "safe_get", lambda *_, **__: Response())
     dynamic = '<a href="https://bkmkitap.com/dinamik-kitap-123?waw_keyword=kitap">Kitap</a><a href="/kampanya">Kampanya</a>'
     links = retailer_discovery.search_product_links("bkmkitap", "kitap", renderer=lambda *_: dynamic)
     assert links == ["https://www.bkmkitap.com/dinamik-kitap-123?waw_keyword=kitap"]

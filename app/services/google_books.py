@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import html
-import json
 import re
 import time
 from datetime import datetime, timezone
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from app.services.outbound_http import safe_get
 
 from bs4 import BeautifulSoup
 
@@ -131,9 +129,10 @@ class GoogleBooksClient:
         }
         if self.api_key:
             params["key"] = self.api_key
-        request = Request(f"{API_URL}?{urlencode(params)}", headers={"User-Agent": "AkilliKitapDanismani/1.0"})
-        with urlopen(request, timeout=self.timeout) as response:
-            payload = json.load(response)
+        response = safe_get(API_URL, allowed_hosts={"www.googleapis.com"}, params=params,
+                            timeout=self.timeout, headers={"User-Agent": "AkilliKitapDanismani/1.0"})
+        response.raise_for_status()
+        payload = response.json()
         return payload.get("items", [])
 
     def iter_records(self, queries: list[str], pages: int, page_size: int, delay: float):

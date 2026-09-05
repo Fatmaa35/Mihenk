@@ -32,8 +32,8 @@ jobs:
       SUPABASE_JWKS_URL: ${{ secrets.SUPABASE_JWKS_URL }}
       REDIS_URL: ${{ secrets.REDIS_URL }}
       PIPELINE_WEBHOOK_SECRET: ${{ secrets.PIPELINE_WEBHOOK_SECRET }}
-      RECOVERY_REDIRECT_URL: ${{ vars.RECOVERY_REDIRECT_URL }}
-      ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+      RECOVERY_REDIRECT_URL: https://mihenk-web-production.onrender.com/
+      ALLOWED_ORIGINS: https://mihenk-web-production.onrender.com
       APP_DOMAIN: ${{ vars.APP_DOMAIN }}
       LEGAL_ENTITY_NAME: ${{ vars.LEGAL_ENTITY_NAME }}
       PRIVACY_CONTACT_EMAIL: ${{ vars.PRIVACY_CONTACT_EMAIL }}

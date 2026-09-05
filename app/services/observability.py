@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.concurrency import run_in_threadpool
 
 
 logger = logging.getLogger("kitap_pusulasi.http")
@@ -36,7 +37,12 @@ class MetricsRegistry:
             return
         try:
             import redis
-            self._redis = redis.Redis.from_url(redis_url, decode_responses=True)
+            from redis.backoff import NoBackoff
+            from redis.retry import Retry
+            self._redis = redis.Redis.from_url(
+                redis_url, decode_responses=True, socket_connect_timeout=2, socket_timeout=2,
+                retry=Retry(NoBackoff(), 0),
+            )
             self._redis_prefix = f"{key_prefix}:metrics"
         except ImportError as error:  # pragma: no cover - dependency is pinned in production
             raise RuntimeError("REDIS_URL için redis paketi kurulmalıdır.") from error
@@ -151,6 +157,16 @@ recent_events = RecentEvents()
 
 
 class ObservabilityMiddleware(BaseHTTPMiddleware):
+    @staticmethod
+    def record_metrics(route_path: str, status: int, elapsed: float) -> None:
+        metrics.observe(route_path, status, elapsed)
+        if route_path == "/auth/login":
+            metrics.increment("login_success" if status < 400 else "login_failure")
+            if status in {401, 429}:
+                metrics.increment("suspicious_login_attempts")
+        if status == 429:
+            metrics.increment("rate_limited_requests")
+
     async def dispatch(self, request: Request, call_next):
         request_id = request.headers.get("x-request-id", "")[:100] or str(uuid4())
         request.state.request_id = request_id
@@ -162,13 +178,7 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
         finally:
             elapsed = round((perf_counter() - started) * 1000, 2)
             route = request.scope.get("route"); route_path = getattr(route, "path", request.url.path)
-            metrics.observe(route_path, status, elapsed)
-            if route_path == "/auth/login":
-                metrics.increment("login_success" if status < 400 else "login_failure")
-                if status in {401, 429}:
-                    metrics.increment("suspicious_login_attempts")
-            if status == 429:
-                metrics.increment("rate_limited_requests")
+            await run_in_threadpool(self.record_metrics, route_path, status, elapsed)
             event = {"level": "error" if status >= 500 else "warning" if status >= 400 else "info",
                      "event_type": "http_request", "request_id": request_id, "method": request.method,
                      "route": route_path, "status_code": status, "duration_ms": elapsed}

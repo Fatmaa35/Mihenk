@@ -16,6 +16,8 @@ def privacy_notice() -> FileResponse:
 
 @router.get("/health")
 def health() -> dict:
+    if settings.app_environment == "production":
+        return {"status": "ok"}
     return {
         "status": "ok",
         "data_backend": settings.data_backend,
@@ -44,4 +46,6 @@ def ready() -> dict:
     books = repository.list_books()
     if not books:
         raise HTTPException(status_code=503, detail="Katalog hazır değil.")
+    if settings.app_environment == "production":
+        return {"status": "ready"}
     return {"status": "ready", "catalog_books": len(books), "backend": settings.data_backend}
