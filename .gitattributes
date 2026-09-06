@@ -1,0 +1,2 @@
+# Vite build output; count the original frontend TypeScript sources instead.
+app/static/generated/** linguist-generated=true
