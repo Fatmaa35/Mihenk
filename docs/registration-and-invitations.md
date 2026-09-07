@@ -18,10 +18,10 @@ Herkese açık kayıt ve admin davetleri birlikte kullanılabilir.
 ## Canlı ortam ayarları
 
 1. Render web servisi Environment bölümünde `ALLOW_REGISTRATION=true` olmalı.
-   Blueprint ve `.env.production.example` bu değeri kullanır. Mevcut serviste elle
+   Blueprint ve `backend/.env.production.example` bu değeri kullanır. Mevcut serviste elle
    tanımlanmış `false` değerini güncelleyin ve servisi yeniden dağıtın.
 2. Supabase Auth ayarlarında yeni kullanıcı kaydına ve e-posta kaydına izin verin.
-   `supabase/config.toml` yerel CLI ayarıdır; barındırılan projeyi kendiliğinden değiştirmez.
+   `backend/supabase/config.toml` yerel CLI ayarıdır; barındırılan projeyi kendiliğinden değiştirmez.
 3. Supabase Auth URL Configuration içinde **Site URL** uygulama adresi olmalı.
    `RECOVERY_REDIRECT_URL` değerini **Redirect URLs** listesine aynen ekleyin;
    örneğin `https://mihenk-web-production.onrender.com/`.

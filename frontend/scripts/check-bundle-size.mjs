@@ -1,7 +1,7 @@
 import { readdir, stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-const output = resolve(import.meta.dirname, '../../app/static/generated')
+const output = resolve(import.meta.dirname, '../../backend/app/static/generated')
 const files = await readdir(output)
 const failures = []
 for (const name of files) {

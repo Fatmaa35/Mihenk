@@ -1,7 +1,9 @@
 services:
   app:
-    build: .
-    env_file: .env
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    env_file: ../backend/.env
     environment:
       REDIS_URL: redis://redis:6379/0
       REDIS_KEY_PREFIX: mihenk-local
