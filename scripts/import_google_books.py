@@ -7,9 +7,9 @@ from urllib.error import HTTPError, URLError
 
 from app.config import settings
 from app.repository_factory import create_repository
-from app.services.catalog_quality import canonical_work_key
-from app.services.google_books import GoogleBooksClient
-from app.services.open_library import OpenLibraryClient
+from app.services.catalog.catalog_quality import canonical_work_key
+from app.services.catalog.google_books import GoogleBooksClient
+from app.services.catalog.open_library import OpenLibraryClient
 
 
 DEFAULT_QUERIES = [

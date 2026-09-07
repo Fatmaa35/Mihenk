@@ -27,5 +27,5 @@ def test_frontend_has_one_vite_entry_and_bounded_growth_components() -> None:
     assert "/static/app.js" not in html
     assert html.count('/static/generated/product-ui.js') == 1
     assert not (static / "app.js").exists()
-    assert line_count(ROOT / "frontend" / "src" / "ProductGrowthHub.tsx") < 900
+    assert line_count(ROOT / "frontend" / "src" / "features" / "growth" / "ProductGrowthHub.tsx") < 900
     assert line_count(ROOT / "frontend" / "src" / "features" / "growth" / "ClubWorkspace.tsx") < 900

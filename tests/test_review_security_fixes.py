@@ -9,8 +9,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.repositories.supabase.community import SupabaseCommunityMixin
-from app.services.security import RedisSlidingWindowRateLimiter, SecurityMiddleware
-from app.services.observability import MetricsRegistry, ObservabilityMiddleware
+from app.services.common.security import RedisSlidingWindowRateLimiter, SecurityMiddleware
+from app.services.common.observability import MetricsRegistry, ObservabilityMiddleware
 
 
 OPERATIONS = [

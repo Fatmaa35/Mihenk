@@ -25,7 +25,7 @@ jobs:
       DATA_BACKEND: supabase
       COOKIE_SECURE: "true"
       RATE_LIMIT_ENABLED: "true"
-      ALLOW_REGISTRATION: "false"
+      ALLOW_REGISTRATION: "true"
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

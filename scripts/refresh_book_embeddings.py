@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from app.config import settings
 from app.repository_factory import create_repository
-from app.services.embeddings import GeminiEmbeddingProvider
+from app.services.recommendations.embeddings import GeminiEmbeddingProvider
 
 
 def embedding_document(book: dict) -> str:

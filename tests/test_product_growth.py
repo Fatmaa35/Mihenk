@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.database import Repository
 from app.main import app
-from app.services.product_growth import experiment_variant, funnel_metrics, parse_library_csv
+from app.services.reading.product_growth import experiment_variant, funnel_metrics, parse_library_csv
 
 
 ROOT = Path(__file__).parents[1]

@@ -30,6 +30,40 @@ Mihenk, okuma alışkanlıklarınızı ve kişisel tercihlerinizi analiz ederek 
 GitHub Actions, tekrarlanabilir kurulum için `requirements.lock.txt` ve
 `frontend/package-lock.json` dosyalarını kullanır.
 
+## Proje Düzeni
+
+Kodlar katman ve özellik bazında düzenlenir. Ayrıntılar ve yeni dosya ekleme
+kuralları için [klasör rehberine](docs/project-structure.md) bakın.
+
+```text
+app/                         # Python backend
+├── routers/                 # HTTP uç noktaları
+├── repositories/            # Veri erişimi
+├── services/                # İş mantığı
+│   ├── ai/                  # Sohbet, model sağlayıcıları ve promptlar
+│   ├── catalog/             # Kitap kaynakları ve katalog kalitesi
+│   ├── recommendations/     # Arama, sıralama ve değerlendirme
+│   ├── pricing/             # Mağazalar ve fiyat takibi
+│   ├── reading/             # Okuma, bildirimler ve ilerleme
+│   └── common/              # Güvenlik, HTTP ve gözlemlenebilirlik
+└── static/                  # Sunulan statik dosyalar ve derleme çıktısı
+frontend/src/
+├── main.tsx                 # Vite giriş noktası
+├── app/                     # Uygulama kabuğu
+├── features/                # auth, catalog, growth, quotes, reading
+├── shared/                  # api, i18n, validation
+└── styles/                  # Ortak stiller
+tests/                       # Backend testleri
+scripts/                     # Bakım ve veri işleme komutları
+database/                    # SQL şemaları ve yükseltmeler
+supabase/                    # CLI yapılandırması, migration ve RLS testleri
+docs/                        # Teknik rehberler
+data/                        # Başlangıç ve değerlendirme verileri
+asset/                       # README görselleri
+n8n/                         # Otomasyon iş akışları
+.github/workflows/           # CI/CD
+```
+
 ## Kurulum ve Çalıştırma
 
 ### 1. Backend
@@ -71,3 +105,5 @@ npm run test:e2e -- --project=desktop
 ## Üretim
 
 `.env.production.example` dosyasını `.env.production` olarak kopyalayıp gerçek secret manager değerleriyle doldurun. Container yayın, Redis, otomatik bildirim/saklama worker'ları ve geri dönüş akışı için [dağıtım rehberine](docs/deployment.md) bakın. Supabase bildirim migration'ı `database/supabase_notification_delivery.sql` dosyasındadır.
+
+Kayıt ve admin davetlerinin kurulumu için [kayıt ve davet rehberine](docs/registration-and-invitations.md) bakın.

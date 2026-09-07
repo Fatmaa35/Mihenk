@@ -5,8 +5,8 @@ import json
 
 from app.config import settings
 from app.repository_factory import create_repository
-from app.services.price_pipeline import run_full_price_pipeline
-from app.services.retailer_discovery import DISCOVERY
+from app.services.pricing.price_pipeline import run_full_price_pipeline
+from app.services.pricing.retailer_discovery import DISCOVERY
 
 
 def main() -> None:

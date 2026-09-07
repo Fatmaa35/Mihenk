@@ -1,11 +1,11 @@
 from app.database import Repository
-from app.services.catalog_quality import (
+from app.services.catalog.catalog_quality import (
     book_matches_intent,
     canonical_work_key,
     enrich_book_record,
     parse_query_intent,
 )
-from app.services.consensus import ConsensusRecommender
+from app.services.recommendations.consensus import ConsensusRecommender
 
 
 def _record(book_id: str, title: str, genre: str, page_count: int) -> dict:

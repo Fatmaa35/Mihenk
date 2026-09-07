@@ -32,11 +32,13 @@ def check_environment(path: Path) -> list[str]:
             errors.append(f"{key} gerçek bir production değeri olmalı")
     expected = {
         "APP_ENVIRONMENT": "production", "DATA_BACKEND": "supabase", "COOKIE_SECURE": "true",
-        "RATE_LIMIT_ENABLED": "true", "ALLOW_REGISTRATION": "false",
+        "RATE_LIMIT_ENABLED": "true",
     }
     for key, expected_value in expected.items():
         if values.get(key, "").lower() != expected_value:
             errors.append(f"{key}={expected_value} olmalı")
+    if values.get("ALLOW_REGISTRATION", "").lower() not in {"true", "false"}:
+        errors.append("ALLOW_REGISTRATION true veya false olmalı")
     for key in ("SUPABASE_URL", "SUPABASE_JWKS_URL", "RECOVERY_REDIRECT_URL"):
         value = values.get(key, "")
         if value and urlparse(value).scheme != "https":

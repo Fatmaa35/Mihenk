@@ -1,4 +1,4 @@
-from app.services.edition_verification import parse_turkish_edition, valid_isbn13
+from app.services.catalog.edition_verification import parse_turkish_edition, valid_isbn13
 
 
 def test_isbn13_checksum() -> None:

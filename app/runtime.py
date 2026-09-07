@@ -66,17 +66,17 @@ from app.schemas import (
     BookQuoteView,
     ISBNBookLookupResponse,
 )
-from app.services.consensus import ConsensusRecommender
-from app.services.chatbot import BookChatbot
-from app.services.gemini import GeminiExplainer, GeminiUnavailable
-from app.services.llm_factory import create_explainer
-from app.services.llm_profiles import ASSISTANT_PROFILE, MATCHER_PROFILE
-from app.services.recommendation_evaluation import run_evaluation
-from app.services.security import SecurityMiddleware
-from app.services.observability import ObservabilityMiddleware, metrics, recent_events
-from app.services.price_forecasting import price_intelligence
-from app.services.price_pipeline import run_full_price_pipeline
-from app.services.product_growth import experiment_variant
+from app.services.recommendations.consensus import ConsensusRecommender
+from app.services.ai.chatbot import BookChatbot
+from app.services.ai.gemini import GeminiExplainer, GeminiUnavailable
+from app.services.ai.llm_factory import create_explainer
+from app.services.ai.llm_profiles import ASSISTANT_PROFILE, MATCHER_PROFILE
+from app.services.recommendations.recommendation_evaluation import run_evaluation
+from app.services.common.security import SecurityMiddleware
+from app.services.common.observability import ObservabilityMiddleware, metrics, recent_events
+from app.services.pricing.price_forecasting import price_intelligence
+from app.services.pricing.price_pipeline import run_full_price_pipeline
+from app.services.reading.product_growth import experiment_variant
 from app.supabase_repository import SupabaseRequestError
 
 

@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from app.runtime import *  # noqa: F403 - explicit shared runtime boundary
 from app.supabase_repository import SupabaseRequestError
-from app.services.security import EmailSendGuard
+from app.services.common.security import EmailSendGuard
 
 router = APIRouter()
 email_guard = EmailSendGuard(settings.redis_url, settings.redis_key_prefix)
@@ -87,6 +87,10 @@ def reset_password(payload: PasswordResetRequest) -> dict:
         repository.reset_password(payload.recovery_token, payload.new_password)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except SupabaseRequestError as error:
+        if error.status_code in {401, 403, 404}:
+            raise HTTPException(status_code=400, detail="Bağlantı geçersiz veya süresi dolmuş. Yeni bir davet ya da parola sıfırlama bağlantısı isteyin.") from error
+        raise
     return {"message": "Parolan güncellendi. Yeni parolanla giriş yapabilirsin."}
 
 

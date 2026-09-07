@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from app.config import settings
 from app.repository_factory import create_repository
-from app.services.notification_delivery import SMTPDelivery, WebPushDelivery
+from app.services.reading.notification_delivery import SMTPDelivery, WebPushDelivery
 
 
 def main() -> None:

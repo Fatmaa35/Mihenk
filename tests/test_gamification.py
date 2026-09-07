@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from app.database import Repository
-from app.services.gamification import build_gamification_summary, level_for_xp
+from app.services.reading.gamification import build_gamification_summary, level_for_xp
 
 
 BOOKS = Path(__file__).resolve().parents[1] / "data" / "books.json"

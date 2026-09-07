@@ -8,7 +8,7 @@ import os
 import sqlite3
 from pathlib import Path
 
-from app.services.google_books import TRAITS, _genre
+from app.services.catalog.google_books import TRAITS, _genre
 
 
 LEGACY_GENRES = {

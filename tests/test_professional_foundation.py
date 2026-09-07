@@ -3,8 +3,8 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from app.database import Repository
-from app.services.recommendation_evaluation import evaluate_ranking
-from app.services.security import RatePolicy, SlidingWindowRateLimiter
+from app.services.recommendations.recommendation_evaluation import evaluate_ranking
+from app.services.common.security import RatePolicy, SlidingWindowRateLimiter
 
 
 def test_rate_limiter_enforces_policy_per_identity() -> None:

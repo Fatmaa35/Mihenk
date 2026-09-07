@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from app.runtime import app, current_session, httpx, require_role, repository, recommender, settings
 from app.supabase_repository import SupabaseRequestError
-from app.services.observability import metrics
+from app.services.common.observability import metrics
 from fastapi.exceptions import RequestValidationError
 from app.routers.platform import router as platform_router
 from app.routers.auth import router as auth_router

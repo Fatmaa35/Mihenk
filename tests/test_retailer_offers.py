@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from app.services.retailer_offers import RetailerPolicyError, fetch_offer, parse_product_page
+from app.services.pricing.retailer_offers import RetailerPolicyError, fetch_offer, parse_product_page
 from app.database import Repository
 
 

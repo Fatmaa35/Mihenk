@@ -1,4 +1,4 @@
-from app.services.google_books import _genre, parse_volume
+from app.services.catalog.google_books import _genre, parse_volume
 
 
 def test_google_books_volume_is_clean_and_traceable() -> None:

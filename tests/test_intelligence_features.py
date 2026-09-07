@@ -2,10 +2,10 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from app.database import Repository
-from app.services.catalog_quality import (
+from app.services.catalog.catalog_quality import (
     book_matches_intent, deduplicate_library_entries, normalize_isbn, parse_query_intent,
 )
-from app.services.chatbot import BookChatbot
+from app.services.ai.chatbot import BookChatbot
 
 
 def test_isbn10_is_validated_and_converted_to_isbn13() -> None:

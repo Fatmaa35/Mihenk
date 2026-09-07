@@ -1,5 +1,5 @@
-from app.services.retailer_discovery import extract_product_links, same_book
-from app.services import retailer_discovery
+from app.services.pricing.retailer_discovery import extract_product_links, same_book
+from app.services.pricing import retailer_discovery
 
 
 def test_kitapsec_product_links_are_deduplicated_and_scoped() -> None:
