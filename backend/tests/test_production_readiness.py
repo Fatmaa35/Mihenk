@@ -5,7 +5,7 @@ import pytest
 from scripts.production_readiness import check_environment, check_repository
 
 
-ROOT = Path(__file__).parents[1]
+ROOT = Path(__file__).parents[2]
 
 
 def test_repository_has_production_release_controls() -> None:

@@ -84,5 +84,5 @@ def test_frontend_accessibility_and_asset_budgets() -> None:
     assert "Mihenk kontrol paneli" in html
     assert '<link rel="manifest"' in html
     assert not (root / "app.js").exists()
-    assert (Path(__file__).parents[1] / "frontend" / "src" / "app" / "app-shell.ts").exists()
+    assert (Path(__file__).parents[2] / "frontend" / "src" / "app" / "app-shell.ts").exists()
     assert (root / "styles.css").stat().st_size < 120_000

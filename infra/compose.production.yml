@@ -2,7 +2,7 @@ services:
   app:
     image: ${MIHENK_IMAGE:?MIHENK_IMAGE is required}
     restart: unless-stopped
-    env_file: .env.production
+    env_file: ../backend/.env.production
     environment:
       APP_ENVIRONMENT: production
       COOKIE_SECURE: "true"
@@ -15,7 +15,7 @@ services:
   reminder-worker:
     image: ${MIHENK_IMAGE:?MIHENK_IMAGE is required}
     restart: unless-stopped
-    env_file: .env.production
+    env_file: ../backend/.env.production
     environment:
       APP_ENVIRONMENT: production
       COOKIE_SECURE: "true"
@@ -27,7 +27,7 @@ services:
   retention-worker:
     image: ${MIHENK_IMAGE:?MIHENK_IMAGE is required}
     restart: unless-stopped
-    env_file: .env.production
+    env_file: ../backend/.env.production
     environment:
       APP_ENVIRONMENT: production
       COOKIE_SECURE: "true"
@@ -50,7 +50,7 @@ services:
   proxy:
     image: caddy:2.10-alpine
     restart: unless-stopped
-    env_file: .env.production
+    env_file: ../backend/.env.production
     ports:
       - "80:80"
       - "443:443"

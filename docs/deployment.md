@@ -9,9 +9,18 @@ Mihenk tek bir container imajı olarak paketlenir. Production trafiği TLS sonla
 - `APP_ENVIRONMENT=production`, `COOKIE_SECURE=true`, `REDIS_URL`, `SUPABASE_SECRET_KEY`, gerçek `ALLOWED_ORIGINS`, `LEGAL_ENTITY_NAME` ve `PRIVACY_CONTACT_EMAIL` release ön koşuludur.
 - `FORWARDED_ALLOW_IPS` yalnızca reverse proxy IP'lerini içermelidir; `*` kullanılmaz.
 
+## Dosya konumları
+
+Depo kökünden Docker komutlarını, `backend/` içinden Python ve Supabase CLI
+komutlarını çalıştırın. `backend/.env.production.example` dosyasını
+`backend/.env.production` olarak kopyalayın.
+
+Yerel Compose: `docker compose -f infra/docker-compose.yml up --build`.
+Yerel ayarlar `backend/.env` dosyasından okunur.
+
 ## Yayın akışı
 
-1. `python -m scripts.production_readiness --env-file .env.production` başarıyla tamamlanır.
+1. `backend/` klasöründe `python -m scripts.production_readiness --env-file .env.production` başarıyla tamamlanır.
 2. CI testleri, frontend derlemesi ve container build tamamlanır.
 3. Supabase migrasyonları staging projesine uygulanır; `supabase test db`, Security ve Performance Advisor temizlenir.
 4. Staging smoke ve geri yükleme testi geçer.
@@ -22,7 +31,7 @@ Mihenk tek bir container imajı olarak paketlenir. Production trafiği TLS sonla
 ```powershell
 docker build -t registry.example.com/mihenk:<git-sha> .
 $env:MIHENK_IMAGE='registry.example.com/mihenk:<git-sha>'
-docker compose --env-file .env.production -f compose.production.yml up -d
+docker compose --env-file backend/.env.production -f infra/compose.production.yml up -d
 ```
 
 Caddy `APP_DOMAIN` için TLS sertifikasını otomatik yönetir. DNS kaydı sunucuya yönlenmeden ve 80/443
@@ -33,6 +42,7 @@ portları açılmadan yayın başlatılmamalıdır. Uygulama portu doğrudan int
 İlk geçişte mevcut canlı şema resmi migration geçmişine alınmalıdır:
 
 ```powershell
+cd backend
 npx --yes supabase@latest login
 npx --yes supabase@latest link --project-ref PROJECT_REF
 npx --yes supabase@latest db pull baseline --linked --yes
@@ -40,7 +50,7 @@ npx --yes supabase@latest migration list --linked
 npx --yes supabase@latest test db --linked
 ```
 
-`supabase/config.toml` yeni tabloları otomatik Data API'ye açmaz. Her migration aynı dosyada RLS,
+`backend/supabase/config.toml` yeni tabloları otomatik Data API'ye açmaz. Her migration aynı dosyada RLS,
 policy ve ihtiyaç duyulan açık `GRANT` ifadelerini içermelidir.
 
 ## Secret rotasyonu
@@ -52,8 +62,8 @@ eski değerler iptal edildikten sonra secret manager güncellenir. `.env.product
 Worker servislerini tek seferlik elle çalıştırmak gerekirse:
 
 ```powershell
-docker compose -f compose.production.yml exec app python -m scripts.process_reading_reminders
-docker compose -f compose.production.yml exec app python -m scripts.enforce_data_retention
+docker compose --env-file backend/.env.production -f infra/compose.production.yml exec app python -m scripts.process_reading_reminders
+docker compose --env-file backend/.env.production -f infra/compose.production.yml exec app python -m scripts.enforce_data_retention
 ```
 
 `reminder-worker` her dakika teslimat kuyruğunu, `retention-worker` günde bir saklama politikasını işler. Hatırlatıcı worker birden fazla replika çalıştırabilir; koşullu claim aynı işi iki kez göndermeyi engeller. Retention worker tek replika tutulur.

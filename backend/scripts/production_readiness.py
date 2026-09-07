@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from dotenv import dotenv_values
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 PLACEHOLDERS = {"", "replace-me", "changeme", "todo", "example"}
 REQUIRED = (
     "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SECRET_KEY", "SUPABASE_JWKS_URL",
@@ -65,15 +65,15 @@ def check_environment(path: Path) -> list[str]:
 def check_repository(root: Path) -> list[str]:
     errors: list[str] = []
     required_paths = (
-        root / "supabase" / "config.toml", root / "supabase" / "tests" / "core_rls_test.sql",
-        root / "compose.production.yml", root / "Caddyfile", root / "requirements.lock.txt",
+        root / "backend" / "supabase" / "config.toml", root / "backend" / "supabase" / "tests" / "core_rls_test.sql",
+        root / "infra" / "compose.production.yml", root / "infra" / "Caddyfile", root / "backend" / "requirements.lock.txt",
         root / "frontend" / "package-lock.json",
     )
     for path in required_paths:
         if not path.exists():
             errors.append(f"Eksik production dosyası: {path.relative_to(root)}")
     tracked_text = []
-    for folder in (root / "app", root / "frontend", root / "database", root / "docs"):
+    for folder in (root / "backend" / "app", root / "frontend" / "src", root / "backend" / "database", root / "docs"):
         for path in folder.rglob("*"):
             if path.is_file() and path.suffix.lower() in {".py", ".js", ".ts", ".tsx", ".sql", ".md"}:
                 tracked_text.append(path.read_text(encoding="utf-8", errors="ignore"))
@@ -91,7 +91,7 @@ def check_repository(root: Path) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Mihenk production release ön kontrolü")
-    parser.add_argument("--env-file", type=Path, default=ROOT / ".env.production")
+    parser.add_argument("--env-file", type=Path, default=ROOT / "backend" / ".env.production")
     parser.add_argument("--repository-only", action="store_true")
     args = parser.parse_args()
     errors = check_repository(ROOT)

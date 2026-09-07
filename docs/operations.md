@@ -1,22 +1,24 @@
 # Üretim işletim notları
 
+Aşağıdaki Python komutları `backend/` klasöründen çalıştırılır.
+
 - Geliştirme, staging ve production için ayrı Supabase projeleri ve ayrı sırlar kullanılır. Migrasyonlar önce staging'e uygulanır; doğrulama sonrası production'a geçirilir.
 - `/health` uptime, `/ready` trafik kabulü; `/admin/metrics` P50/P95/P99, hata ve ürün sinyalleri içindir. Alarm başlangıç eşikleri: 5 dakikada `%2` 5xx, P95 `3 sn`, sonuçsuz arama `%10`, LLM fallback `%20`.
-- SQLite kurulumu için `python scripts/backup_restore_drill.py`; Supabase için günlük yedek/PITR planı ve üç ayda bir ayrı projeye geri yükleme tatbikatı kullanılır.
-- `python scripts/process_reading_reminders.py` her dakika zamanlanır. Uygulama içi kanal hazırdır; e-posta/push kanalları sağlayıcı sırrı olmadan güvenli biçimde başarısız olur.
+- SQLite kurulumu için `python -m scripts.backup_restore_drill`; Supabase için günlük yedek/PITR planı ve üç ayda bir ayrı projeye geri yükleme tatbikatı kullanılır.
+- `python -m scripts.process_reading_reminders` her dakika zamanlanır. Uygulama içi kanal hazırdır; e-posta/push kanalları sağlayıcı sırrı olmadan güvenli biçimde başarısız olur.
 - Migrasyonlar ileri yönlü ve tekrar çalıştırılabilir tutulur. Veri kaybettiren geri dönüş yerine önce eski uygulama sürümüne dönüş, ardından telafi migrasyonu uygulanır.
 - Feature flag kayıtları `feature_flags` tablosunda tutulur; production açılışları kullanıcı kimliğinin deterministik yüzdelik dilimiyle kademeli yapılır.
 - Supabase Auth panelinde sızdırılmış parola koruması açılmalıdır; bu ayar SQL migrasyonundan yönetilmez.
 ## Günlük fiyat veri hattı
 
-`n8n/mihenk-daily-price-pipeline.json` n8n'e aktarılır. n8n ortamındaki
+`infra/n8n/mihenk-daily-price-pipeline.json` n8n'e aktarılır. n8n ortamındaki
 Uygulama ve n8n aynı `PIPELINE_WEBHOOK_SECRET` ortam değişkenini kullanmalıdır.
 Docker içinden yerel uygulamanın varsayılan adresi `http://host.docker.internal:8010`'dur.
 n8n yalnızca zamanlama ve yeniden denemeyi yönetir; doğrulama, idempotency, loglama ve
 tahmin Python servisinde kalır. Elle çalıştırmak için:
 
 ```powershell
-python scripts/refresh_retail_prices.py --limit 40 --discover-books 15 --orchestrator cli
+python -m scripts.refresh_retail_prices --limit 40 --discover-books 15 --orchestrator cli
 ```
 
 # Authentication and community alerts

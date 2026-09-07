@@ -3,20 +3,20 @@ WORKDIR /workspace
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN --mount=type=cache,target=/root/.npm npm ci --prefix frontend
 COPY frontend ./frontend
-COPY app/static ./app/static
+COPY backend/app/static ./backend/app/static
 RUN npm run build --prefix frontend
 
 FROM python:3.12-slim-bookworm AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PORT=8010 WEB_CONCURRENCY=2
 WORKDIR /app
 RUN addgroup --system mihenk && adduser --system --ingroup mihenk mihenk
-COPY requirements.lock.txt ./
+COPY backend/requirements.lock.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip python -m pip install -r requirements.lock.txt
-COPY app ./app
-COPY data/books.json data/recommendation_eval_cases.json ./data/
-COPY scripts ./scripts
-COPY database ./database
-COPY --from=frontend-build /workspace/app/static/generated ./app/static/generated
+COPY backend/app ./app
+COPY backend/data/books.json backend/data/recommendation_eval_cases.json ./data/
+COPY backend/scripts ./scripts
+COPY backend/database ./database
+COPY --from=frontend-build /workspace/backend/app/static/generated ./app/static/generated
 RUN mkdir -p /app/data /app/tmp && chown -R mihenk:mihenk /app
 USER mihenk
 EXPOSE 8010
