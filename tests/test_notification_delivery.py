@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from app.database import Repository
-from app.services.notification_delivery import SMTPDelivery
-from app.services.reading_planner import reminder_datetime_utc
+from app.services.reading.notification_delivery import SMTPDelivery
+from app.services.reading.reading_planner import reminder_datetime_utc
 
 
 def test_reminder_time_is_stored_as_utc() -> None:
@@ -64,7 +64,7 @@ def test_smtp_adapter_uses_tls_and_authentication(monkeypatch) -> None:
         def login(self, username, password): calls.append(("login", username, password))
         def send_message(self, message): calls.append(("send", message["To"], message["Subject"]))
 
-    monkeypatch.setattr("app.services.notification_delivery.smtplib.SMTP", FakeSMTP)
+    monkeypatch.setattr("app.services.reading.notification_delivery.smtplib.SMTP", FakeSMTP)
     SMTPDelivery("smtp.example.test", 587, "user", "pass", "noreply@example.test").send(
         "reader@example.test", "Okuma zamanı", "Bugünkü hedefin hazır."
     )

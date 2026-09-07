@@ -9,9 +9,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.config import ROOT
 from app.database import Repository
-from app.services.consensus import ConsensusRecommender
-from app.services.recommendation_evaluation import run_evaluation
-from app.services.vector_search import LocalVectorIndex
+from app.services.recommendations.consensus import ConsensusRecommender
+from app.services.recommendations.recommendation_evaluation import run_evaluation
+from app.services.recommendations.vector_search import LocalVectorIndex
 
 
 def main() -> None:

@@ -1,6 +1,6 @@
 import asyncio
 
-from app.services.chatbot import BookChatbot
+from app.services.ai.chatbot import BookChatbot
 
 
 class FakeExplainer:

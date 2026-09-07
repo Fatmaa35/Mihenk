@@ -1,9 +1,9 @@
 import React, { Component, ErrorInfo, FormEvent, ReactNode, useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { api } from './api'
-import { t } from './i18n'
-import { PlanSchema } from './schemas'
-import './product-ui.css'
+import { api } from './shared/api/api'
+import { t } from './shared/i18n/i18n'
+import { PlanSchema } from './shared/validation/schemas'
+import './styles/product-ui.css'
 
 type Action = { action_type: string; book_id: string; book_title: string; arguments: Record<string, string | number | boolean>; confirmation: string }
 type Book = { id: string; title: string }
@@ -32,7 +32,7 @@ function AppRoot() {
       confirmAction(next) { setError(''); setAction(next); return new Promise(resolve => { actionResolve.current = resolve }) },
       openReadingPlan(next) { setError(''); setBook(next); return new Promise(resolve => { planResolve.current = resolve }) }
     }
-    void import('./app-shell').then(({ initializeAppShell }) => initializeAppShell())
+    void import('./app/app-shell').then(({ initializeAppShell }) => initializeAppShell())
   }, [])
 
   async function executeAction() {
@@ -78,7 +78,7 @@ function initMounts() {
     if (!pkmMount || pkmMounted) return
     pkmMounted = true
     try {
-      const { BentoReadingDashboard } = await import('./BentoReadingDashboard')
+      const { BentoReadingDashboard } = await import('./features/reading/BentoReadingDashboard')
       createRoot(pkmMount).render(<BentoReadingDashboard />)
     } catch {
       pkmMounted = false
@@ -97,7 +97,7 @@ function initMounts() {
     if (!growthMount || growthMounted) return
     growthMounted = true
     try {
-      const { ProductGrowthHub } = await import('./ProductGrowthHub')
+      const { ProductGrowthHub } = await import('./features/growth/ProductGrowthHub')
       createRoot(growthMount).render(<ProductErrorBoundary><ProductGrowthHub /></ProductErrorBoundary>)
     } catch {
       growthMounted = false

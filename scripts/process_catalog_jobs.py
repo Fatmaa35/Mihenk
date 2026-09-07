@@ -8,8 +8,8 @@ from urllib.error import HTTPError, URLError
 
 from app.config import settings
 from app.repository_factory import create_repository
-from app.services.google_books import GoogleBooksClient, parse_volume
-from app.services.open_library import OpenLibraryClient, parse_document
+from app.services.catalog.google_books import GoogleBooksClient, parse_volume
+from app.services.catalog.open_library import OpenLibraryClient, parse_document
 
 
 def process(repository, job: dict) -> int:

@@ -3,8 +3,8 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, Field, model_validator, field_validator
-from app.services.plain_text import clean_comment
-from app.services.outbound_http import validate_push_endpoint
+from app.services.common.plain_text import clean_comment
+from app.services.common.outbound_http import validate_push_endpoint
 
 
 Shelf = Literal["read", "reading", "to_read", "abandoned"]
@@ -27,6 +27,10 @@ class LoginRequest(BaseModel):
 
 class PasswordRecoveryRequest(BaseModel):
     email: str = Field(min_length=5, max_length=254, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+
+class UserInvitationRequest(PasswordRecoveryRequest):
+    display_name: str = Field(min_length=2, max_length=80)
 
 
 class PasswordResetRequest(BaseModel):

@@ -2,8 +2,8 @@ import asyncio
 from pathlib import Path
 
 from app.database import Repository
-from app.services.consensus import ConsensusRecommender
-from app.services.gemini import GeminiExplainer
+from app.services.recommendations.consensus import ConsensusRecommender
+from app.services.ai.gemini import GeminiExplainer
 
 
 BOOKS = Path(__file__).resolve().parents[1] / "data" / "books.json"

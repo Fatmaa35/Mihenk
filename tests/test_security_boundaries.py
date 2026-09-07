@@ -10,8 +10,8 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from app.schemas import BookCommentCreate, BookCommentPatch, PushSubscriptionUpsert
-from app.services import outbound_http
-from app.services.security import SecurityMiddleware
+from app.services.common import outbound_http
+from app.services.common.security import SecurityMiddleware
 
 
 def secured_client(*, enabled=False, origin="https://mihenk.test"):
@@ -103,7 +103,7 @@ def test_push_rejects_untrusted_endpoints(url):
 
 
 def test_saved_push_endpoint_is_checked_before_delivery():
-    from app.services.notification_delivery import WebPushDelivery
+    from app.services.reading.notification_delivery import WebPushDelivery
     with pytest.raises(ValueError):
         WebPushDelivery("unused", "mailto:test@example.com").send(
             {"endpoint": "https://127.0.0.1/private"}, "Title", "Body")
@@ -167,7 +167,7 @@ def test_sql_injection_does_not_bypass_login(tmp_path):
 
 
 def test_auth_email_quota_is_shared_across_case_changes():
-    from app.services.security import EmailSendGuard
+    from app.services.common.security import EmailSendGuard
     guard = EmailSendGuard()
     for _ in range(3):
         assert guard.check("Reader@example.com")[0]
@@ -176,7 +176,7 @@ def test_auth_email_quota_is_shared_across_case_changes():
 
 
 def test_auth_email_global_quota_limits_rotating_recipients():
-    from app.services.security import EmailSendGuard
+    from app.services.common.security import EmailSendGuard
     guard = EmailSendGuard()
     for index in range(100):
         assert guard.check(f"reader{index}@example.com")[0]

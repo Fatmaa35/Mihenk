@@ -1,5 +1,5 @@
 import type { Dispatch, FormEventHandler, RefObject, SetStateAction } from 'react'
-import { LiveReadingRoom } from '../../LiveReadingRoom'
+import { LiveReadingRoom } from '../reading/LiveReadingRoom'
 import type { Book, ClubDetail, ClubRead, UserProgress } from './types'
 
 type ClubWorkspaceProps = {

@@ -4,7 +4,7 @@ import time
 
 from app.config import settings
 from app.database import Repository
-from app.services.retailer_offers import fetch_offer
+from app.services.pricing.retailer_offers import fetch_offer
 
 
 def main() -> None:

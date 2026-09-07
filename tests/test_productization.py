@@ -4,9 +4,9 @@ import pytest
 
 from app.database import Repository
 from app.schemas import ChatAction
-from app.services.catalog_quality import parse_query_intent
-from app.services.reading_planner import build_schedule
-from app.services.search_pipeline import TTLResultCache, filter_stages
+from app.services.catalog.catalog_quality import parse_query_intent
+from app.services.reading.reading_planner import build_schedule
+from app.services.recommendations.search_pipeline import TTLResultCache, filter_stages
 
 
 def test_action_json_schema_rejects_unknown_or_invalid_arguments() -> None:

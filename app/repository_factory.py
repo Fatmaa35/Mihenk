@@ -1,8 +1,8 @@
 from app.config import Settings
 from app.database import Repository
 from app.supabase_repository import SupabaseRepository
-from app.services.embeddings import GeminiEmbeddingProvider
-from app.services.vector_search import LocalVectorIndex, PgVectorSearchIndex
+from app.services.recommendations.embeddings import GeminiEmbeddingProvider
+from app.services.recommendations.vector_search import LocalVectorIndex, PgVectorSearchIndex
 
 
 def create_repository(settings: Settings) -> Repository | SupabaseRepository:

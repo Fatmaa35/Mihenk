@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from scripts.production_readiness import check_environment, check_repository
 
 
@@ -18,12 +20,13 @@ def test_placeholder_production_environment_fails_closed(tmp_path: Path) -> None
     assert any("SUPABASE_SECRET_KEY" in item for item in errors)
 
 
-def test_complete_environment_passes(tmp_path: Path) -> None:
+@pytest.mark.parametrize("registration", ["true", "false"])
+def test_complete_environment_passes(tmp_path: Path, registration: str) -> None:
     env = tmp_path / ".env.production"
     env.write_text(
         "\n".join([
             "APP_ENVIRONMENT=production", "DATA_BACKEND=supabase", "COOKIE_SECURE=true",
-            "RATE_LIMIT_ENABLED=true", "ALLOW_REGISTRATION=false",
+            "RATE_LIMIT_ENABLED=true", f"ALLOW_REGISTRATION={registration}",
             "SUPABASE_URL=https://project.supabase.co",
             "SUPABASE_PUBLISHABLE_KEY=" + "sb_publishable_" + "a" * 26,
             "SUPABASE_SECRET_KEY=" + "sb_secret_" + "b" * 26,

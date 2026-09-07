@@ -5,6 +5,15 @@ from app.repositories.supabase.base import SupabaseRequestError
 
 
 class SupabaseAuthMixin:
+    def invite_user(self, display_name: str, email: str, redirect_to: str) -> dict:
+        user = self._request(
+            "POST", "/auth/v1/invite", admin=True,
+            params={"redirect_to": redirect_to},
+            json_body={"email": email.strip().casefold(),
+                       "data": {"display_name": display_name.strip()}},
+        ).json()
+        return {"id": user["id"]}
+
     def open_registration_session(self, display_name: str, email: str, password: str) -> dict:
         response = self._request(
             "POST",

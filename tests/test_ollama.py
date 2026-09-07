@@ -3,7 +3,7 @@ import json
 
 import httpx
 
-from app.services.ollama import OllamaExplainer
+from app.services.ai.ollama import OllamaExplainer
 
 
 def test_ollama_only_changes_trusted_explanation(monkeypatch) -> None:

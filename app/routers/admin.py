@@ -2,7 +2,31 @@
 from fastapi import APIRouter
 from app.runtime import *  # noqa: F403 - explicit shared runtime boundary
 
+from app.schemas import UserInvitationRequest
+from app.routers.auth import guard_auth_email
+from app.supabase_repository import SupabaseRequestError
+
 router = APIRouter()
+
+
+@router.post("/admin/invitations", status_code=201)
+def invite_user(payload: UserInvitationRequest, request: Request, response: Response) -> dict:
+    session = require_role(request, response, "admin")
+    if repository.backend_name != "supabase":
+        raise HTTPException(status_code=503, detail="E-posta davetleri bu ortamda etkin değil.")
+    if not settings.recovery_redirect_url:
+        raise HTTPException(status_code=503, detail="Davet dönüş adresi henüz yapılandırılmadı.")
+    guard_auth_email(payload.email)
+    try:
+        invited = repository.invite_user(payload.display_name, payload.email, settings.recovery_redirect_url)
+    except SupabaseRequestError as error:
+        if error.status_code in {400, 422}:
+            raise HTTPException(status_code=400, detail="Davet gönderilemedi. E-posta adresini kontrol edin; hesap zaten kayıtlı olabilir.") from error
+        raise
+    repository.audit(session["user"]["id"], "user.invited", "user", invited["id"],
+                     request_id=request.headers.get("x-request-id"), access_token=session["access_token"])
+    return {"message": "Davet e-postası gönderildi. Kullanıcı bağlantıdan parolasını belirleyebilir."}
+
 
 @router.get("/admin/metrics")
 def admin_metrics(request: Request, response: Response) -> dict:

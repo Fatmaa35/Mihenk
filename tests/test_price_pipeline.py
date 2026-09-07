@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from app.database import Repository
-from app.services.price_forecasting import forecast_prices, price_intelligence
+from app.services.pricing.price_forecasting import forecast_prices, price_intelligence
 
 
 def history(days: int = 20) -> list[dict]:

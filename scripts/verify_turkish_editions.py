@@ -6,7 +6,7 @@ import time
 
 from app.config import settings
 from app.repository_factory import create_repository
-from app.services.edition_verification import TurkishEditionVerifier
+from app.services.catalog.edition_verification import TurkishEditionVerifier
 
 
 def main() -> None:

@@ -2,7 +2,8 @@
 
 ## Kabul ve erişim
 
-- Production'da `ALLOW_REGISTRATION=false` tutulur. Kullanıcılar Supabase Auth panelinden davet edilir.
+- Production varsayılanı `ALLOW_REGISTRATION=true`: kullanıcılar kayıt formundan hesap açabilir; adminler ayrıca yönetim panelinden davet gönderebilir. Yalnızca davetli bir beta için `ALLOW_REGISTRATION=false` seçilebilir.
+- Kurulum ve kullanım için [kayıt ve davet rehberine](registration-and-invitations.md) bakın.
 - İlk kohort 20-50 kişiyle sınırlıdır. Test hesapları production verisine eklenmez.
 - Katılımcıya gizlilik metni, geri bildirim kapsamı ve iletişim adresi davet e-postasında verilir.
 

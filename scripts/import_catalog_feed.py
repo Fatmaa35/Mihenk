@@ -8,7 +8,7 @@ from pathlib import Path
 
 from app.config import settings
 from app.repository_factory import create_repository
-from app.services.catalog_feed import iter_feed
+from app.services.catalog.catalog_feed import iter_feed
 
 
 def main() -> None:

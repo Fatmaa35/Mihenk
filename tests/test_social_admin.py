@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.database import Repository
 from app.main import app, repository as app_repository
-from app.services.search_pipeline import diversify
+from app.services.recommendations.search_pipeline import diversify
 
 
 def repository_with_users(tmp_path):

@@ -31,8 +31,8 @@ from app.schemas import (
     ReadingListItemUpsert,
     RecommendationInteractionCreate,
 )
-from app.services.gemini import GeminiExplainer
-from app.services.product_growth import experiment_variant, onboarding_tasks, parse_library_csv
+from app.services.ai.gemini import GeminiExplainer
+from app.services.reading.product_growth import experiment_variant, onboarding_tasks, parse_library_csv
 
 
 def create_product_router(*, repository, recommender, settings,

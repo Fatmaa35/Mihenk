@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from app.services.catalog_feed import iter_feed, normalize_feed_record
+from app.services.catalog.catalog_feed import iter_feed, normalize_feed_record
 
 
 def test_catalog_feed_normalizes_turkish_edition(tmp_path: Path) -> None:

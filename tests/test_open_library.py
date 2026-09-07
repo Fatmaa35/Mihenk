@@ -1,4 +1,4 @@
-from app.services.open_library import parse_document
+from app.services.catalog.open_library import parse_document
 
 
 def test_open_library_document_is_traceable() -> None:
