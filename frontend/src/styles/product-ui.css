@@ -645,11 +645,15 @@
 }
 
 .growth-chip-label {
+  position: relative;
   display: inline-flex;
   cursor: pointer;
 }
 
 .growth-chip-label input {
+  width: 1px;
+  height: 1px;
+  padding: 0;
   position: absolute;
   opacity: 0;
   pointer-events: none;

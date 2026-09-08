@@ -348,6 +348,9 @@ export function ProductGrowthHub() {
   async function saveClubRead(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!activeClub) return
+    const submit = event.currentTarget.querySelector('button')
+    if (submit?.disabled) return
+    if (submit) submit.disabled = true
     const data = new FormData(event.currentTarget)
     try {
       const detail = await api<ClubDetail>(`/me/book-clubs/${activeClub.id}/reads`, {
@@ -360,9 +363,11 @@ export function ProductGrowthHub() {
         }),
       })
       setActiveClub(detail)
-      setStatus('Kulübün okuma planı güncellendi.')
+      setStatus('Kulübün aktif kitabı güncellendi.')
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Okuma güncellenemedi.')
+    } finally {
+      if (submit) submit.disabled = false
     }
   }
 

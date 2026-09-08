@@ -1,4 +1,4 @@
-import { a as g } from "./main-31Zuru-Y.js";
+import { a as g } from "./main-DhkYpQea.js";
 function et(e, a) {
   const i = new URLSearchParams(e), r = new URLSearchParams(a.replace(/^#/, ""));
   if (i.has("error") || r.has("error") || i.has("error_code") || r.has("error_code")) return { kind: "error" };

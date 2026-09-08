@@ -676,6 +676,8 @@ class SupabaseCommunityMixin:
                               params={"id": f"eq.{club_id}", "select": "*,book_club_reads(*,books(title,author,cover_url,page_count))", "limit": 1}).json()
         club = clubs[0]
         nested_reads = club.pop("book_club_reads", []) or []
+        nested_reads.sort(key=lambda row: (row.get("created_at", ""), row.get("book_id", "")), reverse=True)
+        nested_reads.sort(key=lambda row: {"reading": 0, "planned": 1, "completed": 2}.get(row.get("status"), 3))
         reads = []
         active_read = None
         for item in nested_reads:
@@ -684,8 +686,6 @@ class SupabaseCommunityMixin:
             reads.append(rd)
             if not active_read and rd.get("status") == "reading":
                 active_read = rd
-        if not active_read and reads:
-            active_read = reads[0]
 
         # Members list
         members_data = self._safe_request_json("GET", "/rest/v1/book_club_members", default=[], admin=True,

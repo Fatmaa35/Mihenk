@@ -1,72 +1,72 @@
-import { r, j as e, a as v } from "./main-31Zuru-Y.js";
+import { r, j as e, a as N } from "./main-DhkYpQea.js";
 const je = ({
   isOpen: i,
-  onClose: u,
+  onClose: o,
   onUseQuote: p,
-  initialBookTitle: R
+  initialBookTitle: q
 }) => {
-  const [h, m] = r.useState("upload"), [M, L] = r.useState(null), [z, O] = r.useState(""), [q, w] = r.useState(""), [o, j] = r.useState(!1), [P, T] = r.useState(null), g = r.useRef(null), A = r.useRef(null), B = r.useRef(null), $ = async () => {
+  const [h, m] = r.useState("upload"), [M, L] = r.useState(null), [z, O] = r.useState(""), [F, S] = r.useState(""), [c, b] = r.useState(!1), [R, T] = r.useState(null), g = r.useRef(null), C = r.useRef(null), B = r.useRef(null), $ = async () => {
     T(null);
     try {
-      const d = await navigator.mediaDevices.getUserMedia({
+      const u = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }
       });
-      g.current && (g.current.srcObject = d, g.current.play(), m("camera"));
-    } catch (d) {
-      console.warn("Camera access error:", d), T("Kameraya erişilemedi. Lütfen izin verin veya dosya yükleme modunu kullanın."), m("upload");
+      g.current && (g.current.srcObject = u, g.current.play(), m("camera"));
+    } catch (u) {
+      console.warn("Camera access error:", u), T("Kameraya erişilemedi. Lütfen izin verin veya dosya yükleme modunu kullanın."), m("upload");
     }
-  }, C = () => {
+  }, A = () => {
     g.current && g.current.srcObject && (g.current.srcObject.getTracks().forEach((x) => x.stop()), g.current.srcObject = null);
   };
-  r.useEffect(() => (i || (C(), L(null), O(""), w(""), j(!1)), () => {
-    C();
+  r.useEffect(() => (i || (A(), L(null), O(""), S(""), b(!1)), () => {
+    A();
   }), [i]);
   const W = () => {
-    if (!g.current || !A.current) return;
-    const d = g.current, x = A.current;
-    x.width = d.videoWidth || 1280, x.height = d.videoHeight || 720;
+    if (!g.current || !C.current) return;
+    const u = g.current, x = C.current;
+    x.width = u.videoWidth || 1280, x.height = u.videoHeight || 720;
     const f = x.getContext("2d");
     if (!f) return;
-    f.drawImage(d, 0, 0, x.width, x.height);
-    const N = x.toDataURL("image/jpeg", 0.9);
-    C(), L(N), m("preview"), H(N);
-  }, Z = (d) => {
-    var N;
-    const x = (N = d.target.files) == null ? void 0 : N[0];
+    f.drawImage(u, 0, 0, x.width, x.height);
+    const v = x.toDataURL("image/jpeg", 0.9);
+    A(), L(v), m("preview"), V(v);
+  }, Z = (u) => {
+    var v;
+    const x = (v = u.target.files) == null ? void 0 : v[0];
     if (!x) return;
     const f = new FileReader();
     f.onload = () => {
       const k = f.result;
-      L(k), m("preview"), H(k);
+      L(k), m("preview"), V(k);
     }, f.readAsDataURL(x);
-  }, I = (d) => {
-    let x = d, f;
-    const N = x.match(/(?:sayfa|s\.|page)?\s*[-—~]?\s*(\d{1,4})\s*[-—~]?/i);
-    return N && parseInt(N[1], 10) > 0 && parseInt(N[1], 10) < 3e3 && (f = parseInt(N[1], 10)), x = x.replace(/(\w+)-\s*\n\s*(\w+)/g, "$1$2"), x = x.split(`
+  }, I = (u) => {
+    let x = u, f;
+    const v = x.match(/(?:sayfa|s\.|page)?\s*[-—~]?\s*(\d{1,4})\s*[-—~]?/i);
+    return v && parseInt(v[1], 10) > 0 && parseInt(v[1], 10) < 3e3 && (f = parseInt(v[1], 10)), x = x.replace(/(\w+)-\s*\n\s*(\w+)/g, "$1$2"), x = x.split(`
 `).map((k) => k.trim()).filter((k) => k.length > 0 && !/^\d{1,4}$/.test(k)).join(" ").replace(/\s{2,}/g, " ").trim(), { text: x, page: f };
-  }, H = async (d) => {
-    j(!0), O("");
+  }, V = async (u) => {
+    b(!0), O("");
     try {
       const x = window;
-      if (x.Tesseract || await new Promise((f, N) => {
+      if (x.Tesseract || await new Promise((f, v) => {
         const k = document.createElement("script");
-        k.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js", k.onload = () => f(), k.onerror = () => N(new Error("Tesseract yüklenemedi")), document.head.appendChild(k);
+        k.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js", k.onload = () => f(), k.onerror = () => v(new Error("Tesseract yüklenemedi")), document.head.appendChild(k);
       }), x.Tesseract) {
-        const f = await x.Tesseract.createWorker("tur+eng"), N = await f.recognize(d);
+        const f = await x.Tesseract.createWorker("tur+eng"), v = await f.recognize(u);
         await f.terminate();
-        const k = N.data.text || "", S = I(k);
-        O(S.text || k), S.page && w(S.page.toString());
+        const k = v.data.text || "", w = I(k);
+        O(w.text || k), w.page && S(w.page.toString());
       } else
         throw new Error("Tesseract motoru hazır değil.");
     } catch (x) {
       console.warn("OCR processing fallback:", x), O("Fotoğraftaki metin tarandı. Lütfen aşağıdaki alıntıyı kontrol edip düzenleyin.");
     } finally {
-      j(!1);
+      b(!1);
     }
-  }, V = () => {
+  }, J = () => {
     if (!z.trim()) return;
-    const d = q ? parseInt(q, 10) : void 0;
-    p(z.trim(), d), u();
+    const u = F ? parseInt(F, 10) : void 0;
+    p(z.trim(), u), o();
   };
   return i ? /* @__PURE__ */ e.jsx("div", { className: "ocr-modal-overlay", children: /* @__PURE__ */ e.jsxs("div", { className: "ocr-modal-container", children: [
     /* @__PURE__ */ e.jsxs("div", { className: "ocr-modal-header", children: [
@@ -74,16 +74,16 @@ const je = ({
         /* @__PURE__ */ e.jsx("span", { className: "ocr-icon", children: "📸" }),
         /* @__PURE__ */ e.jsxs("div", { children: [
           /* @__PURE__ */ e.jsx("h3", { children: "Kameradan Alıntı & Pasaj Tara" }),
-          /* @__PURE__ */ e.jsx("p", { className: "ocr-subtitle", children: R ? `${R} için sayfa fotoğrafı çekin` : "Kitap sayfasını tarayıp dijital alıntıya dönüştürün" })
+          /* @__PURE__ */ e.jsx("p", { className: "ocr-subtitle", children: q ? `${q} için sayfa fotoğrafı çekin` : "Kitap sayfasını tarayıp dijital alıntıya dönüştürün" })
         ] })
       ] }),
-      /* @__PURE__ */ e.jsx("button", { className: "ocr-close-btn", onClick: u, "aria-label": "Kapat", children: "✕" })
+      /* @__PURE__ */ e.jsx("button", { className: "ocr-close-btn", onClick: o, "aria-label": "Kapat", children: "✕" })
     ] }),
     /* @__PURE__ */ e.jsxs("div", { className: "ocr-modal-body", children: [
-      P && /* @__PURE__ */ e.jsxs("div", { className: "ocr-alert warning", children: [
+      R && /* @__PURE__ */ e.jsxs("div", { className: "ocr-alert warning", children: [
         /* @__PURE__ */ e.jsx("span", { children: "⚠️" }),
         " ",
-        P
+        R
       ] }),
       /* @__PURE__ */ e.jsxs("div", { className: "ocr-tabs", children: [
         /* @__PURE__ */ e.jsx(
@@ -99,7 +99,7 @@ const je = ({
           {
             className: `ocr-tab-btn ${h === "upload" ? "active" : ""}`,
             onClick: () => {
-              C(), m("upload");
+              A(), m("upload");
             },
             children: "📁 Fotoğraf Yükle"
           }
@@ -123,8 +123,8 @@ const je = ({
         {
           className: "ocr-dropzone",
           onClick: () => {
-            var d;
-            return (d = B.current) == null ? void 0 : d.click();
+            var u;
+            return (u = B.current) == null ? void 0 : u.click();
           },
           children: [
             /* @__PURE__ */ e.jsx("div", { className: "ocr-dropzone-icon", children: "📖" }),
@@ -162,17 +162,17 @@ const je = ({
         /* @__PURE__ */ e.jsxs("div", { className: "ocr-text-col", children: [
           /* @__PURE__ */ e.jsxs("div", { className: "ocr-text-header", children: [
             /* @__PURE__ */ e.jsx("label", { className: "text-sm font-semibold", children: "Taranan ve Temizlenen Metin" }),
-            o && /* @__PURE__ */ e.jsx("span", { className: "ocr-badge processing", children: "⚡ Metin Okunuyor..." })
+            c && /* @__PURE__ */ e.jsx("span", { className: "ocr-badge processing", children: "⚡ Metin Okunuyor..." })
           ] }),
           /* @__PURE__ */ e.jsx(
             "textarea",
             {
               className: "ocr-textarea",
               rows: 6,
-              placeholder: o ? "Türkçe karakterler taranıyor, lütfen bekleyin..." : "Taranan metin burada görünecektir. Gerekirse düzenleyebilirsiniz.",
+              placeholder: c ? "Türkçe karakterler taranıyor, lütfen bekleyin..." : "Taranan metin burada görünecektir. Gerekirse düzenleyebilirsiniz.",
               value: z,
-              onChange: (d) => O(d.target.value),
-              disabled: o
+              onChange: (u) => O(u.target.value),
+              disabled: c
             }
           ),
           /* @__PURE__ */ e.jsxs("div", { className: "ocr-meta-inputs", children: [
@@ -183,8 +183,8 @@ const je = ({
                 {
                   type: "number",
                   placeholder: "Örn: 142",
-                  value: q,
-                  onChange: (d) => w(d.target.value)
+                  value: F,
+                  onChange: (u) => S(u.target.value)
                 }
               )
             ] }),
@@ -195,8 +195,8 @@ const je = ({
                   type: "button",
                   className: "btn btn-xs btn-secondary",
                   onClick: () => {
-                    const d = I(z);
-                    O(d.text);
+                    const u = I(z);
+                    O(u.text);
                   },
                   title: "Satır sonu tirelerini ve gereksiz boşlukları temizle",
                   children: "✨ Satırları Düzelt"
@@ -217,16 +217,16 @@ const je = ({
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ e.jsx("canvas", { ref: A, style: { display: "none" } })
+      /* @__PURE__ */ e.jsx("canvas", { ref: C, style: { display: "none" } })
     ] }),
     /* @__PURE__ */ e.jsxs("div", { className: "ocr-modal-footer", children: [
-      /* @__PURE__ */ e.jsx("button", { className: "btn btn-outline", onClick: u, children: "Vazgeç" }),
+      /* @__PURE__ */ e.jsx("button", { className: "btn btn-outline", onClick: o, children: "Vazgeç" }),
       /* @__PURE__ */ e.jsx(
         "button",
         {
           className: "btn btn-primary",
-          disabled: !z.trim() || o,
-          onClick: V,
+          disabled: !z.trim() || c,
+          onClick: J,
           children: "✅ Bu Alıntıyı Aktar"
         }
       )
@@ -234,34 +234,34 @@ const je = ({
   ] }) }) : null;
 }, be = ({
   clubId: i,
-  activeBookTitle: u,
+  activeBookTitle: o,
   activeBookId: p,
-  userCurrentPage: R = 0,
+  userCurrentPage: q = 0,
   onSessionFinished: h
 }) => {
   var se, te, s, _;
-  const [m, M] = r.useState(null), [L, z] = r.useState(!0), [O, q] = r.useState(null), [w, o] = r.useState("reading"), [j, P] = r.useState(25), [T, g] = r.useState(1500), [A, B] = r.useState(!1), [$] = r.useState(R), [C, W] = r.useState(R), [Z, I] = r.useState(""), [H, V] = r.useState(!1), [d, x] = r.useState("none"), [f, N] = r.useState(0.5), k = r.useRef(null), S = r.useRef(null), [F, c] = r.useState(""), [ee, Q] = r.useState(!1), G = async () => {
+  const [m, M] = r.useState(null), [L, z] = r.useState(!0), [O, F] = r.useState(null), [S, c] = r.useState("reading"), [b, R] = r.useState(25), [T, g] = r.useState(1500), [C, B] = r.useState(!1), [$] = r.useState(q), [A, W] = r.useState(q), [Z, I] = r.useState(""), [V, J] = r.useState(!1), [u, x] = r.useState("none"), [f, v] = r.useState(0.5), k = r.useRef(null), w = r.useRef(null), [G, d] = r.useState(""), [ee, Q] = r.useState(!1), Y = async () => {
     try {
       const t = await fetch(`/me/book-clubs/${i}/room`);
       if (!t.ok) throw new Error("Oda bilgisi alınamadı.");
       const y = await t.json();
       M(y);
     } catch (t) {
-      q(t.message || "Odaya bağlanırken hata oluştu.");
+      F(t.message || "Odaya bağlanırken hata oluştu.");
     } finally {
       z(!1);
     }
   };
   r.useEffect(() => {
-    G();
-    const t = setInterval(G, 1e4);
+    Y();
+    const t = setInterval(Y, 1e4);
     return () => clearInterval(t);
   }, [i]), r.useEffect(() => {
     let t = null;
-    return A && T > 0 ? t = setInterval(() => {
+    return C && T > 0 ? t = setInterval(() => {
       g((y) => y - 1);
-    }, 1e3) : T === 0 && A && (B(!1), ie(), w === "reading" ? (o("break"), g(300)) : w === "break" ? (o("discussion"), g(600)) : (o("reading"), g(j * 60))), () => clearInterval(t);
-  }, [A, T, w, j]);
+    }, 1e3) : T === 0 && C && (B(!1), ie(), S === "reading" ? (c("break"), g(300)) : S === "break" ? (c("discussion"), g(600)) : (c("reading"), g(b * 60))), () => clearInterval(t);
+  }, [C, T, S, b]);
   const ie = () => {
     try {
       const t = new (window.AudioContext || window.webkitAudioContext)(), y = t.createOscillator(), K = t.createGain();
@@ -271,7 +271,7 @@ const je = ({
     }
   };
   r.useEffect(() => {
-    if (S.current && (S.current.stop(), S.current = null), d !== "none") {
+    if (w.current && (w.current.stop(), w.current = null), u !== "none") {
       try {
         const t = new (window.AudioContext || window.webkitAudioContext)();
         k.current = t;
@@ -279,9 +279,9 @@ const je = ({
         let U = 0;
         for (let D = 0; D < y; D++) {
           const ue = Math.random() * 2 - 1;
-          if (d === "rain")
+          if (u === "rain")
             E[D] = (U + 0.02 * ue) / 1.02, U = E[D], E[D] *= 3.5;
-          else if (d === "fireplace") {
+          else if (u === "fireplace") {
             const me = Math.random() > 0.997 ? (Math.random() - 0.5) * 4 : 0;
             E[D] = (U + 0.04 * ue) / 1.04 + me, U = E[D];
           } else
@@ -290,9 +290,9 @@ const je = ({
         const ne = t.createBufferSource();
         ne.buffer = K, ne.loop = !0;
         const oe = t.createBiquadFilter();
-        oe.type = d === "rain" ? "lowpass" : "bandpass", oe.frequency.value = d === "rain" ? 800 : 1200;
+        oe.type = u === "rain" ? "lowpass" : "bandpass", oe.frequency.value = u === "rain" ? 800 : 1200;
         const de = t.createGain();
-        de.gain.value = f * 0.4, ne.connect(oe), oe.connect(de), de.connect(t.destination), ne.start(0), S.current = {
+        de.gain.value = f * 0.4, ne.connect(oe), oe.connect(de), de.connect(t.destination), ne.start(0), w.current = {
           stop: () => {
             try {
               ne.stop(), t.close();
@@ -304,14 +304,14 @@ const je = ({
         console.warn("Ambient audio init failed", t);
       }
       return () => {
-        S.current && (S.current.stop(), S.current = null);
+        w.current && (w.current.stop(), w.current = null);
       };
     }
-  }, [d, f]);
-  const J = (t) => {
-    P(t), g(t * 60), o("reading"), B(!0), V(!1);
-  }, Y = async () => {
-    const t = Math.max(0, C - $);
+  }, [u, f]);
+  const P = (t) => {
+    R(t), g(t * 60), c("reading"), B(!0), J(!1);
+  }, H = async () => {
+    const t = Math.max(0, A - $);
     try {
       const y = await fetch(`/me/book-clubs/${i}/room/complete-session`, {
         method: "POST",
@@ -319,30 +319,30 @@ const je = ({
         body: JSON.stringify({
           room_id: m == null ? void 0 : m.id,
           book_id: p,
-          minutes_read: j,
+          minutes_read: b,
           pages_read: t,
-          current_page: C > 0 ? C : void 0,
+          current_page: A > 0 ? A : void 0,
           notes: Z.trim() || void 0
         })
       });
       if (!y.ok) throw new Error("Seans kaydedilemedi.");
       const K = await y.json();
-      M(K), V(!0), h && h();
+      M(K), J(!0), h && h();
     } catch (y) {
       alert(y.message || "Seans kaydedilirken hata oluştu.");
     }
   }, le = async (t) => {
-    if (t.preventDefault(), !(!F.trim() || !m)) {
+    if (t.preventDefault(), !(!G.trim() || !m)) {
       Q(!0);
       try {
         const y = await fetch(`/me/book-clubs/${i}/room/messages?room_id=${m.id}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: F.trim() })
+          body: JSON.stringify({ content: G.trim() })
         });
         if (!y.ok) throw new Error("Mesaj gönderilemedi.");
         const K = await y.json();
-        M(K), c("");
+        M(K), d("");
       } catch (y) {
         console.warn("Send msg error:", y);
       } finally {
@@ -352,7 +352,7 @@ const je = ({
   }, re = (t) => {
     const y = Math.floor(t / 60), K = t % 60;
     return `${y.toString().padStart(2, "0")}:${K.toString().padStart(2, "0")}`;
-  }, ae = w === "reading" ? j * 60 : w === "break" ? 300 : 600, X = Math.min(100, Math.max(0, (ae - T) / ae * 100));
+  }, ae = S === "reading" ? b * 60 : S === "break" ? 300 : 600, X = Math.min(100, Math.max(0, (ae - T) / ae * 100));
   return L ? /* @__PURE__ */ e.jsx("div", { className: "p-8 text-center text-muted", children: "Canlı okuma odası yükleniyor..." }) : O ? /* @__PURE__ */ e.jsx("div", { className: "p-4 alert warning", children: O }) : /* @__PURE__ */ e.jsxs("div", { className: "live-room-container", children: [
     /* @__PURE__ */ e.jsxs("div", { className: "live-room-header", children: [
       /* @__PURE__ */ e.jsxs("div", { className: "live-room-badge", children: [
@@ -362,7 +362,7 @@ const je = ({
       /* @__PURE__ */ e.jsx("h2", { className: "live-room-title", children: (m == null ? void 0 : m.title) || "Mihenk Birlikte Okuyoruz Seansı" }),
       /* @__PURE__ */ e.jsxs("p", { className: "live-room-subtitle", children: [
         "📖 Aktif Kitap: ",
-        /* @__PURE__ */ e.jsx("strong", { children: u || "Kulüp Kitabı" })
+        /* @__PURE__ */ e.jsx("strong", { children: o || "Kulüp Kitabı" })
       ] })
     ] }),
     /* @__PURE__ */ e.jsxs("div", { className: "live-room-grid", children: [
@@ -371,13 +371,13 @@ const je = ({
           /* @__PURE__ */ e.jsxs(
             "button",
             {
-              className: `phase-pill ${w === "reading" ? "active" : ""}`,
+              className: `phase-pill ${S === "reading" ? "active" : ""}`,
               onClick: () => {
-                o("reading"), g(j * 60), B(!1);
+                c("reading"), g(b * 60), B(!1);
               },
               children: [
                 "📚 Odaklanma (",
-                j,
+                b,
                 " dk)"
               ]
             }
@@ -385,9 +385,9 @@ const je = ({
           /* @__PURE__ */ e.jsx(
             "button",
             {
-              className: `phase-pill ${w === "break" ? "active" : ""}`,
+              className: `phase-pill ${S === "break" ? "active" : ""}`,
               onClick: () => {
-                o("break"), g(300), B(!1);
+                c("break"), g(300), B(!1);
               },
               children: "☕ Mola (5 dk)"
             }
@@ -395,9 +395,9 @@ const je = ({
           /* @__PURE__ */ e.jsx(
             "button",
             {
-              className: `phase-pill ${w === "discussion" ? "active" : ""}`,
+              className: `phase-pill ${S === "discussion" ? "active" : ""}`,
               onClick: () => {
-                o("discussion"), g(600), B(!1);
+                c("discussion"), g(600), B(!1);
               },
               children: "💬 Bölüm Tartışması (10 dk)"
             }
@@ -420,11 +420,11 @@ const je = ({
           ] }),
           /* @__PURE__ */ e.jsxs("div", { className: "timer-content", children: [
             /* @__PURE__ */ e.jsx("span", { className: "timer-time", children: re(T) }),
-            /* @__PURE__ */ e.jsx("span", { className: "timer-phase-label", children: w === "reading" ? "📖 Sessiz Okuma" : w === "break" ? "☕ Çay & Kahve Molası" : "💬 Canlı Değerlendirme" })
+            /* @__PURE__ */ e.jsx("span", { className: "timer-phase-label", children: S === "reading" ? "📖 Sessiz Okuma" : S === "break" ? "☕ Çay & Kahve Molası" : "💬 Canlı Değerlendirme" })
           ] })
         ] }) }),
         /* @__PURE__ */ e.jsxs("div", { className: "timer-action-buttons", children: [
-          A ? /* @__PURE__ */ e.jsx(
+          C ? /* @__PURE__ */ e.jsx(
             "button",
             {
               className: "btn btn-secondary btn-lg",
@@ -443,7 +443,7 @@ const je = ({
             "button",
             {
               className: "btn btn-outline",
-              onClick: () => J(25),
+              onClick: () => P(25),
               children: "🔄 25 dk Sıfırla"
             }
           ),
@@ -451,7 +451,7 @@ const je = ({
             "button",
             {
               className: "btn btn-outline",
-              onClick: () => J(45),
+              onClick: () => P(45),
               children: "⏱ 45 dk"
             }
           )
@@ -462,7 +462,7 @@ const je = ({
             /* @__PURE__ */ e.jsx(
               "button",
               {
-                className: `btn btn-xs ${d === "none" ? "btn-primary" : "btn-outline"}`,
+                className: `btn btn-xs ${u === "none" ? "btn-primary" : "btn-outline"}`,
                 onClick: () => x("none"),
                 children: "Sessiz"
               }
@@ -470,7 +470,7 @@ const je = ({
             /* @__PURE__ */ e.jsx(
               "button",
               {
-                className: `btn btn-xs ${d === "rain" ? "btn-primary" : "btn-outline"}`,
+                className: `btn btn-xs ${u === "rain" ? "btn-primary" : "btn-outline"}`,
                 onClick: () => x("rain"),
                 children: "🌧️ Yağmur"
               }
@@ -478,7 +478,7 @@ const je = ({
             /* @__PURE__ */ e.jsx(
               "button",
               {
-                className: `btn btn-xs ${d === "fireplace" ? "btn-primary" : "btn-outline"}`,
+                className: `btn btn-xs ${u === "fireplace" ? "btn-primary" : "btn-outline"}`,
                 onClick: () => x("fireplace"),
                 children: "🔥 Şömine"
               }
@@ -486,13 +486,13 @@ const je = ({
             /* @__PURE__ */ e.jsx(
               "button",
               {
-                className: `btn btn-xs ${d === "whitenoise" ? "btn-primary" : "btn-outline"}`,
+                className: `btn btn-xs ${u === "whitenoise" ? "btn-primary" : "btn-outline"}`,
                 onClick: () => x("whitenoise"),
                 children: "☕ Beyaz Gürültü"
               }
             )
           ] }),
-          d !== "none" && /* @__PURE__ */ e.jsx("div", { className: "ambient-volume", children: /* @__PURE__ */ e.jsx(
+          u !== "none" && /* @__PURE__ */ e.jsx("div", { className: "ambient-volume", children: /* @__PURE__ */ e.jsx(
             "input",
             {
               type: "range",
@@ -500,7 +500,7 @@ const je = ({
               max: "1.0",
               step: "0.05",
               value: f,
-              onChange: (t) => N(parseFloat(t.target.value))
+              onChange: (t) => v(parseFloat(t.target.value))
             }
           ) })
         ] }),
@@ -517,7 +517,7 @@ const je = ({
                 "input",
                 {
                   type: "number",
-                  value: C,
+                  value: A,
                   min: $,
                   onChange: (t) => W(parseInt(t.target.value, 10) || $)
                 }
@@ -525,7 +525,7 @@ const je = ({
             ] }),
             /* @__PURE__ */ e.jsx("div", { className: "session-diff-badge", children: /* @__PURE__ */ e.jsxs("span", { children: [
               "+",
-              Math.max(0, C - $),
+              Math.max(0, A - $),
               " sayfa"
             ] }) })
           ] }),
@@ -542,12 +542,12 @@ const je = ({
             )
           ] }),
           /* @__PURE__ */ e.jsxs("div", { className: "mt-3 flex justify-between items-center", children: [
-            H ? /* @__PURE__ */ e.jsx("span", { className: "text-success font-semibold text-sm", children: "✅ Seans okuma geçmişine başarıyla işlendi!" }) : /* @__PURE__ */ e.jsx("span", { className: "text-muted text-xs", children: "Seans tamamlanınca kulüp yol haritana yansır." }),
+            V ? /* @__PURE__ */ e.jsx("span", { className: "text-success font-semibold text-sm", children: "✅ Seans okuma geçmişine başarıyla işlendi!" }) : /* @__PURE__ */ e.jsx("span", { className: "text-muted text-xs", children: "Seans tamamlanınca kulüp yol haritana yansır." }),
             /* @__PURE__ */ e.jsx(
               "button",
               {
                 className: "btn btn-success btn-sm",
-                onClick: Y,
+                onClick: H,
                 children: "💾 Seansı İstatistiklerime Kaydet"
               }
             )
@@ -571,7 +571,7 @@ const je = ({
               ] }),
               /* @__PURE__ */ e.jsxs("div", { className: "participant-sub", children: [
                 "📖 ",
-                t.reading_book_title || u || "Kitap",
+                t.reading_book_title || o || "Kitap",
                 " • s. ",
                 t.current_page || 0
               ] })
@@ -596,12 +596,12 @@ const je = ({
               {
                 type: "text",
                 placeholder: "Düşünceni veya okuduğun sayfayı yaz...",
-                value: F,
-                onChange: (t) => c(t.target.value),
+                value: G,
+                onChange: (t) => d(t.target.value),
                 disabled: ee
               }
             ),
-            /* @__PURE__ */ e.jsx("button", { type: "submit", className: "btn btn-primary btn-sm", disabled: ee || !F.trim(), children: "Gönder" })
+            /* @__PURE__ */ e.jsx("button", { type: "submit", className: "btn btn-primary btn-sm", disabled: ee || !G.trim(), children: "Gönder" })
           ] })
         ] })
       ] })
@@ -610,37 +610,37 @@ const je = ({
 };
 function ge({
   activeClub: i,
-  activeRead: u,
+  activeRead: o,
   activeUserProgress: p,
-  clubWorkspaceRef: R,
+  clubWorkspaceRef: q,
   clubTab: h,
   setClubTab: m,
   setActiveClub: M,
   setStatus: L,
   books: z,
   targetDailyPages: O,
-  setTargetDailyPages: q,
-  discContent: w,
-  discPage: o,
-  discType: j,
-  setDiscContent: P,
+  setTargetDailyPages: F,
+  discContent: S,
+  discPage: c,
+  discType: b,
+  setDiscContent: R,
   setDiscPage: T,
   setDiscType: g,
-  setIsOCRModalOpen: A,
+  setIsOCRModalOpen: C,
   handleJoinReading: B,
   saveClubProgress: $,
-  createDiscussion: C,
+  createDiscussion: A,
   toggleReaction: W,
   createEvent: Z,
   rsvpEvent: I,
-  createPoll: H,
-  vote: V,
-  saveClubRead: d,
+  createPoll: V,
+  vote: J,
+  saveClubRead: u,
   updateMemberRole: x,
   openClub: f
 }) {
-  var N, k, S, F, c, ee, Q, G, ie, J, Y, le, re, ae, X, se, te;
-  return /* @__PURE__ */ e.jsxs("article", { ref: R, className: "growth-card club-workspace", children: [
+  var v, k, w, G, d, ee, Q, Y, ie, P, H, le, re, ae, X, se, te;
+  return /* @__PURE__ */ e.jsxs("article", { ref: q, className: "growth-card club-workspace", children: [
     /* @__PURE__ */ e.jsxs("header", { children: [
       /* @__PURE__ */ e.jsxs("div", { children: [
         /* @__PURE__ */ e.jsx("p", { className: "product-eyebrow", children: "KULÜP MERKEZİ" }),
@@ -649,7 +649,7 @@ function ge({
         /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "6px", fontSize: "0.82rem", color: "#4a5b53" }, children: [
           /* @__PURE__ */ e.jsxs("span", { children: [
             "👥 ",
-            ((N = i.stats) == null ? void 0 : N.member_count) || ((k = i.members) == null ? void 0 : k.length) || 1,
+            ((v = i.stats) == null ? void 0 : v.member_count) || ((k = i.members) == null ? void 0 : k.length) || 1,
             " Üye"
           ] }),
           /* @__PURE__ */ e.jsx("span", { children: "·" }),
@@ -718,7 +718,7 @@ function ge({
           onClick: () => m("events"),
           children: [
             "📅 Etkinlikler & Buluşmalar (",
-            ((S = i.events) == null ? void 0 : S.length) || 0,
+            ((w = i.events) == null ? void 0 : w.length) || 0,
             ")"
           ]
         }
@@ -749,7 +749,7 @@ function ge({
           onClick: () => m("stats"),
           children: [
             "🏆 İstatistikler & Rozetler (",
-            ((F = i.badges) == null ? void 0 : F.length) || 0,
+            ((G = i.badges) == null ? void 0 : G.length) || 0,
             ")"
           ]
         }
@@ -759,22 +759,22 @@ function ge({
       h === "reading" && /* @__PURE__ */ e.jsxs("div", { className: "club-grid-2", children: [
         /* @__PURE__ */ e.jsxs("div", { className: "club-card-section", children: [
           /* @__PURE__ */ e.jsx("h3", { children: "Ayın Aktif Kitabı" }),
-          u ? /* @__PURE__ */ e.jsxs("div", { children: [
+          o ? /* @__PURE__ */ e.jsxs("div", { children: [
             /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", gap: "16px", alignItems: "flex-start" }, children: [
-              u.cover_url && /* @__PURE__ */ e.jsx(
+              o.cover_url && /* @__PURE__ */ e.jsx(
                 "img",
                 {
-                  src: u.cover_url,
-                  alt: u.title,
+                  src: o.cover_url,
+                  alt: o.title,
                   style: { width: "80px", height: "115px", objectFit: "cover", borderRadius: "8px" }
                 }
               ),
               /* @__PURE__ */ e.jsxs("div", { style: { flex: 1 }, children: [
-                /* @__PURE__ */ e.jsx("h4", { style: { margin: "0 0 4px", fontSize: "1.2rem", color: "#13392c" }, children: u.title }),
-                /* @__PURE__ */ e.jsx("p", { style: { margin: "0 0 8px", color: "#096e54", fontWeight: 600 }, children: u.author }),
+                /* @__PURE__ */ e.jsx("h4", { style: { margin: "0 0 4px", fontSize: "1.2rem", color: "#13392c" }, children: o.title }),
+                /* @__PURE__ */ e.jsx("p", { style: { margin: "0 0 8px", color: "#096e54", fontWeight: 600 }, children: o.author }),
                 /* @__PURE__ */ e.jsxs("p", { style: { margin: 0, fontSize: "0.84rem", color: "#65776f" }, children: [
-                  u.page_count ? `${u.page_count} sayfa` : "Sayfa bilgisi belirtilmedi",
-                  u.target_date && ` · Hedef: ${u.target_date}`
+                  o.page_count ? `${o.page_count} sayfa` : "Sayfa bilgisi belirtilmedi",
+                  o.target_date && ` · Hedef: ${o.target_date}`
                 ] })
               ] })
             ] }),
@@ -782,19 +782,19 @@ function ge({
               /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "0.82rem", fontWeight: 700, color: "#184737" }, children: [
                 /* @__PURE__ */ e.jsxs("span", { children: [
                   "Ortak Kulüp İlerlemesi (",
-                  u.active_readers_count || 0,
+                  o.active_readers_count || 0,
                   " okur)"
                 ] }),
                 /* @__PURE__ */ e.jsxs("span", { children: [
                   "%",
-                  u.joint_progress_percent || 0
+                  o.joint_progress_percent || 0
                 ] })
               ] }),
               /* @__PURE__ */ e.jsx("div", { className: "club-progress-bar-wrap", children: /* @__PURE__ */ e.jsx(
                 "div",
                 {
                   className: "club-progress-bar-fill",
-                  style: { width: `${u.joint_progress_percent || 0}%` }
+                  style: { width: `${o.joint_progress_percent || 0}%` }
                 }
               ) })
             ] }),
@@ -806,7 +806,7 @@ function ge({
                   "select",
                   {
                     value: O,
-                    onChange: (s) => q(Number(s.target.value)),
+                    onChange: (s) => F(Number(s.target.value)),
                     style: { width: "auto", padding: "6px 12px" },
                     children: [
                       /* @__PURE__ */ e.jsx("option", { value: 5, children: "Günde 5 sayfa (Sakin)" }),
@@ -823,7 +823,7 @@ function ge({
                   type: "button",
                   className: "primary",
                   style: { padding: "10px 16px", background: "#0a6e54", color: "#fff", border: 0, borderRadius: "10px", fontWeight: 700 },
-                  onClick: () => B(u.book_id),
+                  onClick: () => B(o.book_id),
                   children: "Okumaya Katıl ve Kitaplığa Ekle"
                 }
               )
@@ -831,27 +831,27 @@ function ge({
           ] }) : /* @__PURE__ */ e.jsx("p", { style: { color: "#687770" }, children: "Şu an belirlenmiş bir aktif okuma bulunmuyor." }),
           ["owner", "moderator"].includes(i.role) && /* @__PURE__ */ e.jsxs("div", { style: { marginTop: "20px", borderTop: "1px solid #e1ebe5", paddingTop: "14px" }, children: [
             /* @__PURE__ */ e.jsx("h4", { style: { margin: "0 0 8px", fontSize: "0.92rem" }, children: "⚙️ Kulüp Aktif Kitabını Belirle" }),
-            /* @__PURE__ */ e.jsxs("form", { onSubmit: d, children: [
-              /* @__PURE__ */ e.jsxs("select", { name: "book_id", required: !0, defaultValue: (u == null ? void 0 : u.book_id) || "", children: [
+            /* @__PURE__ */ e.jsxs("form", { onSubmit: u, children: [
+              /* @__PURE__ */ e.jsxs("select", { name: "book_id", required: !0, defaultValue: (o == null ? void 0 : o.book_id) || "", children: [
                 /* @__PURE__ */ e.jsx("option", { value: "", children: "Kitap Seç…" }),
                 z.map((s) => /* @__PURE__ */ e.jsxs("option", { value: s.id, children: [
                   s.title,
                   " — ",
                   s.author
                 ] }, s.id))
-              ] }),
+              ] }, (o == null ? void 0 : o.book_id) || "none"),
               /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", gap: "8px" }, children: [
                 /* @__PURE__ */ e.jsx("input", { name: "start_date", type: "date", placeholder: "Başlangıç" }),
                 /* @__PURE__ */ e.jsx("input", { name: "target_date", type: "date", placeholder: "Hedef bitiş" })
               ] }),
               /* @__PURE__ */ e.jsx("button", { style: { width: "100%" }, children: "Aktif Kitap Olarak Ata" })
-            ] })
+            ] }, `${i.id}:${(o == null ? void 0 : o.book_id) || "none"}`)
           ] })
         ] }),
         /* @__PURE__ */ e.jsxs("div", { className: "club-card-section", children: [
           /* @__PURE__ */ e.jsx("h3", { children: "Okuma Yol Haritan & İlerlemen" }),
-          u && /* @__PURE__ */ e.jsxs("div", { children: [
-            /* @__PURE__ */ e.jsx("div", { className: "club-roadmap", children: (c = p == null ? void 0 : p.milestones) == null ? void 0 : c.map((s) => /* @__PURE__ */ e.jsxs(
+          o && /* @__PURE__ */ e.jsxs("div", { children: [
+            /* @__PURE__ */ e.jsx("div", { className: "club-roadmap", children: (d = p == null ? void 0 : p.milestones) == null ? void 0 : d.map((s) => /* @__PURE__ */ e.jsxs(
               "div",
               {
                 className: `club-roadmap-node ${s.reached ? "reached" : ""}`,
@@ -873,7 +873,7 @@ function ge({
                   "s. ",
                   (p == null ? void 0 : p.current_page) || 0,
                   " / ",
-                  (p == null ? void 0 : p.total_pages) || u.page_count || 200,
+                  (p == null ? void 0 : p.total_pages) || o.page_count || 200,
                   " (%",
                   (p == null ? void 0 : p.percent) || 0,
                   ")"
@@ -885,7 +885,7 @@ function ge({
               ] })
             ] }) }),
             /* @__PURE__ */ e.jsxs("form", { onSubmit: $, style: { display: "grid", gap: "8px" }, children: [
-              /* @__PURE__ */ e.jsx("input", { type: "hidden", name: "book_id", value: u.book_id }),
+              /* @__PURE__ */ e.jsx("input", { type: "hidden", name: "book_id", value: o.book_id }),
               /* @__PURE__ */ e.jsxs("label", { style: { fontSize: "0.84rem", fontWeight: 600 }, children: [
                 "Bugün geldiğin sayfa:",
                 /* @__PURE__ */ e.jsx(
@@ -894,7 +894,7 @@ function ge({
                     name: "current_page",
                     type: "number",
                     min: "0",
-                    max: u.page_count || 9999,
+                    max: o.page_count || 9999,
                     defaultValue: (p == null ? void 0 : p.current_page) || 0,
                     required: !0
                   }
@@ -914,7 +914,7 @@ function ge({
                 )
               ] }),
               /* @__PURE__ */ e.jsx("button", { className: "primary", style: { background: "#0a6e54", color: "#fff", border: 0, borderRadius: "10px", padding: "10px" }, children: "İlerlemeyi Kaydet ve Tartışmaları Aç" })
-            ] })
+            ] }, `${i.id}:${o.book_id}`)
           ] })
         ] })
       ] }),
@@ -927,7 +927,7 @@ function ge({
               {
                 type: "button",
                 className: "btn-ocr-trigger",
-                onClick: () => A(!0),
+                onClick: () => C(!0),
                 style: {
                   background: "linear-gradient(135deg, #0a6e54 0%, #1f9d78 100%)",
                   color: "#fff",
@@ -954,11 +954,11 @@ function ge({
             /* @__PURE__ */ e.jsx("strong", { children: "Spoiler Koruması Aktif:" }),
             " Paylaştığın sayfa numarasına henüz ulaşmamış üyeler içeriği görmez."
           ] }),
-          /* @__PURE__ */ e.jsxs("form", { onSubmit: C, style: { display: "grid", gap: "10px" }, children: [
+          /* @__PURE__ */ e.jsxs("form", { onSubmit: A, style: { display: "grid", gap: "10px" }, children: [
             /* @__PURE__ */ e.jsxs("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }, children: [
               /* @__PURE__ */ e.jsxs("label", { style: { fontSize: "0.84rem" }, children: [
                 "Kitap",
-                /* @__PURE__ */ e.jsx("select", { name: "book_id", required: !0, defaultValue: (u == null ? void 0 : u.book_id) || "", children: i.reads.map((s) => /* @__PURE__ */ e.jsx("option", { value: s.book_id, children: s.title }, s.book_id)) })
+                /* @__PURE__ */ e.jsx("select", { name: "book_id", required: !0, defaultValue: (o == null ? void 0 : o.book_id) || "", children: i.reads.map((s) => /* @__PURE__ */ e.jsx("option", { value: s.book_id, children: s.title }, s.book_id)) }, (o == null ? void 0 : o.book_id) || "none")
               ] }),
               /* @__PURE__ */ e.jsxs("label", { style: { fontSize: "0.84rem" }, children: [
                 "Paylaşım Türü",
@@ -966,7 +966,7 @@ function ge({
                   "select",
                   {
                     name: "discussion_type",
-                    value: j,
+                    value: b,
                     onChange: (s) => g(s.target.value),
                     children: [
                       /* @__PURE__ */ e.jsx("option", { value: "discussion", children: "💬 Tartışma & Yorum" }),
@@ -987,7 +987,7 @@ function ge({
                   type: "number",
                   min: "1",
                   placeholder: "Sayfa numarası (isteğe bağlı)",
-                  value: o,
+                  value: c,
                   onChange: (s) => T(s.target.value)
                 }
               )
@@ -998,8 +998,8 @@ function ge({
                 name: "content",
                 placeholder: "Bu bölüm ya da alıntı sende nasıl bir düşünce uyandırdı? Düşüncelerini kulüple paylaş…",
                 required: !0,
-                value: w,
-                onChange: (s) => P(s.target.value),
+                value: S,
+                onChange: (s) => R(s.target.value),
                 rows: 4
               }
             ),
@@ -1092,8 +1092,8 @@ function ge({
         be,
         {
           clubId: i.id,
-          activeBookTitle: u == null ? void 0 : u.title,
-          activeBookId: u == null ? void 0 : u.book_id,
+          activeBookTitle: o == null ? void 0 : o.title,
+          activeBookId: o == null ? void 0 : o.book_id,
           userCurrentPage: (p == null ? void 0 : p.current_page) || 0,
           onSessionFinished: () => f(i.id)
         }
@@ -1214,7 +1214,7 @@ function ge({
         /* @__PURE__ */ e.jsxs("div", { className: "club-card-section", children: [
           /* @__PURE__ */ e.jsxs("h3", { children: [
             "Kulüp Üyeleri (",
-            ((G = i.members) == null ? void 0 : G.length) || 1,
+            ((Y = i.members) == null ? void 0 : Y.length) || 1,
             ")"
           ] }),
           /* @__PURE__ */ e.jsx("ul", { style: { margin: 0 }, children: (ie = i.members) == null ? void 0 : ie.map((s) => /* @__PURE__ */ e.jsxs("li", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
@@ -1244,7 +1244,7 @@ function ge({
       h === "library" && /* @__PURE__ */ e.jsxs("div", { className: "club-grid-2", children: [
         /* @__PURE__ */ e.jsxs("div", { className: "club-card-section", children: [
           /* @__PURE__ */ e.jsx("h3", { children: "Sıradaki Kitap Oylamaları" }),
-          ["owner", "moderator"].includes(i.role) && /* @__PURE__ */ e.jsxs("form", { onSubmit: H, style: { marginBottom: "20px", borderBottom: "1px solid #e1ebe5", paddingBottom: "16px" }, children: [
+          ["owner", "moderator"].includes(i.role) && /* @__PURE__ */ e.jsxs("form", { onSubmit: V, style: { marginBottom: "20px", borderBottom: "1px solid #e1ebe5", paddingBottom: "16px" }, children: [
             /* @__PURE__ */ e.jsx("h4", { style: { margin: "0 0 8px", fontSize: "0.92rem" }, children: "Yeni Kitap Oylaması Başlat" }),
             /* @__PURE__ */ e.jsx("input", { name: "title", placeholder: "Örn: Gelecek Ay Hangi Klasik Kitabı Okuyalım?", required: !0 }),
             /* @__PURE__ */ e.jsx("select", { name: "option_book_ids", multiple: !0, size: 4, required: !0, style: { margin: "8px 0" }, children: z.map((s) => /* @__PURE__ */ e.jsxs("option", { value: s.id, children: [
@@ -1255,14 +1255,14 @@ function ge({
             /* @__PURE__ */ e.jsx("small", { style: { display: "block", color: "#65776f", marginBottom: "8px" }, children: "Ctrl tuşuna basılı tutarak birden fazla kitap seçebilirsin." }),
             /* @__PURE__ */ e.jsx("button", { className: "primary", style: { background: "#0a6e54", color: "#fff", border: 0, padding: "8px 14px" }, children: "Oylamayı Başlat" })
           ] }),
-          ((J = i.polls) == null ? void 0 : J.length) === 0 ? /* @__PURE__ */ e.jsx("p", { style: { color: "#687770" }, children: "Şu an aktif bir oylama bulunmuyor." }) : i.polls.map((s) => /* @__PURE__ */ e.jsxs("div", { className: "club-poll", style: { background: "#fff", border: "1px solid #d9e5df", borderRadius: "12px", padding: "14px", marginBottom: "12px" }, children: [
+          ((P = i.polls) == null ? void 0 : P.length) === 0 ? /* @__PURE__ */ e.jsx("p", { style: { color: "#687770" }, children: "Şu an aktif bir oylama bulunmuyor." }) : i.polls.map((s) => /* @__PURE__ */ e.jsxs("div", { className: "club-poll", style: { background: "#fff", border: "1px solid #d9e5df", borderRadius: "12px", padding: "14px", marginBottom: "12px" }, children: [
             /* @__PURE__ */ e.jsx("strong", { style: { fontSize: "1rem", color: "#144636" }, children: s.title }),
             /* @__PURE__ */ e.jsx("div", { style: { display: "grid", gap: "8px", marginTop: "10px" }, children: s.options.map((_) => /* @__PURE__ */ e.jsxs(
               "button",
               {
                 className: _.selected ? "selected" : "",
                 type: "button",
-                onClick: () => V(s.id, _.id),
+                onClick: () => J(s.id, _.id),
                 style: { display: "flex", justifyContent: "space-between", padding: "10px 14px" },
                 children: [
                   /* @__PURE__ */ e.jsxs("span", { children: [
@@ -1297,7 +1297,7 @@ function ge({
           /* @__PURE__ */ e.jsx("h3", { children: "Kulüp İstatistikleri" }),
           /* @__PURE__ */ e.jsxs("div", { className: "growth-metrics", children: [
             /* @__PURE__ */ e.jsxs("b", { children: [
-              ((Y = i.stats) == null ? void 0 : Y.member_count) || ((le = i.members) == null ? void 0 : le.length) || 1,
+              ((H = i.stats) == null ? void 0 : H.member_count) || ((le = i.members) == null ? void 0 : le.length) || 1,
               /* @__PURE__ */ e.jsx("small", { children: "Toplam Üye" })
             ] }),
             /* @__PURE__ */ e.jsxs("b", { children: [
@@ -1327,68 +1327,68 @@ function ge({
   ] });
 }
 const fe = ["Roman", "Bilim Kurgu", "Fantastik", "Polisiye", "Tarih", "Psikoloji", "Felsefe", "Şiir"];
-function ve() {
+function Ne() {
   var xe;
-  const [i, u] = r.useState(null), [p, R] = r.useState(null), [h, m] = r.useState(null), [M, L] = r.useState([]), [z, O] = r.useState([]), [q, w] = r.useState([]), [o, j] = r.useState(null), [P, T] = r.useState("reading"), [g, A] = r.useState(!1), [B, $] = r.useState(""), [C, W] = r.useState(""), [Z, I] = r.useState("discussion"), [H, V] = r.useState([]), [d, x] = r.useState(""), [f, N] = r.useState("mixed"), [k, S] = r.useState(""), [F, c] = r.useState(""), [ee, Q] = r.useState(!0), [G, ie] = r.useState(10), J = r.useRef(null);
-  async function Y() {
-    Q(!0), c("");
+  const [i, o] = r.useState(null), [p, q] = r.useState(null), [h, m] = r.useState(null), [M, L] = r.useState([]), [z, O] = r.useState([]), [F, S] = r.useState([]), [c, b] = r.useState(null), [R, T] = r.useState("reading"), [g, C] = r.useState(!1), [B, $] = r.useState(""), [A, W] = r.useState(""), [Z, I] = r.useState("discussion"), [V, J] = r.useState([]), [u, x] = r.useState(""), [f, v] = r.useState("mixed"), [k, w] = r.useState(""), [G, d] = r.useState(""), [ee, Q] = r.useState(!0), [Y, ie] = r.useState(10), P = r.useRef(null);
+  async function H() {
+    Q(!0), d("");
     const a = await Promise.allSettled([
-      v("/me/weekly-summary"),
-      v("/me/onboarding"),
-      v("/me/notification-preferences"),
-      v("/me/reading-lists"),
-      v("/me/book-clubs"),
-      v("/books")
+      N("/me/weekly-summary"),
+      N("/me/onboarding"),
+      N("/me/notification-preferences"),
+      N("/me/reading-lists"),
+      N("/me/book-clubs"),
+      N("/books")
     ]);
-    a[0].status === "fulfilled" && u(a[0].value), a[1].status === "fulfilled" && (R(a[1].value), x(a[1].value.liked_authors.join(", ")), V(a[1].value.preferred_genres || []), N(a[1].value.pace_preference || "mixed")), a[2].status === "fulfilled" && m(a[2].value), a[3].status === "fulfilled" && L(a[3].value), a[4].status === "fulfilled" && O(a[4].value), a[5].status === "fulfilled" && w(a[5].value), a.some((n) => n.status === "rejected") && c("Bazı ürün verileri yüklenemedi; yeniden deneyebilirsin."), Q(!1);
+    a[0].status === "fulfilled" && o(a[0].value), a[1].status === "fulfilled" && (q(a[1].value), x(a[1].value.liked_authors.join(", ")), J(a[1].value.preferred_genres || []), v(a[1].value.pace_preference || "mixed")), a[2].status === "fulfilled" && m(a[2].value), a[3].status === "fulfilled" && L(a[3].value), a[4].status === "fulfilled" && O(a[4].value), a[5].status === "fulfilled" && S(a[5].value), a.some((n) => n.status === "rejected") && d("Bazı ürün verileri yüklenemedi; yeniden deneyebilirsin."), Q(!1);
   }
   r.useEffect(() => {
-    Y();
+    H();
   }, []);
   async function le(a) {
-    a.preventDefault(), c("Kaydediliyor…");
-    const n = await v("/me/onboarding", {
+    a.preventDefault(), d("Kaydediliyor…");
+    const n = await N("/me/onboarding", {
       method: "PUT",
       body: JSON.stringify({
-        liked_authors: d.split(",").map((l) => l.trim()).filter(Boolean).slice(0, 20),
+        liked_authors: u.split(",").map((l) => l.trim()).filter(Boolean).slice(0, 20),
         liked_book_ids: [],
-        preferred_genres: H,
+        preferred_genres: V,
         pace_preference: f,
         tone_preference: "balanced",
         focus_preference: "balanced",
         completed: !0
       })
     });
-    R(n), c("Zevk profilin önerilere eklendi.");
+    q(n), d("Zevk profilin önerilere eklendi.");
   }
   async function re(a) {
-    a.preventDefault(), c("Kitaplık içe aktarılıyor…");
-    const n = await v("/me/library/import", { method: "POST", body: JSON.stringify({ csv_text: k }) });
-    c(
+    a.preventDefault(), d("Kitaplık içe aktarılıyor…");
+    const n = await N("/me/library/import", { method: "POST", body: JSON.stringify({ csv_text: k }) });
+    d(
       `${n.imported} kitap aktarıldı · ${n.catalog_matches} katalog eşleşmesi · ${n.custom_books} kişisel kayıt.`
-    ), S(""), window.dispatchEvent(new CustomEvent("pkm-refresh"));
+    ), w(""), window.dispatchEvent(new CustomEvent("pkm-refresh"));
   }
   async function ae(a) {
-    a && S(await a.text());
+    a && w(await a.text());
   }
   async function X(a) {
-    m(a), await v("/me/notification-preferences", { method: "PUT", body: JSON.stringify(a) }), c("Bildirim tercihlerin kaydedildi.");
+    m(a), await N("/me/notification-preferences", { method: "PUT", body: JSON.stringify(a) }), d("Bildirim tercihlerin kaydedildi.");
   }
   async function se(a) {
     a.preventDefault();
     const n = new FormData(a.currentTarget);
-    await v("/me/reading-lists", {
+    await N("/me/reading-lists", {
       method: "POST",
       body: JSON.stringify({
         title: n.get("title"),
         description: n.get("description"),
         visibility: n.get("visibility")
       })
-    }), a.currentTarget.reset(), await Y();
+    }), a.currentTarget.reset(), await H();
   }
   async function te(a) {
     a.preventDefault();
-    const n = new FormData(a.currentTarget), l = await v("/me/book-clubs", {
+    const n = new FormData(a.currentTarget), l = await N("/me/book-clubs", {
       method: "POST",
       body: JSON.stringify({
         name: n.get("name"),
@@ -1397,82 +1397,82 @@ function ve() {
         visibility: n.get("visibility") || "private"
       })
     });
-    a.currentTarget.reset(), await Y(), j(l), T("lobby"), c("Kulübün başarıyla oluşturuldu!");
+    a.currentTarget.reset(), await H(), b(l), T("lobby"), d("Kulübün başarıyla oluşturuldu!");
   }
   async function s(a) {
     a.preventDefault();
     const n = a.currentTarget, l = new FormData(n);
-    c("Kulübe katılınıyor…");
+    d("Kulübe katılınıyor…");
     try {
-      const b = await v("/me/book-clubs/join", {
+      const j = await N("/me/book-clubs/join", {
         method: "POST",
         body: JSON.stringify({ invite_code: l.get("invite_code") })
       });
-      n.reset(), await Y(), j(b), T("reading"), c("Kulübe katıldın. Aktif okumaya hoş geldin!"), requestAnimationFrame(
+      n.reset(), await H(), b(j), T("reading"), d("Kulübe katıldın. Aktif okumaya hoş geldin!"), requestAnimationFrame(
         () => {
           var pe;
-          return (pe = J.current) == null ? void 0 : pe.scrollIntoView({ behavior: "smooth", block: "start" });
+          return (pe = P.current) == null ? void 0 : pe.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       );
-    } catch (b) {
-      c(b instanceof Error ? b.message : "Kulübe katılınamadı.");
+    } catch (j) {
+      d(j instanceof Error ? j.message : "Kulübe katılınamadı.");
     }
   }
   async function _(a) {
-    c("Kulüp açılıyor…");
+    d("Kulüp açılıyor…");
     try {
-      const n = await v(`/me/book-clubs/${a}`);
-      j(n), T("reading"), c(""), requestAnimationFrame(
+      const n = await N(`/me/book-clubs/${a}`);
+      b(n), T("reading"), d(""), requestAnimationFrame(
         () => {
           var l;
-          return (l = J.current) == null ? void 0 : l.scrollIntoView({ behavior: "smooth", block: "start" });
+          return (l = P.current) == null ? void 0 : l.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       );
     } catch (n) {
-      c(n instanceof Error ? n.message : "Kulüp açılamadı.");
+      d(n instanceof Error ? n.message : "Kulüp açılamadı.");
     }
   }
   async function t(a) {
-    if (o) {
-      c("Kitaplığına ekleniyor ve okuma başlatılıyor…");
+    if (c) {
+      d("Kitaplığına ekleniyor ve okuma başlatılıyor…");
       try {
-        const n = await v(`/me/book-clubs/${o.id}/join-reading`, {
+        const n = await N(`/me/book-clubs/${c.id}/join-reading`, {
           method: "POST",
           body: JSON.stringify({
             book_id: a,
-            daily_target_pages: G,
+            daily_target_pages: Y,
             shelf: "reading"
           })
         });
-        j(n), c(`Okumaya katıldın! Günlük hedefin: günde ${G} sayfa.`), window.dispatchEvent(new CustomEvent("pkm-refresh"));
+        b(n), d(`Okumaya katıldın! Günlük hedefin: günde ${Y} sayfa.`), window.dispatchEvent(new CustomEvent("pkm-refresh"));
       } catch (n) {
-        c(n instanceof Error ? n.message : "Okumaya katılınamadı.");
+        d(n instanceof Error ? n.message : "Okumaya katılınamadı.");
       }
     }
   }
   async function y(a) {
-    if (a.preventDefault(), !o) return;
-    const n = new FormData(a.currentTarget), l = String(n.get("book_id")), b = Number(n.get("current_page")), pe = Number(n.get("daily_target_pages")) || G, he = q.find((ce) => ce.id === l);
+    if (a.preventDefault(), !c) return;
+    const n = new FormData(a.currentTarget), l = String(n.get("book_id")), j = Number(n.get("current_page")), pe = Number(n.get("daily_target_pages")) || Y, he = F.find((ce) => ce.id === l);
     try {
-      const ce = await v(`/me/book-clubs/${o.id}/progress`, {
+      const ce = await N(`/me/book-clubs/${c.id}/progress`, {
         method: "PUT",
         body: JSON.stringify({
           book_id: l,
-          current_page: b,
+          current_page: j,
           total_pages: (he == null ? void 0 : he.page_count) || null,
           daily_target_pages: pe
         })
       });
-      j(ce), c(`İlerlemen kaydedildi (s. ${b}). Ulaştığın tartışmalar açıldı!`), window.dispatchEvent(new CustomEvent("pkm-refresh"));
+      b(ce), d(`İlerlemen kaydedildi (s. ${j}). Ulaştığın tartışmalar açıldı!`), window.dispatchEvent(new CustomEvent("pkm-refresh"));
     } catch (ce) {
-      c(ce instanceof Error ? ce.message : "İlerleme kaydedilemedi.");
+      d(ce instanceof Error ? ce.message : "İlerleme kaydedilemedi.");
     }
   }
   async function K(a) {
-    if (a.preventDefault(), !o) return;
+    if (a.preventDefault(), !c) return;
     const n = a.currentTarget, l = new FormData(n);
     try {
-      const b = await v(`/me/book-clubs/${o.id}/discussions`, {
+      const j = await N(`/me/book-clubs/${c.id}/discussions`, {
         method: "POST",
         body: JSON.stringify({
           book_id: l.get("book_id"),
@@ -1482,31 +1482,31 @@ function ve() {
           discussion_type: l.get("discussion_type") || "discussion"
         })
       });
-      j(b), n.reset(), c("Paylaşımın kulüp tartışmalarına eklendi.");
-    } catch (b) {
-      c(b instanceof Error ? b.message : "Tartışma oluşturulamadı.");
+      b(j), n.reset(), d("Paylaşımın kulüp tartışmalarına eklendi.");
+    } catch (j) {
+      d(j instanceof Error ? j.message : "Tartışma oluşturulamadı.");
     }
   }
   async function E(a, n) {
-    if (o)
+    if (c)
       try {
-        const l = await v(
-          `/me/book-clubs/${o.id}/discussions/${a}/reactions`,
+        const l = await N(
+          `/me/book-clubs/${c.id}/discussions/${a}/reactions`,
           {
             method: "POST",
             body: JSON.stringify({ reaction_type: n })
           }
         );
-        j(l);
+        b(l);
       } catch (l) {
-        c(l instanceof Error ? l.message : "Tepki kaydedilemedi.");
+        d(l instanceof Error ? l.message : "Tepki kaydedilemedi.");
       }
   }
   async function U(a) {
-    if (a.preventDefault(), !o) return;
+    if (a.preventDefault(), !c) return;
     const n = a.currentTarget, l = new FormData(n);
     try {
-      const b = await v(`/me/book-clubs/${o.id}/events`, {
+      const j = await N(`/me/book-clubs/${c.id}/events`, {
         method: "POST",
         body: JSON.stringify({
           title: l.get("title"),
@@ -1516,91 +1516,96 @@ function ve() {
           location: l.get("location") || ""
         })
       });
-      j(b), n.reset(), c("Yeni kulüp buluşması takvime eklendi.");
-    } catch (b) {
-      c(b instanceof Error ? b.message : "Etkinlik oluşturulamadı.");
+      b(j), n.reset(), d("Yeni kulüp buluşması takvime eklendi.");
+    } catch (j) {
+      d(j instanceof Error ? j.message : "Etkinlik oluşturulamadı.");
     }
   }
   async function ne(a, n) {
-    if (o)
+    if (c)
       try {
-        const l = await v(
-          `/me/book-clubs/${o.id}/events/${a}/rsvp`,
+        const l = await N(
+          `/me/book-clubs/${c.id}/events/${a}/rsvp`,
           {
             method: "PUT",
             body: JSON.stringify({ status: n })
           }
         );
-        j(l), c(`Katılım durumun kaydedildi: ${n === "attending" ? "Katılıyorum" : n === "maybe" ? "Belki" : "Katılamıyorum"}`);
+        b(l), d(`Katılım durumun kaydedildi: ${n === "attending" ? "Katılıyorum" : n === "maybe" ? "Belki" : "Katılamıyorum"}`);
       } catch (l) {
-        c(l instanceof Error ? l.message : "Katılım durumu kaydedilemedi.");
+        d(l instanceof Error ? l.message : "Katılım durumu kaydedilemedi.");
       }
   }
   async function oe(a) {
-    if (a.preventDefault(), !o) return;
+    if (a.preventDefault(), !c) return;
     const n = a.currentTarget, l = new FormData(n);
     try {
-      const b = await v(`/me/book-clubs/${o.id}/polls`, {
+      const j = await N(`/me/book-clubs/${c.id}/polls`, {
         method: "POST",
         body: JSON.stringify({
           title: l.get("title"),
           option_book_ids: l.getAll("option_book_ids")
         })
       });
-      j(b), n.reset(), c("Yeni kitap oylaması açıldı.");
-    } catch (b) {
-      c(b instanceof Error ? b.message : "Oylama açılamadı.");
+      b(j), n.reset(), d("Yeni kitap oylaması açıldı.");
+    } catch (j) {
+      d(j instanceof Error ? j.message : "Oylama açılamadı.");
     }
   }
   async function de(a, n) {
-    if (o)
+    if (c)
       try {
-        const l = await v(
-          `/me/book-clubs/${o.id}/polls/${a}/vote`,
+        const l = await N(
+          `/me/book-clubs/${c.id}/polls/${a}/vote`,
           {
             method: "PUT",
             body: JSON.stringify({ option_id: n })
           }
         );
-        j(l), c("Oyun kaydedildi!");
+        b(l), d("Oyun kaydedildi!");
       } catch (l) {
-        c(l instanceof Error ? l.message : "Oy verilemedi.");
+        d(l instanceof Error ? l.message : "Oy verilemedi.");
       }
   }
   async function D(a) {
-    if (a.preventDefault(), !o) return;
-    const n = new FormData(a.currentTarget);
+    if (a.preventDefault(), !c) return;
+    const n = a.currentTarget.querySelector("button");
+    if (n != null && n.disabled) return;
+    n && (n.disabled = !0);
+    const l = new FormData(a.currentTarget);
     try {
-      const l = await v(`/me/book-clubs/${o.id}/reads`, {
+      const j = await N(`/me/book-clubs/${c.id}/reads`, {
         method: "PUT",
         body: JSON.stringify({
-          book_id: n.get("book_id"),
-          status: n.get("status") || "reading",
-          start_date: n.get("start_date") || null,
-          target_date: n.get("target_date") || null
+          book_id: l.get("book_id"),
+          status: l.get("status") || "reading",
+          start_date: l.get("start_date") || null,
+          target_date: l.get("target_date") || null
         })
       });
-      j(l), c("Kulübün okuma planı güncellendi.");
-    } catch (l) {
-      c(l instanceof Error ? l.message : "Okuma güncellenemedi.");
+      b(j), d("Kulübün aktif kitabı güncellendi.");
+    } catch (j) {
+      d(j instanceof Error ? j.message : "Okuma güncellenemedi.");
+    } finally {
+      n && (n.disabled = !1);
     }
   }
   async function ue(a, n) {
-    if (o)
+    if (c)
       try {
-        const l = await v(
-          `/me/book-clubs/${o.id}/members/${a}/role`,
+        const l = await N(
+          `/me/book-clubs/${c.id}/members/${a}/role`,
           {
             method: "PUT",
             body: JSON.stringify({ role: n })
           }
         );
-        j(l), c("Üye yetkisi güncellendi.");
+        b(l), d("Üye yetkisi güncellendi.");
       } catch (l) {
-        c(l instanceof Error ? l.message : "Yetki güncellenemedi.");
+        d(l instanceof Error ? l.message : "Yetki güncellenemedi.");
       }
   }
-  const me = (o == null ? void 0 : o.active_read) || (o == null ? void 0 : o.reads.find((a) => a.status === "reading")) || null, ye = o == null ? void 0 : o.user_progress.find((a) => me && a.book_id === me.book_id);
+  const me = (c == null ? void 0 : c.active_read) || (c == null ? void 0 : c.reads.find((a) => a.status === "reading")) || null, ye = c == null ? void 0 : c.user_progress.find((a) => me && a.book_id === me.book_id);
   return ee ? /* @__PURE__ */ e.jsxs("div", { className: "growth-skeleton", role: "status", "aria-label": "Okur merkezi yükleniyor", children: [
     /* @__PURE__ */ e.jsx("i", {}),
     /* @__PURE__ */ e.jsx("i", {}),
@@ -1612,12 +1617,12 @@ function ve() {
         /* @__PURE__ */ e.jsx("h1", { id: "growth-title", children: "Mihenk Topluluğu & Kişisel Yolculuğun" }),
         /* @__PURE__ */ e.jsx("p", { children: "Birlikte oku, yol haritasında ortak ilerle, spoiler korumalı derin tartışmalara katıl ve rozetler kazan." })
       ] }),
-      /* @__PURE__ */ e.jsxs("button", { type: "button", className: "btn-growth-refresh", onClick: Y, children: [
+      /* @__PURE__ */ e.jsxs("button", { type: "button", className: "btn-growth-refresh", onClick: H, children: [
         /* @__PURE__ */ e.jsx("span", { children: "🔄" }),
         " Yenile"
       ] })
     ] }),
-    F && /* @__PURE__ */ e.jsx("p", { className: "growth-status", role: "status", children: F }),
+    G && /* @__PURE__ */ e.jsx("p", { className: "growth-status", role: "status", children: G }),
     /* @__PURE__ */ e.jsxs("div", { className: "growth-grid", children: [
       /* @__PURE__ */ e.jsxs("article", { className: "growth-card growth-weekly", children: [
         /* @__PURE__ */ e.jsxs("div", { className: "card-header-line", children: [
@@ -1665,7 +1670,7 @@ function ve() {
           /* @__PURE__ */ e.jsx(
             "input",
             {
-              value: d,
+              value: u,
               onChange: (a) => x(a.target.value),
               placeholder: "Ursula K. Le Guin, Oğuz Atay, Tolstoy…"
             }
@@ -1674,15 +1679,15 @@ function ve() {
         /* @__PURE__ */ e.jsxs("fieldset", { className: "field-group", children: [
           /* @__PURE__ */ e.jsx("legend", { className: "field-label", children: "Türler" }),
           /* @__PURE__ */ e.jsx("div", { className: "growth-chips", children: fe.map((a) => {
-            const n = H.includes(a);
+            const n = V.includes(a);
             return /* @__PURE__ */ e.jsxs("label", { className: `growth-chip-label ${n ? "active" : ""}`, children: [
               /* @__PURE__ */ e.jsx(
                 "input",
                 {
                   type: "checkbox",
                   checked: n,
-                  onChange: () => V(
-                    (l) => l.includes(a) ? l.filter((b) => b !== a) : [...l, a]
+                  onChange: () => J(
+                    (l) => l.includes(a) ? l.filter((j) => j !== a) : [...l, a]
                   )
                 }
               ),
@@ -1702,7 +1707,7 @@ function ve() {
             {
               type: "button",
               className: `pace-pill ${f === a.id ? "active" : ""}`,
-              onClick: () => N(a.id),
+              onClick: () => v(a.id),
               children: [
                 /* @__PURE__ */ e.jsx("strong", { children: a.label }),
                 /* @__PURE__ */ e.jsx("small", { children: a.desc })
@@ -1741,7 +1746,7 @@ function ve() {
           "textarea",
           {
             value: k,
-            onChange: (a) => S(a.target.value),
+            onChange: (a) => w(a.target.value),
             placeholder: `Title,Author,Exclusive Shelf
 Dune,Frank Herbert,read`,
             required: !0,
@@ -1891,7 +1896,7 @@ Dune,Frank Herbert,read`,
                   className: "btn-club-secondary",
                   title: "Davet kodunu kopyala",
                   onClick: () => {
-                    navigator.clipboard.writeText(a.invite_code), c("Davet kodu panoya kopyalandı!");
+                    navigator.clipboard.writeText(a.invite_code), d("Davet kodu panoya kopyalandı!");
                   },
                   children: "Kodu Kopyala"
                 }
@@ -1900,27 +1905,27 @@ Dune,Frank Herbert,read`,
           ] }, a.id)) })
         ] })
       ] }),
-      o && /* @__PURE__ */ e.jsx(
+      c && /* @__PURE__ */ e.jsx(
         ge,
         {
-          activeClub: o,
+          activeClub: c,
           activeRead: me,
           activeUserProgress: ye,
-          clubWorkspaceRef: J,
-          clubTab: P,
+          clubWorkspaceRef: P,
+          clubTab: R,
           setClubTab: T,
-          setActiveClub: j,
-          setStatus: c,
-          books: q,
-          targetDailyPages: G,
+          setActiveClub: b,
+          setStatus: d,
+          books: F,
+          targetDailyPages: Y,
           setTargetDailyPages: ie,
           discContent: B,
-          discPage: C,
+          discPage: A,
           discType: Z,
           setDiscContent: $,
           setDiscPage: W,
           setDiscType: I,
-          setIsOCRModalOpen: A,
+          setIsOCRModalOpen: C,
           handleJoinReading: t,
           saveClubProgress: y,
           createDiscussion: K,
@@ -1939,15 +1944,15 @@ Dune,Frank Herbert,read`,
       je,
       {
         isOpen: g,
-        onClose: () => A(!1),
-        initialBookTitle: (xe = o == null ? void 0 : o.active_read) == null ? void 0 : xe.title,
+        onClose: () => C(!1),
+        initialBookTitle: (xe = c == null ? void 0 : c.active_read) == null ? void 0 : xe.title,
         onUseQuote: (a, n) => {
-          $(a), n && W(n.toString()), I("quote"), T("discussions"), c("📸 Alıntı metni başarıyla tartışma formuna aktarıldı!");
+          $(a), n && W(n.toString()), I("quote"), T("discussions"), d("📸 Alıntı metni başarıyla tartışma formuna aktarıldı!");
         }
       }
     )
   ] });
 }
 export {
-  ve as ProductGrowthHub
+  Ne as ProductGrowthHub
 };

@@ -69,3 +69,13 @@ docker compose --env-file backend/.env.production -f infra/compose.production.ym
 `reminder-worker` her dakika teslimat kuyruğunu, `retention-worker` günde bir saklama politikasını işler. Hatırlatıcı worker birden fazla replika çalıştırabilir; koşullu claim aynı işi iki kez göndermeyi engeller. Retention worker tek replika tutulur.
 
 Supabase PITR/yedek politikası ile üç ayda bir ayrı staging projesine geri yükleme tatbikatı release takvimine bağlanır.
+
+## Aktif kulüp kitabı düzeltmesi
+
+`backend/supabase/migrations/20260907144425_single_active_club_read.sql`
+kulüp başına tek `reading` kaydı sağlar. Mevcut birden fazla aktif kayıtta en yeni
+`created_at` değerini korur; diğerlerini `planned` yapar. Kitaplar, tartışmalar ve
+okuma ilerlemeleri silinmez. Trigger ve unique index birlikte uygulanmalıdır.
+Yeni seçimler aynı veritabanı işlemi içinde önceki aktif kitabı planlıya alır.
+Bu migration canlıya uygulanmadan PostgreSQL tarafındaki çoklu aktif kayıt
+sorunu tamamen çözülmüş sayılmaz.
