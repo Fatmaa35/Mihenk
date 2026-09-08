@@ -79,3 +79,13 @@ okuma ilerlemeleri silinmez. Trigger ve unique index birlikte uygulanmalıdır.
 Yeni seçimler aynı veritabanı işlemi içinde önceki aktif kitabı planlıya alır.
 Bu migration canlıya uygulanmadan PostgreSQL tarafındaki çoklu aktif kayıt
 sorunu tamamen çözülmüş sayılmaz.
+
+### Ollama Cloud
+
+Render Environment: set `LLM_ENABLED=true`, `AI_PROVIDER=ollama`,
+`OLLAMA_BASE_URL=https://ollama.com`, `OLLAMA_MODEL=gemma4:31b`, and
+`OLLAMA_API_KEY` to your secret from https://ollama.com/settings/keys.
+Deploy the backend with Cloud authentication support before enabling it.
+The base URL must not include `/api`; the application appends `/api/chat`.
+Keep the key in Render, never in Git. Local Ollama can still run without a key.
+Cloud model names: https://ollama.com/api/tags.

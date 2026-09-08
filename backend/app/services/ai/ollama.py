@@ -25,6 +25,7 @@ class OllamaExplainer(GeminiExplainer):
         usage_sink: Callable[[dict], None] | None = None,
         input_cost_per_million: float = 0,
         output_cost_per_million: float = 0,
+        api_key: str = "",
     ) -> None:
         super().__init__(
             "ollama-local", model, enabled, usage_sink,
@@ -32,6 +33,7 @@ class OllamaExplainer(GeminiExplainer):
         )
         self.provider = "ollama"
         self.base_url = base_url.rstrip("/")
+        self._headers = {"Authorization": f"Bearer {api_key.strip()}"} if api_key.strip() else {}
 
     @staticmethod
     def _ollama_tokens(payload: dict) -> tuple[int, int]:
@@ -59,6 +61,7 @@ class OllamaExplainer(GeminiExplainer):
         try:
             response = httpx.post(
                 f"{self.base_url}/api/chat",
+                headers=self._headers,
                 json={
                     "model": self.model,
                     "messages": [
@@ -125,6 +128,7 @@ class OllamaExplainer(GeminiExplainer):
         try:
             response = httpx.post(
                 f"{self.base_url}/api/chat",
+                headers=self._headers,
                 json={
                     "model": self.model,
                     "messages": messages,
