@@ -9,6 +9,7 @@ def create_explainer(settings: Settings, usage_sink=None):
             settings.ollama_base_url, settings.ollama_model, settings.llm_enabled,
             usage_sink, settings.ai_input_cost_per_million_usd,
             settings.ai_output_cost_per_million_usd,
+            api_key=settings.ollama_api_key,
         )
     return GeminiExplainer(
         settings.gemini_api_key, settings.gemini_model,

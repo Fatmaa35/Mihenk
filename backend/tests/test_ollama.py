@@ -267,3 +267,39 @@ def test_ollama_records_token_usage_and_estimated_cost(monkeypatch) -> None:
     assert events[0]["prompt_tokens"] == 1_000
     assert events[0]["output_tokens"] == 500
     assert events[0]["estimated_cost_usd"] == 0.004
+
+
+def test_cloud_factory_authenticates_chat_and_recommendations(monkeypatch):
+    from app.config import Settings
+    from app.services.ai.llm_factory import create_explainer
+
+    settings = Settings(ai_provider="ollama", llm_enabled=True,
+                        ollama_base_url="https://ollama.com", ollama_model="gemma4:31b",
+                        ollama_api_key="test-cloud-key")
+    assert "test-cloud-key" not in repr(settings)
+    requests = []
+
+    def fake_post(url, **kwargs):
+        requests.append(kwargs)
+        assert url == "https://ollama.com/api/chat"
+        assert kwargs["headers"] == {"Authorization": "Bearer test-cloud-key"}
+        assert kwargs["json"]["model"] == "gemma4:31b"
+        return httpx.Response(200, request=httpx.Request("POST", url),
+                              json={"message": {"content": "Edebiyat yaniti."}})
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    explainer = create_explainer(settings)
+    assert asyncio.run(explainer.answer_book_question("Roman nedir?")) == "Edebiyat yaniti."
+    asyncio.run(explainer.explain({"read_books": [], "favorite_books": [], "to_read_books": []}, "roman", "ozet", []))
+    assert len(requests) == 2
+
+
+def test_local_ollama_does_not_send_authorization(monkeypatch):
+    def fake_post(url, **kwargs):
+        assert kwargs["headers"] == {}
+        return httpx.Response(200, request=httpx.Request("POST", url),
+                              json={"message": {"content": "Yerel yanit."}})
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    explainer = OllamaExplainer("http://127.0.0.1:11434", "local-model", True)
+    assert asyncio.run(explainer.answer_book_question("Roman nedir?")) == "Yerel yanit."

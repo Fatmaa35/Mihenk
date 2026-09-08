@@ -217,8 +217,8 @@ export function ClubWorkspace({
               {['owner', 'moderator'].includes(activeClub.role) && (
                 <div style={{ marginTop: '20px', borderTop: '1px solid #e1ebe5', paddingTop: '14px' }}>
                   <h4 style={{ margin: '0 0 8px', fontSize: '0.92rem' }}>⚙️ Kulüp Aktif Kitabını Belirle</h4>
-                  <form onSubmit={saveClubRead}>
-                    <select name="book_id" required defaultValue={activeRead?.book_id || ''}>
+                  <form key={`${activeClub.id}:${activeRead?.book_id || "none"}`} onSubmit={saveClubRead}>
+                    <select key={activeRead?.book_id || "none"} name="book_id" required defaultValue={activeRead?.book_id || ''}>
                       <option value="">Kitap Seç…</option>
                       {books.map((b) => (
                         <option key={b.id} value={b.id}>
@@ -274,7 +274,7 @@ export function ClubWorkspace({
                   </div>
 
                   {/* Progress logging form */}
-                  <form onSubmit={saveClubProgress} style={{ display: 'grid', gap: '8px' }}>
+                  <form key={`${activeClub.id}:${activeRead.book_id}`} onSubmit={saveClubProgress} style={{ display: 'grid', gap: '8px' }}>
                     <input type="hidden" name="book_id" value={activeRead.book_id} />
                     <label style={{ fontSize: '0.84rem', fontWeight: 600 }}>
                       Bugün geldiğin sayfa:
@@ -342,7 +342,7 @@ export function ClubWorkspace({
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <label style={{ fontSize: '0.84rem' }}>
                     Kitap
-                    <select name="book_id" required defaultValue={activeRead?.book_id || ''}>
+                    <select key={activeRead?.book_id || "none"} name="book_id" required defaultValue={activeRead?.book_id || ''}>
                       {activeClub.reads.map((r) => (
                         <option key={r.book_id} value={r.book_id}>
                           {r.title}

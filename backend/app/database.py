@@ -3047,6 +3047,11 @@ class Repository:
             ).fetchone()
             if not membership or membership["role"] not in {"owner", "moderator"}:
                 raise PermissionError("Kulüp okumasını yalnızca yönetici düzenleyebilir.")
+            if values["status"] == "reading":
+                connection.execute(
+                    "UPDATE book_club_reads SET status='planned' WHERE club_id=? AND book_id<>? AND status='reading'",
+                    (club_id, values["book_id"]),
+                )
             connection.execute(
                 """INSERT INTO book_club_reads(club_id,book_id,start_date,target_date,status,created_at) VALUES(?,?,?,?,?,?)
                    ON CONFLICT(club_id,book_id) DO UPDATE SET start_date=excluded.start_date,target_date=excluded.target_date,status=excluded.status""",
@@ -3102,8 +3107,6 @@ class Repository:
                 reads.append(rd)
                 if not active_read and rd["status"] == "reading":
                     active_read = rd
-            if not active_read and reads:
-                active_read = reads[0]
 
             # User progress & roadmap
             progress_rows = connection.execute(

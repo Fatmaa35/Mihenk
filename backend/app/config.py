@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import os
 from urllib.parse import urlparse
@@ -45,6 +45,7 @@ class Settings:
     llm_enabled: bool = os.getenv("LLM_ENABLED", "false").lower() == "true"
     ai_provider: str = os.getenv("AI_PROVIDER", "gemini").strip().lower()
     ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").strip().rstrip("/")
+    ollama_api_key: str = field(default=os.getenv("OLLAMA_API_KEY", "").strip(), repr=False)
     ollama_model: str = os.getenv("OLLAMA_MODEL", "gemma4:cloud").strip()
     ai_input_cost_per_million_usd: float = float(os.getenv("AI_INPUT_COST_PER_MILLION_USD", "0"))
     ai_output_cost_per_million_usd: float = float(os.getenv("AI_OUTPUT_COST_PER_MILLION_USD", "0"))

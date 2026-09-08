@@ -55,9 +55,15 @@ services:
       - key: SMTP_STARTTLS
         value: "true"
       - key: LLM_ENABLED
-        value: "false"
+        sync: false
       - key: AI_PROVIDER
-        value: none
+        sync: false
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        sync: false
+      - key: OLLAMA_API_KEY
+        sync: false
       - key: SEMANTIC_SEARCH_BACKEND
         value: pgvector
       - key: SUPABASE_URL
