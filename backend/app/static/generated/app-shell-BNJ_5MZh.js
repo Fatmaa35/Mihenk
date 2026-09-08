@@ -1,4 +1,4 @@
-import { a as g } from "./main-DhkYpQea.js";
+import { a as g } from "./main-o413eXwu.js";
 function et(e, a) {
   const i = new URLSearchParams(e), r = new URLSearchParams(a.replace(/^#/, ""));
   if (i.has("error") || r.has("error") || i.has("error_code") || r.has("error_code")) return { kind: "error" };
@@ -1246,7 +1246,7 @@ async function Qe(e) {
   me = !0;
   const i = l.chatHistory.slice(-8), r = We(), s = t("#chat-input"), o = t("#chat-form button"), c = new AbortController(), p = setTimeout(() => c.abort(), 3e4);
   q("user", a), s.value = "", s.disabled = !0, o.disabled = !0, U([]), Le("Yanıt hazırlanıyor…", !0);
-  const u = n("div", r.books.length ? "Ekrandaki kitapları ve konuşmayı inceliyorum…" : "Pusula düşünüyor…", "chat-typing");
+  const u = n("div", r.books.length ? "Ekrandaki kitapları ve konuşmayı inceliyorum…" : "Mihenk asistanı düşünüyor…", "chat-typing");
   u.setAttribute("role", "status"), t("#chat-messages").append(u), t("#chat-messages").scrollTop = t("#chat-messages").scrollHeight;
   try {
     const d = await g("/me/chat", { method: "POST", signal: c.signal, body: JSON.stringify({ message: a, history: i, active_view_context: r, session_id: l.chatSessionId }) });
