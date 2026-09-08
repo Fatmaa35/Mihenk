@@ -303,3 +303,26 @@ def test_local_ollama_does_not_send_authorization(monkeypatch):
     monkeypatch.setattr(httpx, "post", fake_post)
     explainer = OllamaExplainer("http://127.0.0.1:11434", "local-model", True)
     assert asyncio.run(explainer.answer_book_question("Roman nedir?")) == "Yerel yanit."
+
+
+def test_cloud_failure_records_status_without_secrets(monkeypatch, caplog):
+    import pytest
+    from app.services.ai.gemini import GeminiUnavailable
+    events = []
+
+    def fake_post(url, **kwargs):
+        return httpx.Response(401, request=httpx.Request("POST", url, headers=kwargs["headers"]),
+                              json={"error": "private-provider-response"})
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    explainer = OllamaExplainer("https://ollama.com", "gemma4:31b", True,
+                               events.append, api_key="secret-test-key")
+    with pytest.raises(GeminiUnavailable):
+        asyncio.run(explainer.answer_book_question("private-user-question"))
+    assert events[0]["failure"] == {
+        "type": "HTTPStatusError", "http_status": 401,
+        "host": "ollama.com", "api_key_configured": True,
+    }
+    assert "ollama_request_failed" in caplog.text
+    for private in ("secret-test-key", "private-provider-response", "private-user-question"):
+        assert private not in caplog.text + json.dumps(events)
