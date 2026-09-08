@@ -36,6 +36,7 @@ class GeminiExplainer:
     def _record_usage(
         self, operation: str, started: float, success: bool,
         prompt_tokens: int = 0, output_tokens: int = 0,
+        failure: dict | None = None,
     ) -> None:
         if not self.usage_sink:
             return
@@ -45,6 +46,7 @@ class GeminiExplainer:
         ) / 1_000_000
         try:
             self.usage_sink({
+                **({"failure": failure} if failure else {}),
                 "provider": self.provider,
                 "model": self.model,
                 "operation": operation,

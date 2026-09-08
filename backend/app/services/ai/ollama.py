@@ -1,5 +1,7 @@
 import json
 import asyncio
+import logging
+from urllib.parse import urlparse
 from time import perf_counter
 from typing import Callable
 
@@ -34,6 +36,17 @@ class OllamaExplainer(GeminiExplainer):
         self.provider = "ollama"
         self.base_url = base_url.rstrip("/")
         self._headers = {"Authorization": f"Bearer {api_key.strip()}"} if api_key.strip() else {}
+
+    def _record_failure(self, operation: str, started: float, error: Exception) -> None:
+        failure = {
+            "type": type(error).__name__,
+            "http_status": error.response.status_code if isinstance(error, httpx.HTTPStatusError) else None,
+            "host": urlparse(self.base_url).hostname,
+            "api_key_configured": bool(self._headers),
+        }
+        # Never log the exception text, response body, headers or conversation.
+        logging.getLogger(__name__).warning("ollama_request_failed %s", json.dumps(failure))
+        self._record_usage(operation, started, False, failure=failure)
 
     @staticmethod
     def _ollama_tokens(payload: dict) -> tuple[int, int]:
@@ -96,7 +109,7 @@ class OllamaExplainer(GeminiExplainer):
             self._record_usage("recommendation", started, True, *self._ollama_tokens(payload))
             return result
         except (httpx.HTTPError, KeyError, ValueError) as error:
-            self._record_usage("recommendation", started, False)
+            self._record_failure("recommendation", started, error)
             raise GeminiUnavailable("Ollama açıklama katmanına ulaşılamadı.") from error
 
     async def answer_book_question(
@@ -146,7 +159,7 @@ class OllamaExplainer(GeminiExplainer):
             self._record_usage("chat", started, True, *self._ollama_tokens(payload))
             return answer
         except (httpx.HTTPError, KeyError, ValueError) as error:
-            self._record_usage("chat", started, False)
+            self._record_failure("chat", started, error)
             raise GeminiUnavailable("Ollama genel kitap danışmanına ulaşılamadı.") from error
 
     @staticmethod
