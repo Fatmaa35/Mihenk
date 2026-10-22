@@ -1,8 +1,8 @@
+"""Kimlik, oturum ve hesap yaşam döngüsü."""
 from __future__ import annotations
 
-from app.repositories.supabase.shared import *  # noqa: F403
+from datetime import datetime, timedelta, timezone
 from app.repositories.supabase.base import SupabaseRequestError
-
 
 class SupabaseAuthMixin:
     def invite_user(self, display_name: str, email: str, redirect_to: str) -> dict:
@@ -13,6 +13,7 @@ class SupabaseAuthMixin:
                        "data": {"display_name": display_name.strip()}},
         ).json()
         return {"id": user["id"]}
+
 
     def open_registration_session(self, display_name: str, email: str, password: str) -> dict:
         response = self._request(
@@ -27,6 +28,7 @@ class SupabaseAuthMixin:
         payload = response.json()
         return self._auth_envelope(payload, confirmation_required=not bool(payload.get("access_token")))
 
+
     def open_login_session(self, email: str, password: str) -> dict:
         response = self._request(
             "POST",
@@ -36,6 +38,7 @@ class SupabaseAuthMixin:
         )
         return self._auth_envelope(response.json())
 
+
     def request_password_reset(self, email: str, redirect_to: str | None = None) -> None:
         params = {"redirect_to": redirect_to} if redirect_to else None
         self._request(
@@ -43,17 +46,20 @@ class SupabaseAuthMixin:
             json_body={"email": email.strip().casefold()},
         )
 
+
     def reset_password(self, recovery_token: str, new_password: str) -> None:
         self._request(
             "PUT", "/auth/v1/user", token=recovery_token,
             json_body={"password": new_password},
         )
 
+
     def resend_confirmation(self, email: str) -> None:
         self._request(
             "POST", "/auth/v1/resend",
             json_body={"type": "signup", "email": email.strip().casefold()},
         )
+
 
     def resolve_session(self, access_token: str | None, refresh_token: str | None = None) -> dict | None:
         if not access_token:
@@ -93,6 +99,7 @@ class SupabaseAuthMixin:
             return None
         return self._auth_envelope(refreshed.json())
 
+
     def close_session(self, access_token: str | None, refresh_token: str | None = None) -> None:
         if not access_token:
             return
@@ -103,6 +110,7 @@ class SupabaseAuthMixin:
             allow_statuses={401, 403},
         )
 
+
     def user_role(self, user_id: str, access_token: str | None = None) -> str:
         if not access_token:
             return "user"
@@ -111,6 +119,7 @@ class SupabaseAuthMixin:
             params={"select": "app_role", "id": f"eq.{user_id}", "limit": 1},
         ).json()
         return rows[0].get("app_role", "user") if rows else "user"
+
 
     def set_user_role(self, user_id: str, role: str, access_token: str | None = None) -> dict:
         rows = self._request(
@@ -122,8 +131,10 @@ class SupabaseAuthMixin:
             raise KeyError("Kullanıcı bulunamadı.")
         return {"user_id": user_id, "role": rows[0]["app_role"]}
 
+
     def delete_user_account(self, user_id: str, access_token: str | None = None) -> None:
         self._request("DELETE", f"/auth/v1/admin/users/{user_id}", admin=True)
+
 
     def export_user_data(self, user_id: str, access_token: str | None = None) -> dict:
         """Return the authenticated user's portable data without secrets or auth tokens."""
@@ -173,6 +184,7 @@ class SupabaseAuthMixin:
             "records": {**records, "user_follows": follows},
         }
 
+
     def purge_expired_data(self, *, audit_days: int, event_days: int,
                            notification_days: int, chat_days: int) -> dict[str, int]:
         now = datetime.now(timezone.utc)
@@ -197,45 +209,17 @@ class SupabaseAuthMixin:
             deleted[table] = len(response.json())
         return deleted
 
-    def audit(self, actor_user_id: str | None, action: str, entity_type: str, entity_id: str | None,
-              before: dict | None = None, after: dict | None = None, request_id: str | None = None,
-              access_token: str | None = None) -> None:
-        self._request(
-            "POST", "/rest/v1/audit_log", admin=True,
-            json_body={"actor_user_id": actor_user_id, "action": action, "entity_type": entity_type,
-                       "entity_id": entity_id, "before_data": before, "after_data": after, "request_id": request_id},
-            extra_headers={"Prefer": "return=minimal"},
-        )
 
-    def action_execution(self, user_id: str, key: str, access_token: str | None = None) -> dict | None:
-        rows = self._request(
-            "GET", "/rest/v1/action_executions", admin=True,
-            params={"select": "result,status", "idempotency_key": f"eq.{key}", "user_id": f"eq.{user_id}", "limit": 1},
-        ).json()
-        return rows[0]["result"] if rows and rows[0]["status"] == "succeeded" else None
-
-    def save_action_execution(self, user_id: str, key: str, action_type: str, result: dict,
-                              access_token: str | None = None, action_payload: dict | None = None,
-                              inverse_action: dict | None = None, status: str = "succeeded",
-                              error_code: str | None = None, duration_ms: int = 0) -> dict:
-        self._request(
-            "POST", "/rest/v1/action_executions", admin=True, params={"on_conflict": "idempotency_key"},
-            json_body={"idempotency_key": key, "user_id": user_id, "action_type": action_type, "result": result,
-                       "action_payload": action_payload or {}, "inverse_action": inverse_action, "status": status,
-                       "error_code": error_code, "duration_ms": duration_ms},
-            extra_headers={"Prefer": "resolution=ignore-duplicates,return=minimal"},
-        )
+    def account_status(self, user_id: str, access_token: str | None = None) -> dict:
+        rows = self._request("GET", "/rest/v1/profiles", admin=True, params={
+            "select": "is_verified,verification_label,banned_at,banned_until,ban_reason", "id": f"eq.{user_id}", "limit": 1}) .json()
+        if not rows: raise KeyError("Kullanıcı bulunamadı.")
+        result = rows[0]; until = result.get("banned_until")
+        result["is_banned"] = bool(result.get("banned_at")) and (not until or datetime.fromisoformat(until.replace("Z", "+00:00")) > datetime.now(timezone.utc))
         return result
 
-    def action_history(self, user_id: str, limit: int = 50, access_token: str | None = None) -> list[dict]:
-        return self._request("GET", "/rest/v1/action_executions", admin=True,
-                             params={"select": "*", "user_id": f"eq.{user_id}", "order": "created_at.desc", "limit": limit}).json()
 
-    def mark_action_undone(self, user_id: str, key: str, access_token: str | None = None) -> None:
-        self._request("PATCH", "/rest/v1/action_executions", admin=True,
-                      params={"user_id": f"eq.{user_id}", "idempotency_key": f"eq.{key}", "status": "eq.succeeded"},
-                      json_body={"status": "undone", "undone_at": datetime.now(timezone.utc).isoformat()})
+    def create_user(self, display_name: str) -> dict:
+        raise SupabaseRequestError("Kullanıcılar Supabase Auth kayıt akışıyla oluşturulmalıdır.", 400)
 
-    def remove_library_entry(self, user_id: str, book_id: str, access_token: str | None = None) -> None:
-        self._request("DELETE", "/rest/v1/user_books", token=access_token,
-                      params={"user_id": f"eq.{user_id}", "book_id": f"eq.{book_id}"})
+    # Product growth -----------------------------------------------------

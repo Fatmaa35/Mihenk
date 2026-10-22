@@ -37,7 +37,7 @@ def health() -> dict:
             },
         },
         "scoring": {"character": 0.45, "themes": 0.15, "reading_history": 0.40},
-        "semantic_search": type(search_index).__name__,
+        "semantic_search": type(services.search_index).__name__,
     }
 
 

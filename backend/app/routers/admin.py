@@ -47,7 +47,7 @@ def admin_metrics(request: Request, response: Response) -> dict:
     return {**snapshot, "alerts": alerts, "product": {
         "zero_result_queries": quality.get("zero_result_queries", 0),
         "gemma_fallback_rate": quality.get("fallback_rate", 0),
-        "catalog_books": len(catalog),
+        "catalog_books": len(services.catalog),
     }}
 
 
@@ -136,7 +136,7 @@ def admin_create_catalog_job(payload: CatalogJobCreate, request: Request, respon
 @router.post("/admin/evaluations/recommendations")
 def admin_run_recommendation_evaluation(request: Request, response: Response) -> dict:
     session = require_role(request, response, "editor", "admin")
-    report = run_evaluation(ROOT / "data" / "recommendation_eval_cases.json", recommender, catalog)
+    report = run_evaluation(ROOT / "data" / "recommendation_eval_cases.json", services.recommender, services.catalog)
     repository.audit(session["user"]["id"], "evaluation.recommendations.run", "evaluation", str(uuid4()),
                      after=report["summary"], request_id=request.headers.get("x-request-id"), access_token=session["access_token"])
     return report

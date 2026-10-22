@@ -1,10 +1,90 @@
+"""Kitap kataloğu, arama ve baskı doğrulama."""
 from __future__ import annotations
 
-from app.repositories.supabase.shared import *  # noqa: F403
-from app.repositories.supabase.base import SupabaseRequestError
+import json
+import re
+from pathlib import Path
+from typing import Any
 
+from app.services.catalog.catalog_quality import enrich_book_record, normalize_isbn
 
 class SupabaseCatalogMixin:
+    def list_verified_editions(self, limit: int = 200) -> list[dict]:
+        rows = self._request("GET", "/rest/v1/editions", admin=True, params={
+            "select": "*,book:books(title,author)", "language": "eq.tur",
+            "verification_status": "in.(verified,retailer_verified)", "order": "verified_at.desc", "limit": limit}).json()
+        result = []
+        for row in rows:
+            book = row.pop("book", None) or {}
+            result.append({**row, "book_title": book.get("title"), "book_author": book.get("author")})
+        return result
+
+
+    def semantic_book_search(
+        self, embedding: list[float], limit: int = 20,
+        access_token: str | None = None, query: str | None = None,
+    ) -> list[dict]:
+        if not access_token:
+            return []
+        rpc = "search_books_hybrid" if query else "match_books"
+        body = {"query_embedding": embedding, "match_count": min(max(limit, 1), 100)}
+        if query:
+            body["query_text"] = query
+        return self._request("POST", f"/rest/v1/rpc/{rpc}", token=access_token, json_body=body).json()
+
+
+    def upsert_book_embeddings(self, records: list[dict]) -> int:
+        updated = 0
+        for record in records:
+            self._request(
+                "PATCH", "/rest/v1/books", admin=True,
+                params={"id": f"eq.{record['id']}"},
+                json_body={
+                    "embedding": record["embedding"],
+                    "embedding_model": record["embedding_model"],
+                    "embedding_updated_at": record["embedding_updated_at"],
+                },
+                extra_headers={"Prefer": "return=minimal"},
+            )
+            updated += 1
+        return updated
+
+
+    def seed_books(self, source: Path) -> None:
+        if not self.secret_key:
+            return
+        books = json.loads(source.read_text(encoding="utf-8"))
+        for start in range(0, len(books), 100):
+            payload = []
+            for raw_book in books[start : start + 100]:
+                book = enrich_book_record({**raw_book, "source_name": "local_curated"})
+                payload.append({
+                    "id": book["id"],
+                    "title": book["title"],
+                    "author": book["author"],
+                    "canonical_work_key": book["canonical_work_key"],
+                    "genre": book["genre"],
+                    "publication_type": book["publication_type"],
+                    "language": book["language"],
+                    "page_count": book["page_count"],
+                    "themes": book["themes"],
+                    "character_traits": book["character_traits"],
+                    "description": book["description"],
+                    "quality_score": book["quality_score"],
+                    "quality_flags": book["quality_flags"],
+                    "is_recommendable": book["is_recommendable"],
+                    "source_name": book["source_name"],
+                })
+            self._request(
+                "POST",
+                "/rest/v1/books",
+                admin=True,
+                params={"on_conflict": "id"},
+                json_body=payload,
+                extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
+            )
+
+
     @staticmethod
     def _book(row: dict) -> dict:
         return {
@@ -36,6 +116,7 @@ class SupabaseCatalogMixin:
             "popularity_score": float(row.get("popularity_score") or 0),
         }
 
+
     def list_books(self) -> list[dict]:
         response = self._request(
             "GET",
@@ -44,10 +125,12 @@ class SupabaseCatalogMixin:
         )
         return [self._book(row) for row in response.json()]
 
+
     @staticmethod
     def _search_phrase(query: str) -> str:
         cleaned = re.sub(r"[^\w\sçğıöşüÇĞİÖŞÜ-]", " ", query, flags=re.UNICODE)
         return " ".join(cleaned.split())[:200]
+
 
     def search_books(self, query: str | None, limit: int, offset: int, sort: str = "title") -> dict:
         params: dict[str, Any] = {
@@ -79,6 +162,7 @@ class SupabaseCatalogMixin:
             "offset": offset,
         }
 
+
     def _count(self, table: str, params: dict[str, Any] | None = None) -> int:
         query = {"select": "*", "limit": 1, **(params or {})}
         response = self._request(
@@ -89,6 +173,7 @@ class SupabaseCatalogMixin:
         )
         total = response.headers.get("content-range", "0-0/0").rsplit("/", 1)[-1]
         return int(total) if total.isdigit() else 0
+
 
     def catalog_coverage(self) -> dict:
         offers_response = self._request(
@@ -122,6 +207,7 @@ class SupabaseCatalogMixin:
             "offers": len(offer_rows),
             "last_price_check": last_price_check,
         }
+
 
     def upsert_metadata_book(self, raw_record: dict) -> str:
         """Merge external metadata at work level and retain ISBN at edition level."""

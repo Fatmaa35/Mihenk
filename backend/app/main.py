@@ -2,7 +2,7 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from app.runtime import app, current_session, httpx, require_role, repository, recommender, settings
+from app.runtime import app, current_session, httpx, require_role, repository, services, settings
 from app.supabase_repository import SupabaseRequestError
 from app.services.common.observability import metrics
 from fastapi.exceptions import RequestValidationError
@@ -52,7 +52,7 @@ for feature_router in (
 
 app.include_router(create_product_router(
     repository=repository,
-    recommender=recommender,
+    services=services,
     settings=settings,
     current_session=current_session,
     require_role=require_role,

@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from app.repositories.supabase.community import SupabaseCommunityMixin
+from app.repositories.supabase.clubs import SupabaseClubsMixin
 from app.services.common.security import RedisSlidingWindowRateLimiter, SecurityMiddleware
 from app.services.common.observability import MetricsRegistry, ObservabilityMiddleware
 
@@ -24,7 +24,7 @@ OPERATIONS = [
 @pytest.mark.parametrize("target_club", ["club-A", "club-B", None])
 def test_supabase_club_mutations_require_matching_target(
         operation, target_table, write_table, value, error, target_club):
-    repository = SupabaseCommunityMixin()
+    repository = SupabaseClubsMixin()
     calls = []
 
     def request(method, path, **kwargs):

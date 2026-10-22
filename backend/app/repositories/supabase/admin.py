@@ -1,10 +1,69 @@
+"""Yönetim paneli, katalog kalitesi ve moderasyon."""
 from __future__ import annotations
 
-from app.repositories.supabase.shared import *  # noqa: F403
+from datetime import datetime, timedelta, timezone
 from app.repositories.supabase.base import SupabaseRequestError
 
-
 class SupabaseAdminMixin:
+    def admin_comment_reports(self, status: str | None = None, limit: int = 100,
+                              access_token: str | None = None) -> list[dict]:
+        params = {"select": "*,comment:book_comments(content,book_id)", "order": "created_at.desc", "limit": limit}
+        if status:
+            params["status"] = f"eq.{status}"
+        return self._request("GET", "/rest/v1/comment_reports", admin=True, params=params).json()
+
+
+    def resolve_comment_report(self, report_id: int, status: str, moderator_id: str,
+                               comment_status: str | None = None, access_token: str | None = None) -> dict:
+        rows = self._request("PATCH", "/rest/v1/comment_reports", admin=True, params={"id": f"eq.{report_id}"},
+            json_body={"status": status, "moderator_id": moderator_id,
+                       "resolved_at": datetime.now(timezone.utc).isoformat() if status in {"resolved", "dismissed"} else None},
+            extra_headers={"Prefer": "return=representation"}).json()
+        if not rows:
+            raise KeyError("Şikâyet bulunamadı.")
+        if comment_status:
+            self._request("PATCH", "/rest/v1/book_comments", admin=True,
+                params={"id": f"eq.{rows[0]['comment_id']}"}, json_body={"status": comment_status},
+                extra_headers={"Prefer": "return=minimal"})
+        return {**rows[0], "comment_status": comment_status}
+
+
+    def admin_users(self, query: str | None = None, limit: int = 100, access_token: str | None = None) -> list[dict]:
+        params = {"select": "id,display_name,app_role,is_verified,verification_label,banned_at,banned_until,ban_reason,created_at", "order": "created_at.desc", "limit": limit}
+        if query: params["display_name"] = f"ilike.*{self._search_phrase(query)}*"
+        rows = self._request("GET", "/rest/v1/profiles", admin=True, params=params).json(); now = datetime.now(timezone.utc)
+        for row in rows:
+            until = row.get("banned_until"); row["is_banned"] = bool(row.get("banned_at")) and (not until or datetime.fromisoformat(until.replace("Z", "+00:00")) > now)
+        return rows
+
+
+    def admin_set_verification(self, user_id: str, verified: bool, label: str | None, actor_id: str, access_token: str | None = None) -> dict:
+        payload = {"is_verified": verified, "verification_label": label.strip() if verified and label else None,
+                   "verified_at": datetime.now(timezone.utc).isoformat() if verified else None, "verified_by": actor_id if verified else None}
+        rows = self._request("PATCH", "/rest/v1/profiles", admin=True, params={"id": f"eq.{user_id}"}, json_body=payload,
+                             extra_headers={"Prefer": "return=representation"}).json()
+        if not rows: raise KeyError("Kullanıcı bulunamadı.")
+        return {"user_id": user_id, **payload}
+
+
+    def admin_set_ban(self, user_id: str, banned: bool, reason: str | None, duration_days: int | None, actor_id: str, access_token: str | None = None) -> dict:
+        if user_id == actor_id and banned: raise ValueError("Kendi hesabınızı banlayamazsınız.")
+        now = datetime.now(timezone.utc); until = (now + timedelta(days=duration_days)).isoformat() if banned and duration_days else None
+        payload = {"banned_at": now.isoformat() if banned else None, "banned_until": until, "banned_by": actor_id if banned else None,
+                   "ban_reason": reason.strip() if banned and reason else None}
+        rows = self._request("PATCH", "/rest/v1/profiles", admin=True, params={"id": f"eq.{user_id}"}, json_body=payload,
+                             extra_headers={"Prefer": "return=representation"}).json()
+        if not rows: raise KeyError("Kullanıcı bulunamadı.")
+        return {"user_id": user_id, "is_banned": banned, **payload}
+
+
+    def moderate_comment(self, comment_id: str, status: str, access_token: str | None = None) -> dict:
+        rows = self._request("PATCH", "/rest/v1/book_comments", admin=True, params={"id": f"eq.{comment_id}"},
+            json_body={"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}, extra_headers={"Prefer": "return=representation"}).json()
+        if not rows: raise KeyError("Yorum bulunamadı.")
+        return {"comment_id": comment_id, "status": status}
+
+
     def quality_dashboard(self, access_token: str | None = None) -> dict:
         report = self.catalog_coverage()
         def admin_count(table: str, params: dict[str, str] | None = None) -> int:
@@ -26,9 +85,11 @@ class SupabaseAdminMixin:
         })
         return report
 
+
     def list_feature_flags(self, access_token: str | None = None) -> list[dict]:
         return self._request("GET", "/rest/v1/feature_flags", token=access_token,
                              params={"select": "*", "order": "key"}).json()
+
 
     def upsert_feature_flag(self, key: str, description: str, enabled: bool, rollout_percent: int,
                             access_token: str | None = None) -> dict:
@@ -36,6 +97,7 @@ class SupabaseAdminMixin:
                              json_body={"key": key, "description": description, "enabled": enabled, "rollout_percent": rollout_percent},
                              extra_headers={"Prefer": "resolution=merge-duplicates,return=representation"}).json()
         return rows[0]
+
 
     def admin_catalog_issues(self, status: str = "open", limit: int = 100,
                              access_token: str | None = None) -> list[dict]:
@@ -61,6 +123,7 @@ class SupabaseAdminMixin:
                     "order": "severity.desc,created_at.asc", "limit": limit},
         ).json()
 
+
     def resolve_catalog_issue(self, issue_id: str, status: str, actor_id: str,
                               access_token: str | None = None) -> dict:
         rows = self._request(
@@ -72,6 +135,7 @@ class SupabaseAdminMixin:
         if not rows:
             raise KeyError("İnceleme kaydı bulunamadı.")
         return rows[0]
+
 
     def admin_update_book(self, book_id: str, changes: dict, access_token: str | None = None) -> tuple[dict, dict]:
         allowed = {"title", "author", "genre", "publication_type", "language", "original_language", "page_count",
@@ -90,6 +154,7 @@ class SupabaseAdminMixin:
         ).json()
         return self._book(before_rows[0]), self._book(after_rows[0])
 
+
     def merge_catalog_books(self, source_id: str, target_id: str, access_token: str | None = None) -> dict:
         if not access_token:
             raise SupabaseRequestError("Oturum açmanız gerekiyor.", 401)
@@ -98,6 +163,7 @@ class SupabaseAdminMixin:
             "POST", "/rest/v1/rpc/catalog_merge_books", admin=True,
             json_body={"source_book_id": source_id, "target_book_id": target_id, "actor_user_id": actor_id},
         ).json()
+
 
     def create_catalog_job(self, job_type: str, payload: dict, created_by: str,
                            access_token: str | None = None) -> dict:
@@ -108,15 +174,18 @@ class SupabaseAdminMixin:
         ).json()
         return rows[0]
 
+
     def list_catalog_jobs(self, limit: int = 50, access_token: str | None = None) -> list[dict]:
         return self._request(
             "GET", "/rest/v1/catalog_jobs", admin=True,
             params={"select": "*", "order": "created_at.desc", "limit": limit},
         ).json()
 
+
     def claim_catalog_job(self) -> dict | None:
         rows = self._request("POST", "/rest/v1/rpc/claim_catalog_job", admin=True, json_body={}).json()
         return rows[0] if rows else None
+
 
     def finish_catalog_job(self, job_id: str, success: bool, error: str | None = None) -> None:
         rows = self._request("GET", "/rest/v1/catalog_jobs", admin=True,
@@ -128,146 +197,12 @@ class SupabaseAdminMixin:
                       json_body={"status": status, "last_error": error[:2000] if error else None,
                                  "finished_at": datetime.now(timezone.utc).isoformat() if status in {"completed","dead_letter"} else None})
 
-    def seed_books(self, source: Path) -> None:
-        if not self.secret_key:
-            return
-        books = json.loads(source.read_text(encoding="utf-8"))
-        for start in range(0, len(books), 100):
-            payload = []
-            for raw_book in books[start : start + 100]:
-                book = enrich_book_record({**raw_book, "source_name": "local_curated"})
-                payload.append({
-                    "id": book["id"],
-                    "title": book["title"],
-                    "author": book["author"],
-                    "canonical_work_key": book["canonical_work_key"],
-                    "genre": book["genre"],
-                    "publication_type": book["publication_type"],
-                    "language": book["language"],
-                    "page_count": book["page_count"],
-                    "themes": book["themes"],
-                    "character_traits": book["character_traits"],
-                    "description": book["description"],
-                    "quality_score": book["quality_score"],
-                    "quality_flags": book["quality_flags"],
-                    "is_recommendable": book["is_recommendable"],
-                    "source_name": book["source_name"],
-                })
-            self._request(
-                "POST",
-                "/rest/v1/books",
-                admin=True,
-                params={"on_conflict": "id"},
-                json_body=payload,
-                extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
-            )
-
-    def application_event(self, level: str, event_type: str, request_id: str | None = None, route: str | None = None,
-                          status_code: int | None = None, duration_ms: float | None = None, details: dict | None = None) -> None:
-        self._request("POST", "/rest/v1/application_events", admin=True,
-            json_body={"level": level, "event_type": event_type, "request_id": request_id, "route": route, "status_code": status_code,
-                       "duration_ms": duration_ms, "details": details or {}}, extra_headers={"Prefer": "return=minimal"})
-
-    def track_product_event(self, user_id: str, event_name: str, properties: dict,
-                            access_token: str | None = None) -> dict:
-        payload = {"user_id": user_id, "event_name": event_name,
-                   "properties": dict(list((properties or {}).items())[:20])}
-        try:
-            rows = self._request(
-                "POST", "/rest/v1/product_events", admin=True, json_body=payload,
-                extra_headers={"Prefer": "return=representation"},
-            ).json()
-            return rows[0]
-        except SupabaseRequestError as error:
-            if error.status_code not in {400, 404}:
-                raise
-            self.application_event("info", "product_event", details=payload)
-            return {**payload, "occurred_at": datetime.now(timezone.utc).isoformat(), "compatibility_mode": True}
-
-    def create_beta_feedback(self, user_id: str, category: str, rating: int | None,
-                             message: str, context: dict, access_token: str | None = None) -> dict:
-        payload = {"user_id": user_id, "category": category, "rating": rating,
-                   "message": message.strip(), "context": dict(list((context or {}).items())[:20]), "status": "new"}
-        try:
-            rows = self._request(
-                "POST", "/rest/v1/beta_feedback", token=access_token, json_body=payload,
-                extra_headers={"Prefer": "return=representation"},
-            ).json()
-            saved = rows[0]
-        except SupabaseRequestError as error:
-            if error.status_code not in {400, 404}:
-                raise
-            saved = {"id": str(uuid4()), **payload, "created_at": datetime.now(timezone.utc).isoformat(),
-                     "compatibility_mode": True}
-            self.application_event("info", "beta_feedback", details=saved)
-        self.track_product_event(user_id, "feedback_submitted", {"category": category}, access_token)
-        return saved
-
-    def list_beta_feedback(self, user_id: str, limit: int = 20,
-                           access_token: str | None = None) -> list[dict]:
-        try:
-            return self._request(
-                "GET", "/rest/v1/beta_feedback", token=access_token,
-                params={"user_id": f"eq.{user_id}", "select": "*", "order": "created_at.desc", "limit": limit},
-            ).json()
-        except SupabaseRequestError as error:
-            if error.status_code not in {400, 404}:
-                raise
-            rows = self._request(
-                "GET", "/rest/v1/application_events", admin=True,
-                params={"event_type": "eq.beta_feedback", "select": "details,created_at",
-                        "order": "created_at.desc", "limit": 500},
-            ).json()
-            return [{**row.get("details", {}), "created_at": row.get("created_at")}
-                    for row in rows if row.get("details", {}).get("user_id") == user_id][:limit]
-
-    def beta_dashboard(self, days: int = 30, access_token: str | None = None) -> dict:
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-        try:
-            events = self._request(
-                "GET", "/rest/v1/product_events", admin=True,
-                params={"occurred_at": f"gte.{cutoff}", "select": "user_id,event_name,occurred_at", "limit": 10000},
-            ).json()
-        except SupabaseRequestError as error:
-            if error.status_code not in {400, 404}:
-                raise
-            legacy = self._request(
-                "GET", "/rest/v1/application_events", admin=True,
-                params={"event_type": "eq.product_event", "created_at": f"gte.{cutoff}",
-                        "select": "details,created_at", "limit": 10000},
-            ).json()
-            events = [{**row.get("details", {}), "occurred_at": row.get("created_at")} for row in legacy]
-        try:
-            feedback = self._request(
-                "GET", "/rest/v1/beta_feedback", admin=True,
-                params={"created_at": f"gte.{cutoff}", "select": "id,user_id,category,rating,message,status,created_at", "order": "created_at.desc", "limit": 500},
-            ).json()
-        except SupabaseRequestError as error:
-            if error.status_code not in {400, 404}:
-                raise
-            legacy = self._request(
-                "GET", "/rest/v1/application_events", admin=True,
-                params={"event_type": "eq.beta_feedback", "created_at": f"gte.{cutoff}",
-                        "select": "details,created_at", "order": "created_at.desc", "limit": 500},
-            ).json()
-            feedback = [{**row.get("details", {}), "created_at": row.get("created_at")} for row in legacy]
-        onboarding = self._request(
-            "GET", "/rest/v1/onboarding_profiles", admin=True,
-            params={"onboarding_completed": "eq.true", "completed_at": f"gte.{cutoff}", "select": "user_id", "limit": 10000},
-        ).json()
-        counts: dict[str, int] = {}
-        for event in events:
-            counts[event["event_name"]] = counts.get(event["event_name"], 0) + 1
-        ratings = [item["rating"] for item in feedback if item.get("rating") is not None]
-        return {"days": days, "active_users": len({item["user_id"] for item in events}),
-                "onboarding_completed": len(onboarding), "feedback_count": len(feedback),
-                "average_rating": round(sum(ratings) / len(ratings), 1) if ratings else None,
-                "events": counts, "recent_feedback": feedback[:50]}
 
     def admin_system_logs(self, limit: int = 200, level: str | None = None, access_token: str | None = None) -> list[dict]:
         params = {"select": "*", "order": "created_at.desc", "limit": limit}
         if level: params["level"] = f"eq.{level}"
         return self._request("GET", "/rest/v1/application_events", admin=True, params=params).json()
+
 
     def admin_dashboard(self, access_token: str | None = None) -> dict:
         payload = self._request(
