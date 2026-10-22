@@ -29,7 +29,7 @@ test('expired invitation gives an actionable error', async ({ page }) => {
 
 test('public signup remains available alongside invitations', async ({ page }) => {
   await page.route('**/auth/register', route => route.fulfill({ status: 201, json: { email_confirmation_required: true } }))
-  await page.goto('/')
+  await page.goto('/classic')
   await page.getByRole('button', { name: 'Giriş yap', exact: true }).first().click()
   await page.locator('#auth-switch').click()
   await page.locator('#auth-name').fill('New Reader')
@@ -48,7 +48,7 @@ test('admin invitation form reports delivery and preserves input on failure', as
       ? { status: 429, json: { detail: 'İstek sınırına ulaşıldı.' } }
       : { status: 201, json: { message: 'Davet e-postası gönderildi.' } })
   })
-  await page.goto('/')
+  await page.goto('/classic')
   // Isolate the form UI; server-side role enforcement is covered by API tests.
   await page.waitForFunction(() => !!document.querySelector<HTMLFormElement>('#admin-invitation-form')?.onsubmit)
   await page.evaluate(() => {

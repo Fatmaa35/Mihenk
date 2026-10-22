@@ -6,11 +6,12 @@ test('expired recovery link offers a new link without rendering URL error conten
   await expect(page.locator('#recovery-status')).toContainText('Yeni bir sıfırlama bağlantısı isteyin.')
   await expect(page.locator('#password-reset-dialog')).not.toBeVisible()
   await expect(page.locator('body')).not.toContainText('untrusted-marker')
-  await expect(page).toHaveURL(/\/$/)
+  // Yeni arayüz e-posta bağlantılarını klasik arayüze devreder; o da jetonları adresten temizler.
+  await expect(page).toHaveURL(/\/classic$/)
 })
 
 test('public landing page presents the Mihenk story and login entry point', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/classic')
   await expect(page.getByRole('heading', { name: /Bir sonraki kitabın seni bekliyor/ })).toBeVisible()
   await expect(page.locator('.landing-visual img')).toBeVisible()
   await expect(page.locator('#landing-features article')).toHaveCount(4)
@@ -19,7 +20,7 @@ test('public landing page presents the Mihenk story and login entry point', asyn
 })
 
 test('login form is accessible and recovery opens', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/classic')
   await page.getByRole('button', { name: 'Giriş yap', exact: true }).first().click()
   await expect(page.getByRole('heading', { name: 'Tekrar hoş geldin' })).toBeVisible()
   const auth = page.locator('#auth-form')
@@ -30,7 +31,7 @@ test('login form is accessible and recovery opens', async ({ page }) => {
 })
 
 test('invalid login preserves a generic error and can recover', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/classic')
   await page.getByRole('button', { name: 'Giriş yap', exact: true }).first().click()
   const auth = page.locator('#auth-form')
   await auth.getByLabel('E-posta').fill('nobody@example.com')
@@ -46,7 +47,7 @@ test('anonymous startup checks for a restorable session', async ({ page }) => {
     bootstrapWasRequested = true
     await route.fulfill({ status: 401, json: { detail: 'Oturum açmanız gerekiyor.' } })
   })
-  await page.goto('/')
+  await page.goto('/classic')
   await expect(page.getByRole('heading', { name: /Bir sonraki kitabın seni bekliyor/ })).toBeVisible()
   await expect(page.locator('#auth-form')).not.toBeVisible()
   await expect(page.locator('#app')).toHaveClass(/hidden/)
@@ -58,7 +59,7 @@ test('assistant removes the thinking state when a response arrives', async ({ pa
     status: 200,
     json: { intent: 'general', answer: 'Test yanıtı hazır.', books: [], suggestions: [], session_id: 'test-session', pending_action: null },
   }))
-  await page.goto('/')
+  await page.goto('/classic')
   await page.locator('#app').evaluate(element => element.classList.remove('hidden'))
   await page.locator('#chat-panel').evaluate(element => element.classList.remove('hidden'))
   await page.locator('#chat-input').fill('Bir kitap anlat')

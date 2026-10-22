@@ -10,7 +10,7 @@ export default defineConfig({
   define: { 'process.env.NODE_ENV': JSON.stringify('production') },
   build: {
     outDir: resolve(configDir, '../backend/app/static/generated'), emptyOutDir: true,
-    lib: { entry: resolve(configDir, 'src/main.tsx'), formats: ['es'], fileName: () => 'product-ui.js' },
+    lib: { entry: resolve(configDir, 'src/legacy/main.tsx'), formats: ['es'], fileName: () => 'product-ui.js' },
     cssCodeSplit: false, rollupOptions: { output: { assetFileNames: 'product-ui.css' } }
   }
 })

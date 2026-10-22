@@ -29,7 +29,7 @@ def catalog_coverage() -> dict:
 @router.get("/books/{book_id}/details")
 def book_details(book_id: str, request: Request, response: Response) -> dict:
     session = current_session(request, response)
-    book = next((item for item in repository.list_books() if item["id"] == book_id), None)
+    book = next((item for item in services.catalog if item["id"] == book_id), None)
     if not book:
         raise HTTPException(status_code=404, detail="Kitap bulunamadı.")
     community = repository.book_community(book_id, session["user"]["id"], session["access_token"])

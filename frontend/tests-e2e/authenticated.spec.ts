@@ -7,7 +7,7 @@ test.describe('authenticated reading flow', () => {
   test.skip(!email || !password, 'E2E_EMAIL ve E2E_PASSWORD tanımlanmalıdır.')
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/classic')
     await page.getByRole('button', { name: 'Giriş yap', exact: true }).first().click()
     const auth = page.locator('#auth-form')
     await auth.getByLabel('E-posta').fill(email!)

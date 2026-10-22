@@ -54,9 +54,10 @@ async def my_recommendations(payload: CharacterSearchRequest, request: Request, 
     recommendation_id = str(uuid4())
     title_to_id = {book["title"].casefold(): book["id"] for book in services.catalog}
     for position, item in enumerate(result.recommended_books, start=1):
+        item.book_id = item.book_id or title_to_id.get(item.book_title.casefold())
         repository.log_recommendation_interaction(user["id"], {
             "recommendation_id": recommendation_id,
-            "book_id": title_to_id.get(item.book_title.casefold()),
+            "book_id": item.book_id,
             "event_type": "impression",
             "position": position,
             "experiment_variant": variant,

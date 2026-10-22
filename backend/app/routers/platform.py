@@ -4,8 +4,29 @@ from app.runtime import *  # noqa: F403 - explicit shared runtime boundary
 
 router = APIRouter()
 
+SPA_PAGE = STATIC_DIR / "generated" / "app" / "index.html"
+# React uygulamasının istemci tarafı rotaları. API yollarıyla çakışmaması için açıkça listelenir.
+SPA_ROUTES = ("giris", "bugun", "kesfet", "kitapligim", "kulupler", "odak")
+
+
+def spa_page() -> FileResponse:
+    """Yeni arayüz derlenmemişse klasik arayüze düşer; geliştirme ortamı hiç kırılmaz."""
+    page = SPA_PAGE if SPA_PAGE.exists() else STATIC_PAGE
+    return FileResponse(page, media_type="text/html; charset=utf-8", headers={"Cache-Control": "no-cache"})
+
+
 @router.get("/", include_in_schema=False)
 def home() -> FileResponse:
+    return spa_page()
+
+
+for _route in SPA_ROUTES:
+    router.add_api_route(f"/{_route}", spa_page, methods=["GET"], include_in_schema=False)
+
+
+@router.get("/classic", include_in_schema=False)
+def classic_home() -> FileResponse:
+    """Henüz yeni arayüze taşınmamış ekranlar için klasik arayüz."""
     return FileResponse(STATIC_PAGE, media_type="text/html; charset=utf-8")
 
 

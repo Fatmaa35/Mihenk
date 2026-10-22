@@ -57,7 +57,7 @@ def test_llm_disabled_returns_exact_json_contract(tmp_path) -> None:
     assert set(payload) == {"character_analysis_summary", "recommended_books", "ai_discoveries"}
     assert payload["ai_discoveries"] == []
     assert set(payload["recommended_books"][0]) == {
-        "book_title", "author", "match_score", "reasoning", "genre",
+        "book_id", "book_title", "author", "match_score", "reasoning", "genre",
         "already_in_watchlist", "score_breakdown",
     }
 

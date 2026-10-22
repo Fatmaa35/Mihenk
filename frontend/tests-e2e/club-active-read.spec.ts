@@ -13,7 +13,7 @@ test('switching the active club book updates the card, progress form and persist
   const endpoint = `/me/book-clubs/${club.id}`
   expect((await page.request.put(`${endpoint}/reads`, { data: { book_id: oldBook.id, status: 'reading' } })).ok()).toBe(true)
   expect((await page.request.put(`${endpoint}/progress`, { data: { book_id: oldBook.id, current_page: 30, total_pages: 200 } })).ok()).toBe(true)
-  await page.goto('/')
+  await page.goto('/classic')
   await page.getByRole('button', { name: 'Kulübü Aç', exact: true }).waitFor()
   await page.getByRole('button', { name: 'Kulübü Aç', exact: true }).click()
   const card = page.locator('.club-card-section').filter({ has: page.getByRole('heading', { name: 'Ayın Aktif Kitabı', exact: true }) })

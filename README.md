@@ -46,10 +46,14 @@ olarak kopyalayın.
 ```powershell
 cd frontend
 npm ci
-npm run build
+npm run build      # klasik arayüz + yeni React uygulaması
+npm run dev        # yeni uygulamayı değişiklikte yeniden derler (backend açıkken)
 ```
 
-Derleme `backend/app/static/generated/` klasörüne yazılır.
+Derleme `backend/app/static/generated/` klasörüne yazılır; yeni uygulama
+`generated/app/` altındadır. Uygulama `/` adresinde açılır, henüz taşınmamış
+ekranlar `/classic` adresindeki klasik arayüzde durur. Açık ve koyu tema
+desteklenir; varsayılan olarak sistem ayarı izlenir.
 Uygulama [localhost:8010](http://127.0.0.1:8010) adresinde açılır.
 
 ## Testler

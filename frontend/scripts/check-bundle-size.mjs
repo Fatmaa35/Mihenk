@@ -1,13 +1,31 @@
 import { readdir, stat } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 
 const output = resolve(import.meta.dirname, '../../backend/app/static/generated')
-const files = await readdir(output)
+
+async function* files(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name)
+    if (entry.isDirectory()) yield* files(path)
+    else yield path
+  }
+}
+
+/** Dosya başına üst sınır (bayt). Yeni React uygulaması `app/` altındadır ve parçalara bölünür. */
+function limitFor(name, isApp) {
+  if (name.includes('ISBNScanner')) return 700_000
+  if (name.endsWith('.css')) return 120_000
+  if (isApp) return name.startsWith('react-') ? 300_000 : 180_000
+  return name.startsWith('main-') ? 520_000 : 280_000
+}
+
 const failures = []
-for (const name of files) {
+for await (const path of files(output)) {
+  const name = relative(output, path)
   if (!/\.(js|css)$/.test(name)) continue
-  const bytes = (await stat(resolve(output, name))).size
-  const limit = name.includes('ISBNScanner') ? 700_000 : name.endsWith('.css') ? 120_000 : name.startsWith('main-') ? 520_000 : 280_000
+  const isApp = name.startsWith('app/')
+  const bytes = (await stat(path)).size
+  const limit = limitFor(name.split('/').pop(), isApp)
   if (bytes > limit) failures.push(`${name}: ${bytes} bayt > ${limit} bayt`)
 }
 if (failures.length) {

@@ -1,4 +1,4 @@
-import { a as g } from "./main-o413eXwu.js";
+import { a as g } from "./main-bu9rETAP.js";
 function et(e, a) {
   const i = new URLSearchParams(e), r = new URLSearchParams(a.replace(/^#/, ""));
   if (i.has("error") || r.has("error") || i.has("error_code") || r.has("error_code")) return { kind: "error" };
@@ -28,19 +28,19 @@ function ge(e, a = {}) {
   return l.user ? g("/me/product-events", { method: "POST", body: JSON.stringify({ event_name: e, properties: a }) }).catch(() => {
   }) : Promise.resolve();
 }
-const H = window.matchMedia("(max-width: 1100px)");
+const q = window.matchMedia("(max-width: 1100px)");
 function j() {
-  const e = H.matches, a = !e && document.body.classList.contains("sidebar-collapsed"), i = e && document.body.classList.contains("sidebar-open"), r = e ? i : !a, s = t("#sidebar-toggle"), o = t("#primary-sidebar");
+  const e = q.matches, a = !e && document.body.classList.contains("sidebar-collapsed"), i = e && document.body.classList.contains("sidebar-open"), r = e ? i : !a, s = t("#sidebar-toggle"), o = t("#primary-sidebar");
   s.setAttribute("aria-expanded", String(r)), s.setAttribute("aria-label", e ? i ? "Menüyü kapat" : "Menüyü aç" : a ? "Menüyü genişlet" : "Menüyü daralt"), s.querySelector("span").textContent = e ? i ? "×" : "☰" : a ? "›" : "☰", o.setAttribute("aria-hidden", String(e && !i)), o.inert = e && !i;
 }
 function he() {
   document.body.classList.remove("sidebar-open"), j();
 }
 function at() {
-  document.body.classList.toggle("reduce-motion", localStorage.getItem("mihenk-reduced-motion") === "true"), !H.matches && localStorage.getItem("mihenk-sidebar-collapsed") === "true" && document.body.classList.add("sidebar-collapsed"), t("#sidebar-toggle").onclick = () => {
-    H.matches ? document.body.classList.toggle("sidebar-open") : (document.body.classList.toggle("sidebar-collapsed"), localStorage.setItem("mihenk-sidebar-collapsed", String(document.body.classList.contains("sidebar-collapsed")))), j();
-  }, t("#sidebar-backdrop").onclick = he, H.addEventListener("change", () => {
-    document.body.classList.remove("sidebar-open"), document.body.classList.toggle("sidebar-collapsed", !H.matches && localStorage.getItem("mihenk-sidebar-collapsed") === "true"), j(), we();
+  document.body.classList.toggle("reduce-motion", localStorage.getItem("mihenk-reduced-motion") === "true"), !q.matches && localStorage.getItem("mihenk-sidebar-collapsed") === "true" && document.body.classList.add("sidebar-collapsed"), t("#sidebar-toggle").onclick = () => {
+    q.matches ? document.body.classList.toggle("sidebar-open") : (document.body.classList.toggle("sidebar-collapsed"), localStorage.setItem("mihenk-sidebar-collapsed", String(document.body.classList.contains("sidebar-collapsed")))), j();
+  }, t("#sidebar-backdrop").onclick = he, q.addEventListener("change", () => {
+    document.body.classList.remove("sidebar-open"), document.body.classList.toggle("sidebar-collapsed", !q.matches && localStorage.getItem("mihenk-sidebar-collapsed") === "true"), j(), we();
   }), document.addEventListener("keydown", (e) => {
     e.key === "Escape" && document.body.classList.contains("sidebar-open") && he();
   }), j();
@@ -163,21 +163,21 @@ t("#auth-form").onsubmit = async (e) => {
     a.disabled = !1, a.textContent = l.mode === "login" ? "Giriş yap" : "Kayıt ol";
   }
 };
-function K(e, a = !1) {
+function B(e, a = !1) {
   const i = t("#profile-menu-panel"), r = t("#profile-menu-button");
   i.classList.toggle("hidden", !e), r.setAttribute("aria-expanded", String(e)), e && a && setTimeout(() => {
     var s;
     return (s = i.querySelector('[role="menuitem"]')) == null ? void 0 : s.focus();
   }, 0);
 }
-t("#profile-menu-button").onclick = () => K(t("#profile-menu-panel").classList.contains("hidden"));
+t("#profile-menu-button").onclick = () => B(t("#profile-menu-panel").classList.contains("hidden"));
 t("#profile-menu-button").onkeydown = (e) => {
-  e.key === "ArrowDown" && (e.preventDefault(), K(!0, !0));
+  e.key === "ArrowDown" && (e.preventDefault(), B(!0, !0));
 };
 t("#profile-menu-panel").onkeydown = (e) => {
   const a = [...t("#profile-menu-panel").querySelectorAll('[role="menuitem"]')], i = a.indexOf(document.activeElement);
   if (e.key === "Escape")
-    e.preventDefault(), K(!1), t("#profile-menu-button").focus();
+    e.preventDefault(), B(!1), t("#profile-menu-button").focus();
   else if (["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
     e.preventDefault();
     const r = e.key === "Home" ? 0 : e.key === "End" ? a.length - 1 : e.key === "ArrowDown" ? (i + 1) % a.length : (i - 1 + a.length) % a.length;
@@ -185,17 +185,17 @@ t("#profile-menu-panel").onkeydown = (e) => {
   }
 };
 document.addEventListener("click", (e) => {
-  t("#profile-menu-root").contains(e.target) || K(!1);
+  t("#profile-menu-root").contains(e.target) || B(!1);
 });
 document.addEventListener("keydown", (e) => {
-  e.key === "Escape" && !t("#profile-menu-panel").classList.contains("hidden") && (K(!1), t("#profile-menu-button").focus());
+  e.key === "Escape" && !t("#profile-menu-panel").classList.contains("hidden") && (B(!1), t("#profile-menu-button").focus());
 });
 t("#profile-overview").onclick = () => {
-  K(!1), G("insights");
+  B(!1), I("insights");
 };
 t("#change-password").onclick = () => {
   const e = t("#profile-menu-email").textContent.trim();
-  K(!1), t("#recovery-status").textContent = "", t("#recovery-dialog").showModal(), t("#recovery-email").value = e;
+  B(!1), t("#recovery-status").textContent = "", t("#recovery-dialog").showModal(), t("#recovery-email").value = e;
 };
 t("#logout").onclick = async () => {
   var e, a;
@@ -205,7 +205,7 @@ t("#sidebar-logout").onclick = () => t("#logout").click();
 t("#settings-logout").onclick = () => t("#logout").click();
 t("#settings-password").onclick = () => t("#change-password").click();
 t("#settings-compact").onchange = (e) => {
-  localStorage.setItem("mihenk-sidebar-collapsed", String(e.target.checked)), document.body.classList.toggle("sidebar-collapsed", e.target.checked && !H.matches), j(), f(e.target.checked ? "Kompakt menü etkinleştirildi." : "Geniş menü etkinleştirildi.");
+  localStorage.setItem("mihenk-sidebar-collapsed", String(e.target.checked)), document.body.classList.toggle("sidebar-collapsed", e.target.checked && !q.matches), j(), f(e.target.checked ? "Kompakt menü etkinleştirildi." : "Geniş menü etkinleştirildi.");
 };
 t("#settings-reduced-motion").onchange = (e) => {
   document.body.classList.toggle("reduce-motion", e.target.checked), localStorage.setItem("mihenk-reduced-motion", String(e.target.checked)), f(e.target.checked ? "Hareketler azaltıldı." : "Standart hareketler etkinleştirildi.");
@@ -223,17 +223,19 @@ t("#beta-feedback-form").onsubmit = async (e) => {
   }
 };
 function it() {
-  se("login"), K(!1), t("#login-dialog").open && t("#login-dialog").close(), t("#app").classList.add("hidden"), t("#chat-toggle").classList.add("hidden"), t("#auth-screen").classList.remove("hidden");
+  se("login"), B(!1), t("#login-dialog").open && t("#login-dialog").close(), t("#app").classList.add("hidden"), t("#chat-toggle").classList.add("hidden"), t("#auth-screen").classList.remove("hidden");
 }
 async function Be(e = !1) {
   if (!e) {
-    const i = await g("/me/bootstrap");
-    Object.assign(l, i);
+    const r = await g("/me/bootstrap");
+    Object.assign(l, r);
   }
   t("#login-dialog").open && t("#login-dialog").close(), t("#auth-screen").classList.add("hidden"), t("#app").classList.remove("hidden"), t("#chat-toggle").classList.remove("hidden"), t("#admin-nav").classList.toggle("hidden", !["editor", "admin"].includes(l.user.app_role)), t("#admin-invitation-panel").classList.toggle("hidden", l.user.app_role !== "admin"), rt(), X(), oe(), de(), ke(), Kt(), qt(), st(), z(!0).catch(() => {
   }), ge("session_started", { source: "web" });
   const a = await Promise.allSettled([g("/books"), g("/market/offers"), g(`/me/reading-dashboard?year=${(/* @__PURE__ */ new Date()).getFullYear()}`), g("/me/price-alerts"), g("/me/onboarding")]);
-  a[0].status === "fulfilled" && (l.books = a[0].value), a[1].status === "fulfilled" && (l.offers = a[1].value), a[2].status === "fulfilled" && (l.dashboard = a[2].value), a[3].status === "fulfilled" && (l.alerts = a[3].value), X(), oe(), Fe(), ke(), At(), a[4].status === "fulfilled" && !a[4].value.onboarding_completed && (G("growth"), ge("onboarding_started", { source: "first_session" }), f("Önce birkaç tercihini seç; önerilerin sana göre şekillensin.")), window.dispatchEvent(new CustomEvent("pkm-refresh"));
+  a[0].status === "fulfilled" && (l.books = a[0].value), a[1].status === "fulfilled" && (l.offers = a[1].value), a[2].status === "fulfilled" && (l.dashboard = a[2].value), a[3].status === "fulfilled" && (l.alerts = a[3].value), X(), oe(), Fe(), ke(), At();
+  const i = new URLSearchParams(location.search).get("view");
+  i && document.getElementById(`${i}-view`) ? I(i) : a[4].status === "fulfilled" && !a[4].value.onboarding_completed && (I("growth"), ge("onboarding_started", { source: "first_session" }), f("Önce birkaç tercihini seç; önerilerin sana göre şekillensin.")), window.dispatchEvent(new CustomEvent("pkm-refresh"));
 }
 function rt() {
   var a, i;
@@ -257,12 +259,12 @@ function ot() {
   const e = ((i = l.dashboard) == null ? void 0 : i.goal) || {}, a = [[l.profile.reading_books.length, "Şu an okunuyor", "library"], [`${e.completed_books || 0}/${e.target_books || 12}`, "Yıllık hedef", "insights"], [((r = l.dashboard) == null ? void 0 : r.total_pages_read) || 0, "Okunan sayfa", "insights"]];
   t("#home-summary").replaceChildren(...a.map(([s, o, c]) => {
     const p = n("button", "", "home-metric");
-    return p.type = "button", p.title = `${o} bölümünü aç`, p.append(n("b", s), n("span", o)), p.onclick = () => G(c), p;
+    return p.type = "button", p.title = `${o} bölümünü aç`, p.append(n("b", s), n("span", o)), p.onclick = () => I(c), p;
   })), He();
 }
 function Me(e, a) {
   const i = n("button", e, "bento-link");
-  return i.type = "button", i.onclick = () => G(a), i;
+  return i.type = "button", i.onclick = () => I(a), i;
 }
 function He() {
   var h;
@@ -306,17 +308,17 @@ function Z() {
 }
 document.addEventListener("click", (e) => {
   const a = e.target.closest("[data-view]");
-  a && (G(a.dataset.view), H.matches && he());
+  a && (I(a.dataset.view), q.matches && he());
 });
-t("#home-brand").onclick = () => G("discover");
+t("#home-brand").onclick = () => I("discover");
 let fe = "";
-function G(e) {
+function I(e) {
   M(".view").forEach((i) => i.classList.toggle("hidden", i.id !== `${e}-view`)), M(".nav-button").forEach((i) => {
     const r = i.dataset.view === e;
     i.classList.toggle("active", r), i.setAttribute("aria-current", r ? "page" : "false");
   });
   const a = { discover: "Keşfet", growth: "Okur Merkezi", catalog: "Katalog", community: "Topluluk", library: "Kitaplığım", insights: "Okuma analizi", alerts: "Bildirimler", settings: "Ayarlar", quality: "Kalite", "reading-mode": "Okuma Modu (PKM)" };
-  document.title = `${a[e] || "Mihenk"} · Mihenk`, e === "quality" && je(), e === "community" && kt(), e === "settings" && we(), e === "reading-mode" && window.dispatchEvent(new CustomEvent("pkm-refresh")), e === "growth" && window.dispatchEvent(new CustomEvent("growth-refresh")), e !== fe && (fe = e, ge("view_opened", { view: e })), I(), window.scrollTo({ top: 0, behavior: document.body.classList.contains("reduce-motion") ? "auto" : "smooth" });
+  document.title = `${a[e] || "Mihenk"} · Mihenk`, e === "quality" && je(), e === "community" && kt(), e === "settings" && we(), e === "reading-mode" && window.dispatchEvent(new CustomEvent("pkm-refresh")), e === "growth" && window.dispatchEvent(new CustomEvent("growth-refresh")), e !== fe && (fe = e, ge("view_opened", { view: e })), K(), window.scrollTo({ top: 0, behavior: document.body.classList.contains("reduce-motion") ? "auto" : "smooth" });
 }
 M("#quick-prompts button").forEach((e) => e.onclick = () => {
   const a = t("#character");
@@ -343,9 +345,9 @@ t("#recommend").onclick = async () => {
   try {
     await lt(e);
     const i = await g("/me/recommendations", { method: "POST", body: JSON.stringify({ character_description: e, limit: 6 }) });
-    l.lastDiscoveryQuery = e, l.lastRecommendations = [...i.recommended_books, ...i.ai_discoveries || []], l.recommendationId = i.recommendation_id, l.recommendationVariant = i.experiment_variant, t("#recommendation-summary").textContent = i.character_analysis_summary, t("#recommendations").replaceChildren(...i.recommended_books.map((r, s) => dt(r, s + 1))), pt(i.ai_discoveries || []), t("#recommendations-panel").classList.remove("hidden"), I(), t("#recommendations-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    l.lastDiscoveryQuery = e, l.lastRecommendations = [...i.recommended_books, ...i.ai_discoveries || []], l.recommendationId = i.recommendation_id, l.recommendationVariant = i.experiment_variant, t("#recommendation-summary").textContent = i.character_analysis_summary, t("#recommendations").replaceChildren(...i.recommended_books.map((r, s) => dt(r, s + 1))), pt(i.ai_discoveries || []), t("#recommendations-panel").classList.remove("hidden"), K(), t("#recommendations-panel").scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (i) {
-    I(), f(i.message, !0);
+    K(), f(i.message, !0);
   } finally {
     a.disabled = !1, t("#recommend-status").textContent = "";
   }
@@ -384,7 +386,7 @@ function dt(e, a) {
     u.matched_signals.forEach((y) => m.append(n("span", `✓ ${y}`))), s.append(m);
   }
   if (i.id) {
-    s.append(xe(i));
+    s.append($e(i));
     const m = n("div", "", "feedback-actions");
     [["✓ Tam isabet", "great_match"], ["× Bana göre değil", "not_for_me"], ["Biliyorum", "already_know"], ["+ Benzerleri", "more_like_this"]].forEach(([y, h]) => {
       const b = n("button", y);
@@ -419,14 +421,14 @@ function ht(e) {
     s === 0 && p.append(n("small", "EN UCUZ", "cheapest")), p.append(n("b", N(r.price_minor, r.currency))), o.href = r.product_url, o.target = "_blank", o.rel = "noopener noreferrer nofollow", o.title = `${r.stock_status === "in_stock" ? "Stokta" : "Stok durumu belirsiz"} · Son kontrol ${new Date(r.checked_at).toLocaleString("tr-TR")}`, o.append(c, p), a.append(o);
   }), a) : (a.append(n("p", "Henüz doğrulanmış mağaza fiyatı yok.", "muted")), a);
 }
-function xe(e) {
+function $e(e) {
   const a = n("div", "", "book-actions"), i = le(e) || e, r = { to_read: "Okuyacağım", reading: "Okuyorum", read: "Okudum" }, s = n("details", "", "shelf-picker"), o = n("summary", i != null && i.shelf ? `✓ ${r[i.shelf]}` : "+ Kitaplığa ekle"), c = n("div", "", "shelf-menu");
   o.setAttribute("aria-label", i != null && i.shelf ? `Raf: ${r[i.shelf]}. Değiştir` : `${e.title} kitabını kitaplığa ekle`), s.ontoggle = () => {
     s.open && M(".shelf-picker[open]").filter((m) => m !== s).forEach((m) => m.open = !1);
   }, [["Okuyacağım", "to_read"], ["Okuyorum", "reading"], ["Okudum", "read"]].forEach(([m, y]) => {
     const h = n("button", `${(i == null ? void 0 : i.shelf) === y ? "✓ " : ""}${m}`);
     h.type = "button", h.onclick = () => {
-      s.open = !1, y === "reading" ? xt(e) : Oe(e, y);
+      s.open = !1, y === "reading" ? $t(e) : Oe(e, y);
     }, c.append(h);
   }), s.append(o, c), a.append(s);
   const p = n("div", "", "compact-actions"), u = !!(i != null && i.is_favorite), d = n("button", u ? "♥" : "♡", "compact-action");
@@ -434,7 +436,7 @@ function xe(e) {
     const m = n("button", "✎", "compact-action");
     m.type = "button", m.title = "Kitabı düzenle", m.setAttribute("aria-label", m.title), m.onclick = () => ce(e);
     const y = n("button", "×", "compact-action danger");
-    y.type = "button", y.title = "Kitabı sil", y.setAttribute("aria-label", y.title), y.onclick = () => $t(e), p.append(m, y);
+    y.type = "button", y.title = "Kitabı sil", y.setAttribute("aria-label", y.title), y.onclick = () => xt(e), p.append(m, y);
   } else {
     const m = n("button", "♢", "compact-action");
     m.type = "button", m.title = "Fiyat alarmı kur", m.setAttribute("aria-label", m.title), m.onclick = () => Pt(e), p.append(m);
@@ -465,17 +467,17 @@ async function Oe(e, a, i) {
 function ft(e) {
   const a = n("article", "", "catalog-card"), i = n("div", "", "catalog-info"), r = n("button", e.title, "book-title-button");
   r.type = "button", r.onclick = () => ye(e), i.append(r, n("p", `${e.author} · ${e.genre}`, "book-meta"), n("p", e.rating_count ? `★ ${Number(e.rating_average).toFixed(1)} · ${e.rating_count} okur puanı` : "Henüz puanlanmadı", "community-summary"));
-  const s = xe(e), o = n("button", "Ayrıntılar", "detail-button"), c = n("button", "☆ Puanla ve yorumla", "community-button"), p = n("button", l.compareIds.has(e.id) ? "✓ Seçildi" : "⇄ Karşılaştır", "compare-button");
+  const s = $e(e), o = n("button", "Ayrıntılar", "detail-button"), c = n("button", "☆ Puanla ve yorumla", "community-button"), p = n("button", l.compareIds.has(e.id) ? "✓ Seçildi" : "⇄ Karşılaştır", "compare-button");
   return o.type = "button", o.onclick = () => ye(e), c.type = "button", c.onclick = () => bt(e), p.type = "button", p.onclick = () => {
-    l.compareIds.has(e.id) ? l.compareIds.delete(e.id) : l.compareIds.size < 4 ? l.compareIds.add(e.id) : f("En fazla dört kitap karşılaştırılabilir.", !0), z(), Ye();
+    l.compareIds.has(e.id) ? l.compareIds.delete(e.id) : l.compareIds.size < 4 ? l.compareIds.add(e.id) : f("En fazla dört kitap karşılaştırılabilir.", !0), z(), Ue();
   }, s.append(o, c, p), a.append(F(e), i, n("p", e.description, "summary"), ht(e), s), a;
 }
-function Ye() {
+function Ue() {
   const e = l.compareIds.size;
   t("#compare-count").textContent = `${e} kitap seçildi`, t("#compare-tray").classList.toggle("hidden", e < 1), t("#compare-run").disabled = e < 2;
 }
 t("#compare-clear").onclick = () => {
-  l.compareIds.clear(), t("#comparison-results").classList.add("hidden"), z(), Ye();
+  l.compareIds.clear(), t("#comparison-results").classList.add("hidden"), z(), Ue();
 };
 t("#compare-run").onclick = async () => {
   try {
@@ -502,7 +504,7 @@ async function z(e = !1) {
       l.catalog.offset = Math.max(0, l.catalog.offset - l.catalog.limit), z();
     }, u.onclick = () => {
       l.catalog.offset += l.catalog.limit, z();
-    }, t("#catalog-pagination").replaceChildren(p, n("span", `Sayfa ${Math.floor(l.catalog.offset / l.catalog.limit) + 1}`, "muted"), u), I();
+    }, t("#catalog-pagination").replaceChildren(p, n("span", `Sayfa ${Math.floor(l.catalog.offset / l.catalog.limit) + 1}`, "muted"), u), K();
   } finally {
     a.setAttribute("aria-busy", "false");
   }
@@ -519,7 +521,7 @@ t("#catalog-clear").onclick = () => {
 };
 t("#catalog-sort").onchange = () => z(!0).catch((e) => f(e.message, !0));
 async function bt(e) {
-  t("#community-title").textContent = `${e.title} — ${e.author}`, t("#community-book-id").value = e.id, t("#community-dialog").showModal(), await Y(e.id);
+  t("#community-title").textContent = `${e.title} — ${e.author}`, t("#community-book-id").value = e.id, t("#community-dialog").showModal(), await U(e.id);
 }
 t("[data-close-community]").onclick = () => t("#community-dialog").close();
 t("#community-comment-form").onsubmit = async (e) => {
@@ -527,19 +529,19 @@ t("#community-comment-form").onsubmit = async (e) => {
   const a = t("#community-book-id").value, i = t("#community-parent-id").value || null, r = e.submitter;
   r.disabled = !0;
   try {
-    await g("/me/book-comments", { method: "POST", body: JSON.stringify({ book_id: a, parent_comment_id: i, content: t("#community-comment").value, contains_spoiler: t("#community-spoiler").checked }) }), e.target.reset(), t("#community-book-id").value = a, t("#community-parent-id").value = "", t("#community-reply-context").classList.add("hidden"), await Y(a), await be(), f(i ? "Yanıtın yayınlandı." : "Yorumun yayınlandı.");
+    await g("/me/book-comments", { method: "POST", body: JSON.stringify({ book_id: a, parent_comment_id: i, content: t("#community-comment").value, contains_spoiler: t("#community-spoiler").checked }) }), e.target.reset(), t("#community-book-id").value = a, t("#community-parent-id").value = "", t("#community-reply-context").classList.add("hidden"), await U(a), await be(), f(i ? "Yanıtın yayınlandı." : "Yorumun yayınlandı.");
   } catch (s) {
     f(s.message, !0);
   } finally {
     r.disabled = !1;
   }
 };
-async function Y(e) {
+async function U(e) {
   const a = await g(`/books/${e}/community`);
   t("#community-rating").replaceChildren(...[1, 2, 3, 4, 5].map((u) => {
     const d = n("button", "★", u <= a.own_rating ? "active" : "");
     return d.type = "button", d.title = `${u} yıldız`, d.setAttribute("aria-label", `${u} yıldız ver`), d.onclick = async () => {
-      await g(`/me/book-ratings/${e}`, { method: "PUT", body: JSON.stringify({ rating: u }) }), await Y(e), await be(), await z(), f("Puanın kaydedildi.");
+      await g(`/me/book-ratings/${e}`, { method: "PUT", body: JSON.stringify({ rating: u }) }), await U(e), await be(), await z(), f("Puanın kaydedildi.");
     }, d;
   }));
   const r = a.rating_distribution || {}, s = t("#community-rating-summary");
@@ -552,26 +554,26 @@ async function Y(e) {
     const d = n("article", "", `community-comment${u.contains_spoiler ? " spoiler" : ""}${u.parent_comment_id ? " reply" : ""}`), m = n("header"), y = n("strong", u.author.display_name);
     u.author.is_verified && y.append(n("span", " ✓", "verified-badge")), m.append(y, n("time", new Date(u.created_at).toLocaleDateString("tr-TR")));
     const h = n("p", u.contains_spoiler ? "Spoiler — görmek için tıkla" : u.content);
-    u.contains_spoiler && (h.tabIndex = 0, h.onclick = () => h.textContent = u.content, h.onkeydown = (x) => {
-      x.key === "Enter" && h.click();
+    u.contains_spoiler && (h.tabIndex = 0, h.onclick = () => h.textContent = u.content, h.onkeydown = ($) => {
+      $.key === "Enter" && h.click();
     });
     const b = n("div", "", "comment-actions"), v = n("button", "Yanıtla", "text-button"), w = n("button", `${u.own_helpful ? "✓ " : ""}Faydalı · ${u.helpful_count || 0}`, "text-button");
     if (v.onclick = () => {
       t("#community-parent-id").value = u.id, t("#community-reply-context").textContent = `${u.author.display_name} adlı okura yanıt veriyorsun.`, t("#community-reply-context").classList.remove("hidden"), t("#community-comment").focus();
     }, w.onclick = async () => {
-      await g(`/me/comments/${u.id}/helpful`, { method: u.own_helpful ? "DELETE" : "PUT" }), await Y(e);
+      await g(`/me/comments/${u.id}/helpful`, { method: u.own_helpful ? "DELETE" : "PUT" }), await U(e);
     }, b.append(v, w), u.is_mine) {
-      const x = n("button", "Yorumu sil", "text-button");
-      x.onclick = async () => {
-        await g(`/me/book-comments/${u.id}`, { method: "DELETE" }), await Y(e), await be();
-      }, b.append(x);
+      const $ = n("button", "Yorumu sil", "text-button");
+      $.onclick = async () => {
+        await g(`/me/book-comments/${u.id}`, { method: "DELETE" }), await U(e), await be();
+      }, b.append($);
     } else {
-      const x = n("button", u.following_author ? "Takibi bırak" : "Takip et", "text-button"), S = n("button", "Şikâyet", "text-button");
-      x.onclick = async () => {
-        await g(`/me/follows/${u.author.id}`, { method: u.following_author ? "DELETE" : "PUT" }), await Y(e);
+      const $ = n("button", u.following_author ? "Takibi bırak" : "Takip et", "text-button"), S = n("button", "Şikâyet", "text-button");
+      $.onclick = async () => {
+        await g(`/me/follows/${u.author.id}`, { method: u.following_author ? "DELETE" : "PUT" }), await U(e);
       }, S.onclick = () => {
         t("#report-form").reset(), t("#report-comment-id").value = u.id, t("#report-dialog").showModal();
-      }, b.append(x, S);
+      }, b.append($, S);
     }
     return d.append(m, h, b), d;
   }) : [n("p", "İlk yorumu sen paylaş.", "muted")]);
@@ -596,8 +598,8 @@ async function ye(e) {
     if (m.append(n("h3", "Fiyat geçmişi")), y.length) {
       const h = n("div", "", "price-sparkline"), b = Math.min(...y.map((w) => w.price_minor)), v = Math.max(...y.map((w) => w.price_minor));
       y.forEach((w) => {
-        const x = n("i");
-        x.style.height = `${20 + (v - w.price_minor) / Math.max(1, v - b) * 70}%`, x.title = `${N(w.price_minor, w.currency)} · ${new Date(w.observed_at).toLocaleDateString("tr-TR")}`, h.append(x);
+        const $ = n("i");
+        $.style.height = `${20 + (v - w.price_minor) / Math.max(1, v - b) * 70}%`, $.title = `${N(w.price_minor, w.currency)} · ${new Date(w.observed_at).toLocaleDateString("tr-TR")}`, h.append($);
       }), m.append(h);
     } else m.append(n("p", "Fiyat geçmişi veri toplandıkça oluşacak.", "muted"));
     i.replaceChildren(s, c, d, m);
@@ -611,17 +613,17 @@ function vt(e, a) {
   return r.width = 760, r.height = 230, r.setAttribute("aria-label", "Gerçek ve tahmini fiyat grafiği"), r.setAttribute("role", "img"), s.append(n("span", "Gerçek fiyat", "actual"), n("span", "15 günlük tahmin", "forecast")), i.append(r, s), requestAnimationFrame(() => {
     const o = r.getContext("2d"), c = e.slice().reverse().slice(-45).map((_) => ({ value: _.price_minor, label: _.observed_at })), p = a.map((_) => ({ value: _.predicted_price_minor, low: _.lower_price_minor, high: _.upper_price_minor, label: _.forecast_date })), u = [...c, ...p], d = u.flatMap((_) => [_.value, _.low, _.high].filter(Number.isFinite));
     if (!d.length) return;
-    const m = { x: 44, y: 24, b: 34 }, y = r.width - m.x - 18, h = r.height - m.y - m.b, b = Math.min(...d) * 0.96, v = Math.max(...d) * 1.04, w = Math.max(1, v - b), x = (_) => m.x + _ / Math.max(1, u.length - 1) * y, S = (_) => m.y + (v - _) / w * h;
+    const m = { x: 44, y: 24, b: 34 }, y = r.width - m.x - 18, h = r.height - m.y - m.b, b = Math.min(...d) * 0.96, v = Math.max(...d) * 1.04, w = Math.max(1, v - b), $ = (_) => m.x + _ / Math.max(1, u.length - 1) * y, S = (_) => m.y + (v - _) / w * h;
     o.clearRect(0, 0, r.width, r.height), o.strokeStyle = "#dfe5df", o.fillStyle = "#68766f", o.font = "12px Inter, sans-serif";
     for (let _ = 0; _ < 4; _++) {
       const T = m.y + _ * h / 3, L = Math.round(v - _ * w / 3);
       o.beginPath(), o.moveTo(m.x, T), o.lineTo(r.width - 18, T), o.stroke(), o.fillText(`${Math.round(L / 100)} TL`, 2, T + 4);
     }
-    p.length && (o.fillStyle = "rgba(213,154,69,.14)", o.beginPath(), p.forEach((_, T) => o.lineTo(x(c.length + T), S(_.high))), [...p].reverse().forEach((_, T) => o.lineTo(x(u.length - 1 - T), S(_.low))), o.closePath(), o.fill());
-    const A = (_, T, L, B = !1) => {
-      o.beginPath(), o.strokeStyle = L, o.lineWidth = 3, o.setLineDash(B ? [7, 6] : []), _.forEach((te, k) => {
-        const $ = x(T + k), C = S(te.value);
-        k ? o.lineTo($, C) : o.moveTo($, C);
+    p.length && (o.fillStyle = "rgba(213,154,69,.14)", o.beginPath(), p.forEach((_, T) => o.lineTo($(c.length + T), S(_.high))), [...p].reverse().forEach((_, T) => o.lineTo($(u.length - 1 - T), S(_.low))), o.closePath(), o.fill());
+    const A = (_, T, L, H = !1) => {
+      o.beginPath(), o.strokeStyle = L, o.lineWidth = 3, o.setLineDash(H ? [7, 6] : []), _.forEach((te, k) => {
+        const x = $(T + k), C = S(te.value);
+        k ? o.lineTo(x, C) : o.moveTo(x, C);
       }), o.stroke(), o.setLineDash([]);
     };
     if (A(c, 0, "#08745a"), p.length) {
@@ -648,9 +650,9 @@ ye = async function(e) {
     const y = n("section", "", "detail-section price-intelligence"), h = o.price_intelligence || {};
     if (y.append(n("p", "FİYAT ZEKÂSI", "eyebrow"), n("h3", "Geçmiş ve 15 günlük görünüm")), h.status === "ready") {
       const b = n("div", "", "price-signal-grid"), v = ((r = h.windows) == null ? void 0 : r["30"]) || {};
-      b.append(n("div", `${N(h.current_price_minor)}|Güncel en düşük`, "price-signal"), n("div", `${N(v.lowest_price_minor)}|30 günün en düşüğü`, "price-signal"), n("div", `${h.deal_score}/100|${h.deal_label}`, "price-signal")), [...b.children].forEach((x) => {
-        const [S, A] = x.textContent.split("|");
-        x.replaceChildren(n("strong", S), n("small", A));
+      b.append(n("div", `${N(h.current_price_minor)}|Güncel en düşük`, "price-signal"), n("div", `${N(v.lowest_price_minor)}|30 günün en düşüğü`, "price-signal"), n("div", `${h.deal_score}/100|${h.deal_label}`, "price-signal")), [...b.children].forEach(($) => {
+        const [S, A] = $.textContent.split("|");
+        $.replaceChildren(n("strong", S), n("small", A));
       }), y.append(b, vt(o.price_history || [], o.price_forecasts || []));
       const w = (s = o.price_forecasts) == null ? void 0 : s.at(-1);
       w && y.append(n("p", `Model: ${w.model_name} · Son veri: ${new Date(w.trained_through).toLocaleDateString("tr-TR")} · Tahminler kesin fiyat vaadi değildir.`, "forecast-note"));
@@ -689,7 +691,7 @@ async function kt() {
 M(".tab").forEach((e) => e.onclick = () => {
   l.shelf = e.dataset.shelf, M(".tab").forEach((a) => a.classList.toggle("active", a === e)), oe();
 });
-function Ue() {
+function Ye() {
   return l.shelf === "favorite" ? l.profile.favorite_books : l.profile[`${l.shelf}_books`] || [];
 }
 function _t(e) {
@@ -698,7 +700,7 @@ function _t(e) {
     const s = n("div", "", "progress-bar"), o = n("i");
     o.style.width = `${e.progress_percent}%`, s.append(o), i.append(s, n("p", e.total_pages ? `${e.current_page} / ${e.total_pages} sayfa · %${e.progress_percent}` : `${e.current_page} sayfa`, "muted"));
   }
-  i.append(xe(e));
+  i.append($e(e));
   const r = n("button", "◷ Okuma planı", "ghost reading-plan-button");
   return r.type = "button", r.onclick = () => wt(e), i.append(r), a.append(F(e), i), a;
 }
@@ -711,17 +713,17 @@ async function wt(e) {
   }
 }
 function oe() {
-  const e = Ue();
+  const e = Ye();
   if (e.length) {
-    t("#library-grid").replaceChildren(...e.map(_t)), I();
+    t("#library-grid").replaceChildren(...e.map(_t)), K();
     return;
   }
   const a = n("div", "", "empty"), i = n("div", "", "empty-shelf");
   i.setAttribute("aria-hidden", "true"), i.append(n("i"), n("i"), n("i"), n("span"));
   const r = n("h3", l.shelf === "favorite" ? "Favori rafın seni bekliyor" : "Bu rafta henüz kitap yok"), s = n("p", l.shelf === "reading" ? "Okumaya başladığın kitabı ekle; ilerlemeni buradan takip et." : "Hemen yeni dünyalar keşfet ve ilgini çeken kitapları bu rafa yerleştir.", "muted"), o = n("div", "", "empty-actions"), c = n("button", "Kataloğu keşfet", "primary"), p = n("button", "Kendi kitabımı ekle", "ghost");
-  c.type = p.type = "button", c.onclick = () => G("catalog"), p.onclick = () => ce(), o.append(c, p), a.append(i, r, s, o), t("#library-grid").replaceChildren(a), I();
+  c.type = p.type = "button", c.onclick = () => I("catalog"), p.onclick = () => ce(), o.append(c, p), a.append(i, r, s, o), t("#library-grid").replaceChildren(a), K();
 }
-function xt(e) {
+function $t(e) {
   const a = le(e) || e;
   t("#progress-book-id").value = e.id, t("#progress-book-id").dataset.custom = e.is_custom ? "1" : "", t("#progress-title").textContent = e.title, t("#current-page").value = (a == null ? void 0 : a.current_page) || 0, t("#total-pages").value = (a == null ? void 0 : a.total_pages) || "", t("#progress-dialog").showModal();
 }
@@ -749,7 +751,7 @@ t("#custom-book-form").onsubmit = async (e) => {
     f(r.message, !0);
   }
 };
-async function $t(e) {
+async function xt(e) {
   if (confirm(`“${e.title}” kişisel kitaplığından silinsin mi?`))
     try {
       await g(`/me/custom-books/${encodeURIComponent(e.id)}`, { method: "DELETE" }), await D(), f("Kişisel kitap silindi.");
@@ -801,10 +803,10 @@ function de() {
     h.append(re(d, !0), b);
     const v = n("h4", d.name), w = n("span", `+${d.xp_reward} XP`, "badge-reward");
     y.append(h, v, w, n("p", d.description, "muted"));
-    const x = n("div", "", "badge-progress"), S = n("div", "", "progress-bar"), A = n("i");
+    const $ = n("div", "", "badge-progress"), S = n("div", "", "progress-bar"), A = n("i");
     A.style.width = `${d.progress_percent}%`, S.append(A);
     const _ = Math.max(0, d.goal - d.progress), T = d.earned ? "Başarım tamamlandı" : _ === 1 ? "1 adım kaldı" : `${d.progress} / ${d.goal}`;
-    if (x.append(S, n("small", T, "muted")), y.append(x), d.earned) {
+    if ($.append(S, n("small", T, "muted")), y.append($), d.earned) {
       const L = n("button", d.showcased ? "✓ Vitrinde" : "Vitrinde göster", d.showcased ? "ghost badge-toggle active" : "ghost badge-toggle");
       L.type = "button", L.setAttribute("aria-pressed", String(d.showcased)), L.onclick = () => Ct(d.code, L), y.append(L);
     }
@@ -968,7 +970,7 @@ async function zt(e) {
 t("#read-all").onclick = async () => {
   await g("/me/notifications/read-all", { method: "PUT" }), await D();
 };
-async function $e() {
+async function xe() {
   try {
     const [e, a] = await Promise.all([g("/admin/catalog/issues"), g("/admin/catalog/jobs")]);
     t("#catalog-issues").replaceChildren(...e.length ? e.map((i) => {
@@ -976,7 +978,7 @@ async function $e() {
       return s.append(n("strong", i.title || i.book_id), n("p", `${i.issue_type} · ${i.severity}`, "muted")), [["Çözüldü", "resolved"], ["Yok say", "dismissed"]].forEach(([c, p]) => {
         const u = n("button", c, "ghost");
         u.onclick = async () => {
-          await g(`/admin/catalog/issues/${i.id}`, { method: "PATCH", body: JSON.stringify({ status: p }) }), await $e();
+          await g(`/admin/catalog/issues/${i.id}`, { method: "PATCH", body: JSON.stringify({ status: p }) }), await xe();
         }, o.append(u);
       }), r.append(s, o), r;
     }) : [n("p", "Açık katalog incelemesi yok.", "muted")]), t("#catalog-jobs").replaceChildren(...a.length ? a.map((i) => n("div", `${i.job_type} · ${i.status} · ${i.attempts}/${i.max_attempts}`, "admin-row")) : [n("p", "Kuyrukta veri işi yok.", "muted")]);
@@ -984,7 +986,7 @@ async function $e() {
     f(e.message, !0);
   }
 }
-t("#admin-nav").addEventListener("click", $e);
+t("#admin-nav").addEventListener("click", xe);
 t("#admin-nav").addEventListener("click", () => ee().catch((e) => f(e.message, !0)));
 t("#admin-nav").addEventListener("click", () => Ve().catch((e) => f(e.message, !0)));
 async function Ve() {
@@ -1012,39 +1014,39 @@ async function ee() {
   t("#admin-social-metrics").replaceChildren(...d.map((k) => Je(...k)));
   const m = [{ label: "Kullanıcı", value: i.users, tone: "green" }, { label: "Yorum", value: i.comments, tone: "amber" }, { label: "Yıldız", value: i.ratings, tone: "blue" }, { label: "Teklif", value: i.offers, tone: "purple" }], y = Math.max(1, ...m.map((k) => Number(k.value || 0)));
   t("#admin-community-chart").replaceChildren(...m.map((k) => {
-    const $ = n("div", "", "chart-column"), C = n("div", "", "chart-bar-slot"), E = n("i", "", `tone-${k.tone}`), O = Number(k.value || 0);
-    return E.style.setProperty("--height", O ? `${Math.max(7, O / y * 100)}%` : "0%"), C.append(E), $.append(n("b", k.value), C, n("span", k.label)), $;
+    const x = n("div", "", "chart-column"), C = n("div", "", "chart-bar-slot"), E = n("i", "", `tone-${k.tone}`), O = Number(k.value || 0);
+    return E.style.setProperty("--height", O ? `${Math.max(7, O / y * 100)}%` : "0%"), C.append(E), x.append(n("b", k.value), C, n("span", k.label)), x;
   }));
-  const h = Math.round(Number(u.login_failure_rate || 0) * 100), b = Math.max(0, 100 - h), v = Number(p.p95_ms || 0), w = Number(u.suspicious_login_attempts || 0), x = c.alerts || [];
-  t("#admin-alert-count").textContent = `${x.length} uyarı`, t("#admin-alert-count").className = `status-chip ${x.length ? "status-warn" : "status-good"}`, t("#admin-ops-health").replaceChildren(...[[`${b}%`, "Giriş başarısı", b, "green"], [`${v} ms`, "Giriş P95", Math.min(100, v / 1500 * 100), v >= 1500 ? "red" : "blue"], [w, "Şüpheli giriş", Math.min(100, w / 10 * 100), w >= 10 ? "red" : "amber"]].map(([k, $, C, E]) => {
+  const h = Math.round(Number(u.login_failure_rate || 0) * 100), b = Math.max(0, 100 - h), v = Number(p.p95_ms || 0), w = Number(u.suspicious_login_attempts || 0), $ = c.alerts || [];
+  t("#admin-alert-count").textContent = `${$.length} uyarı`, t("#admin-alert-count").className = `status-chip ${$.length ? "status-warn" : "status-good"}`, t("#admin-ops-health").replaceChildren(...[[`${b}%`, "Giriş başarısı", b, "green"], [`${v} ms`, "Giriş P95", Math.min(100, v / 1500 * 100), v >= 1500 ? "red" : "blue"], [w, "Şüpheli giriş", Math.min(100, w / 10 * 100), w >= 10 ? "red" : "amber"]].map(([k, x, C, E]) => {
     const O = n("div", "", "ops-item"), R = n("div", "", "ops-track"), ae = n("i", "", `tone-${E}`);
-    return ae.style.width = `${C}%`, R.append(ae), O.append(n("strong", k), n("span", $), R), O;
+    return ae.style.width = `${C}%`, R.append(ae), O.append(n("strong", k), n("span", x), R), O;
   }));
   const S = i.top_books || [], A = Math.max(1, ...S.map((k) => Number(k.rating_count || 0)));
-  t("#admin-top-books").replaceChildren(...S.length ? S.slice(0, 6).map((k, $) => {
+  t("#admin-top-books").replaceChildren(...S.length ? S.slice(0, 6).map((k, x) => {
     const C = n("div", "", "rank-row"), E = n("div"), O = n("div", "", "rank-track"), R = n("i");
-    return E.append(n("span", `${$ + 1}`, "rank-number"), n("b", k.title), n("small", `★ ${Number(k.rating_average || 0).toFixed(1)} · ${k.rating_count}`)), R.style.width = `${Math.max(4, Number(k.rating_count || 0) / A * 100)}%`, O.append(R), C.append(E, O), C;
+    return E.append(n("span", `${x + 1}`, "rank-number"), n("b", k.title), n("small", `★ ${Number(k.rating_average || 0).toFixed(1)} · ${k.rating_count}`)), R.style.width = `${Math.max(4, Number(k.rating_count || 0) / A * 100)}%`, O.append(R), C.append(E, O), C;
   }) : [n("p", "Henüz topluluk puanı yok.", "muted")]);
   const _ = { success: 0, warning: 0, error: 0 };
   r.forEach((k) => {
-    const $ = Number(k.status_code || 0);
-    k.level === "error" || $ >= 500 ? _.error++ : k.level === "warning" || $ >= 400 ? _.warning++ : _.success++;
+    const x = Number(k.status_code || 0);
+    k.level === "error" || x >= 500 ? _.error++ : k.level === "warning" || x >= 400 ? _.warning++ : _.success++;
   });
   const T = Math.max(1, r.length), L = n("div", "", "log-stack");
-  Object.entries(_).forEach(([k, $]) => {
+  Object.entries(_).forEach(([k, x]) => {
     const C = n("i", "", k);
-    C.style.width = `${$ / T * 100}%`, L.append(C);
+    C.style.width = `${x / T * 100}%`, L.append(C);
   });
-  const B = n("div", "", "log-legend");
-  [["success", "Başarılı"], ["warning", "Uyarı"], ["error", "Hata"]].forEach(([k, $]) => B.append(n("span", `${$} ${_[k]}`, k))), t("#admin-log-chart").replaceChildren(L, B), t("#system-logs").replaceChildren(...r.length ? r.slice(0, 6).map((k) => {
-    const $ = n("div", "", `admin-row log-${k.level}`);
-    return $.append(n("strong", `${k.status_code || "—"} ${k.route || k.event_type}`), n("small", `${k.duration_ms || 0} ms`)), $;
+  const H = n("div", "", "log-legend");
+  [["success", "Başarılı"], ["warning", "Uyarı"], ["error", "Hata"]].forEach(([k, x]) => H.append(n("span", `${x} ${_[k]}`, k))), t("#admin-log-chart").replaceChildren(L, H), t("#system-logs").replaceChildren(...r.length ? r.slice(0, 6).map((k) => {
+    const x = n("div", "", `admin-row log-${k.level}`);
+    return x.append(n("strong", `${k.status_code || "—"} ${k.route || k.event_type}`), n("small", `${k.duration_ms || 0} ms`)), x;
   }) : [n("p", "Henüz sistem kaydı yok.", "muted")]), t("#admin-users").replaceChildren(...s.length ? s.map((k) => {
-    const $ = n("div", "", "admin-row"), C = n("div"), E = n("button", "Yönet", "ghost");
-    return C.append(n("strong", `${k.display_name}${k.is_verified ? " ✓" : ""}`), n("p", `${k.app_role || "user"} · ${k.is_banned ? "BANLI" : k.rating_count || "0 puan, " + (k.comment_count || 0) + " yorum"}`, "muted")), E.onclick = () => Rt(k), $.append(C, E), $;
+    const x = n("div", "", "admin-row"), C = n("div"), E = n("button", "Yönet", "ghost");
+    return C.append(n("strong", `${k.display_name}${k.is_verified ? " ✓" : ""}`), n("p", `${k.app_role || "user"} · ${k.is_banned ? "BANLI" : k.rating_count || "0 puan, " + (k.comment_count || 0) + " yorum"}`, "muted")), E.onclick = () => Rt(k), x.append(C, E), x;
   }) : [n("p", "Kullanıcı bulunamadı.", "muted")]), t("#report-queue-count").textContent = `${o.length} açık`, t("#admin-reports").replaceChildren(...o.length ? o.map((k) => {
     var R;
-    const $ = n("div", "", "admin-row"), C = n("div"), E = n("div", "", "actions"), O = k.content || ((R = k.comment) == null ? void 0 : R.content) || "";
+    const x = n("div", "", "admin-row"), C = n("div"), E = n("div", "", "actions"), O = k.content || ((R = k.comment) == null ? void 0 : R.content) || "";
     return C.append(n("strong", k.reason), n("p", O, "muted")), [["İncele", "reviewing", null], ["Kaldır", "resolved", "removed"], ["Reddet", "dismissed", null]].forEach(([ae, Xe, Ze]) => {
       const ne = n("button", ae, "ghost");
       ne.onclick = async () => {
@@ -1055,7 +1057,7 @@ async function ee() {
           ne.disabled = !1;
         }
       }, E.append(ne);
-    }), $.append(C, E), $;
+    }), x.append(C, E), x;
   }) : [n("p", "Açık yorum şikâyeti yok.", "muted")]);
 }
 async function Ce() {
@@ -1154,13 +1156,13 @@ t("#run-evaluation").onclick = async () => {
 };
 t("#queue-quality-scan").onclick = async () => {
   try {
-    await g("/admin/catalog/jobs", { method: "POST", body: JSON.stringify({ job_type: "quality_scan", limit: 200 }) }), await $e(), f("Kalite taraması kuyruğa eklendi.");
+    await g("/admin/catalog/jobs", { method: "POST", body: JSON.stringify({ job_type: "quality_scan", limit: 200 }) }), await xe(), f("Kalite taraması kuyruğa eklendi.");
   } catch (e) {
     f(e.message, !0);
   }
 };
 let ze = !1;
-function q(e, a, i = [], r = !0) {
+function G(e, a, i = [], r = !0) {
   const s = n("div", a, `chat-message ${e}`);
   if (i.length) {
     const o = n("div", "", "chat-books");
@@ -1168,7 +1170,7 @@ function q(e, a, i = [], r = !0) {
   }
   t("#chat-messages").append(s), t("#chat-messages").scrollTop = t("#chat-messages").scrollHeight, r && (l.chatHistory.push({ role: e, content: a }), l.chatHistory = l.chatHistory.slice(-8));
 }
-function U(e) {
+function Y(e) {
   t("#chat-suggestions").replaceChildren(...e.map((a) => {
     const i = n("button", a);
     return i.type = "button", i.onclick = () => Qe(a), i;
@@ -1183,7 +1185,7 @@ async function Se() {
   }
 }
 function Te() {
-  l.chatSessionId = null, l.chatHistory = [], t("#chat-messages").replaceChildren(), q("assistant", "Yeni bir konuşma başladı. Nasıl bir kitap aradığını anlatabilirsin.", [], !1), U(["Kısa ve atmosferik bir roman", "Şu an ne okuyorum?"]), t("#chat-session-select").value = "", t("#chat-delete").disabled = !0;
+  l.chatSessionId = null, l.chatHistory = [], t("#chat-messages").replaceChildren(), G("assistant", "Yeni bir konuşma başladı. Nasıl bir kitap aradığını anlatabilirsin.", [], !1), Y(["Kısa ve atmosferik bir roman", "Şu an ne okuyorum?"]), t("#chat-session-select").value = "", t("#chat-delete").disabled = !0;
 }
 async function It(e) {
   if (!e) {
@@ -1192,7 +1194,7 @@ async function It(e) {
   }
   try {
     const a = await g(`/me/chat/sessions/${encodeURIComponent(e)}/messages`);
-    l.chatSessionId = e, l.chatHistory = [], t("#chat-messages").replaceChildren(), a.forEach((i) => q(i.role, i.content, i.books || [], !0)), t("#chat-delete").disabled = !1, U(["Konuşmaya devam et", "Benzer kitaplar bul"]);
+    l.chatSessionId = e, l.chatHistory = [], t("#chat-messages").replaceChildren(), a.forEach((i) => G(i.role, i.content, i.books || [], !0)), t("#chat-delete").disabled = !1, Y(["Konuşmaya devam et", "Benzer kitaplar bul"]);
   } catch (a) {
     f(a.message, !0);
   }
@@ -1208,7 +1210,7 @@ t("#chat-delete").onclick = async () => {
     }
 };
 function Kt() {
-  ze || (ze = !0, q("assistant", "Merhaba! Kitaplar, yazarlar ve edebî kavramlar hakkında konuşabilir; ekrandaki sonuçları yorumlayabilir ve okuma yolculuğuna eşlik edebilirim.", [], !1), U(["Ekrandaki kitapları karşılaştır", "Roman ile novella farkı nedir?", "Yıllık hedefim nasıl gidiyor?"]), Se(), I());
+  ze || (ze = !0, G("assistant", "Merhaba! Kitaplar, yazarlar ve edebî kavramlar hakkında konuşabilir; ekrandaki sonuçları yorumlayabilir ve okuma yolculuğuna eşlik edebilirim.", [], !1), Y(["Ekrandaki kitapları karşılaştır", "Roman ile novella farkı nedir?", "Yıllık hedefim nasıl gidiyor?"]), Se(), K());
 }
 t("#chat-toggle").onclick = () => {
   const e = t("#chat-panel").classList.toggle("hidden") === !1;
@@ -1228,13 +1230,13 @@ function Ht(e, a) {
 function We() {
   const e = Bt();
   let a = [], i = null;
-  return e === "discover" && !t("#recommendations-panel").classList.contains("hidden") ? (a = l.lastRecommendations, i = l.lastDiscoveryQuery) : e === "catalog" ? (a = l.catalog.items, i = t("#catalog-search").value.trim() || null) : e === "library" && (a = Ue()), { view: e, query: i, books: a.slice(0, 10).map((r, s) => Ht(r, s + 1)) };
+  return e === "discover" && !t("#recommendations-panel").classList.contains("hidden") ? (a = l.lastRecommendations, i = l.lastDiscoveryQuery) : e === "catalog" ? (a = l.catalog.items, i = t("#catalog-search").value.trim() || null) : e === "library" && (a = Ye()), { view: e, query: i, books: a.slice(0, 10).map((r, s) => Ht(r, s + 1)) };
 }
 function Le(e, a = !1) {
   const i = t("#chat-context");
   i && (i.classList.toggle("loading", a), i.querySelector("span").textContent = e);
 }
-function I() {
+function K() {
   if (!t("#chat-context")) return;
   const e = We(), a = { discover: "eşleştirme", catalog: "katalog", library: "kitaplık", insights: "okuma analizi", alerts: "fiyat alarmı", quality: "kalite" };
   Le(e.books.length ? `${e.books.length} ${a[e.view]} kitabı bu sohbete bağlı.` : `${a[e.view]} ekranını görebiliyorum.`);
@@ -1245,16 +1247,16 @@ async function Qe(e) {
   if (a.length < 2 || me) return;
   me = !0;
   const i = l.chatHistory.slice(-8), r = We(), s = t("#chat-input"), o = t("#chat-form button"), c = new AbortController(), p = setTimeout(() => c.abort(), 3e4);
-  q("user", a), s.value = "", s.disabled = !0, o.disabled = !0, U([]), Le("Yanıt hazırlanıyor…", !0);
+  G("user", a), s.value = "", s.disabled = !0, o.disabled = !0, Y([]), Le("Yanıt hazırlanıyor…", !0);
   const u = n("div", r.books.length ? "Ekrandaki kitapları ve konuşmayı inceliyorum…" : "Mihenk asistanı düşünüyor…", "chat-typing");
   u.setAttribute("role", "status"), t("#chat-messages").append(u), t("#chat-messages").scrollTop = t("#chat-messages").scrollHeight;
   try {
     const d = await g("/me/chat", { method: "POST", signal: c.signal, body: JSON.stringify({ message: a, history: i, active_view_context: r, session_id: l.chatSessionId }) });
-    l.chatSessionId = d.session_id, u.remove(), q("assistant", d.answer || "Yanıt oluşturulamadı.", d.books || []), U(d.suggestions || []), d.pending_action && await window.BookPusulasiUI.confirmAction(d.pending_action) && (await D(), q("assistant", "İşlem onayından sonra güvenle tamamlandı.", [], !1), f("Asistan işlemi tamamladı."));
+    l.chatSessionId = d.session_id, u.remove(), G("assistant", d.answer || "Yanıt oluşturulamadı.", d.books || []), Y(d.suggestions || []), d.pending_action && await window.BookPusulasiUI.confirmAction(d.pending_action) && (await D(), G("assistant", "İşlem onayından sonra güvenle tamamlandı.", [], !1), f("Asistan işlemi tamamladı."));
   } catch (d) {
-    q("assistant", d.message || "Asistan yanıtı tamamlanamadı."), U(["Tekrar dene", "Şu an ne okuyorum?"]);
+    G("assistant", d.message || "Asistan yanıtı tamamlanamadı."), Y(["Tekrar dene", "Şu an ne okuyorum?"]);
   } finally {
-    clearTimeout(p), u.remove(), me = !1, s.disabled = !1, o.disabled = !1, I(), s.focus();
+    clearTimeout(p), u.remove(), me = !1, s.disabled = !1, o.disabled = !1, K(), s.focus();
   }
 }
 t("#chat-form").onsubmit = (e) => {
@@ -1273,8 +1275,8 @@ function qt() {
     const y = a.getBoundingClientRect(), h = Math.min(devicePixelRatio || 1, 2);
     o = y.width, c = y.height, e.width = Math.max(1, Math.round(o * h)), e.height = Math.max(1, Math.round(c * h)), i.setTransform(h, 0, 0, h, 0, 0), r && m(performance.now());
   }
-  function d(y, h, b, v, w, x = []) {
-    i.save(), i.strokeStyle = `rgba(8,116,90,${w})`, i.lineWidth = 1, i.setLineDash(x), i.beginPath(), i.ellipse(y, h, b, v, -0.13, 0, Math.PI * 2), i.stroke(), i.restore();
+  function d(y, h, b, v, w, $ = []) {
+    i.save(), i.strokeStyle = `rgba(8,116,90,${w})`, i.lineWidth = 1, i.setLineDash($), i.beginPath(), i.ellipse(y, h, b, v, -0.13, 0, Math.PI * 2), i.stroke(), i.restore();
   }
   function m(y) {
     i.clearRect(0, 0, o, c);
@@ -1282,8 +1284,8 @@ function qt() {
     d(h, b, o * 0.31, c * 0.25, 0.17, [4, 7]), d(h, b, o * 0.41, c * 0.34, 0.09, [2, 10]), i.save(), i.fillStyle = "rgba(8,116,90,.16)", [[0.12, 0.2], [0.87, 0.3], [0.17, 0.78], [0.82, 0.82]].forEach(([v, w]) => {
       i.beginPath(), i.arc(o * v, c * w, 2.2, 0, Math.PI * 2), i.fill();
     }), i.restore(), p.forEach((v) => {
-      const w = v.angle + (r ? 0 : y * v.speed), x = v.orbit === 1, S = o * (x ? 0.39 : 0.3), A = c * (x ? 0.31 : 0.23), _ = (Math.sin(w) + 1) / 2, T = h + Math.cos(w) * S, L = b + Math.sin(w) * A, B = 0.76 + _ * 0.28;
-      i.save(), i.translate(T, L), i.rotate(v.tilt + Math.cos(w) * 0.09), i.scale(B, B), i.globalAlpha = 0.68 + _ * 0.28, i.shadowColor = "rgba(13,49,38,.18)", i.shadowBlur = 12, i.shadowOffsetY = 7, i.fillStyle = v.color, i.beginPath(), i.roundRect(-v.w / 2, -v.h / 2, v.w, v.h, 3), i.fill(), i.strokeStyle = "rgba(255,255,255,.28)", i.lineWidth = 0.8, i.stroke(), i.fillStyle = "rgba(255,255,255,.55)", i.fillRect(-v.w / 2 + 2.5, -v.h / 2 + 4, 1.2, v.h - 8), i.fillStyle = "rgba(255,255,255,.35)", i.fillRect(-v.w / 2 + 5, -v.h / 2 + 7, v.w - 7, 1), i.restore();
+      const w = v.angle + (r ? 0 : y * v.speed), $ = v.orbit === 1, S = o * ($ ? 0.39 : 0.3), A = c * ($ ? 0.31 : 0.23), _ = (Math.sin(w) + 1) / 2, T = h + Math.cos(w) * S, L = b + Math.sin(w) * A, H = 0.76 + _ * 0.28;
+      i.save(), i.translate(T, L), i.rotate(v.tilt + Math.cos(w) * 0.09), i.scale(H, H), i.globalAlpha = 0.68 + _ * 0.28, i.shadowColor = "rgba(13,49,38,.18)", i.shadowBlur = 12, i.shadowOffsetY = 7, i.fillStyle = v.color, i.beginPath(), i.roundRect(-v.w / 2, -v.h / 2, v.w, v.h, 3), i.fill(), i.strokeStyle = "rgba(255,255,255,.28)", i.lineWidth = 0.8, i.stroke(), i.fillStyle = "rgba(255,255,255,.55)", i.fillRect(-v.w / 2 + 2.5, -v.h / 2 + 4, 1.2, v.h - 8), i.fillStyle = "rgba(255,255,255,.35)", i.fillRect(-v.w / 2 + 5, -v.h / 2 + 7, v.w - 7, 1), i.restore();
     }), i.globalAlpha = 1, r || requestAnimationFrame(m);
   }
   new ResizeObserver(u).observe(a), u(), r || requestAnimationFrame(m);
@@ -1306,9 +1308,9 @@ async function Gt() {
   }
 }
 let Ie = !1;
-function Ut() {
+function Yt() {
   Ie || (Ie = !0, at(), Gt());
 }
 export {
-  Ut as initializeAppShell
+  Yt as initializeAppShell
 };
