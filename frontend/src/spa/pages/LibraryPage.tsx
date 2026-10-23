@@ -4,7 +4,7 @@ import { BookOpen, Heart, Pencil, Trash2 } from 'lucide-react'
 import { BookDetailDialog } from '../../features/catalog/BookDetailDialog'
 import { ProgressDialog } from '../../features/library/ProgressDialog'
 import { progressOf, SHELF_LABELS } from '../../features/library/shelves'
-import { useRemoveLibraryEntry, useUpsertLibraryEntry } from '../../shared/api/queries'
+import { customFields, useRemoveLibraryEntry, useUpsertLibraryEntry } from '../../shared/api/queries'
 import type { LibraryBook, Shelf } from '../../shared/api/types'
 import { BookCover, Dialog, EmptyState, IconButton, Progress, SegmentedTabs, Button, useToast } from '../../shared/ui'
 import { useSession } from '../layout/SessionGate'
@@ -25,7 +25,7 @@ function LibraryRow({ book, onOpen, onProgress, onRemove }: { book: LibraryBook;
   const upsert = useUpsertLibraryEntry()
   const { notify } = useToast()
   const update = (changes: Partial<Pick<LibraryBook, 'shelf' | 'is_favorite'>>, message: string) => upsert.mutate(
-    { book_id: book.id, shelf: book.shelf, is_favorite: book.is_favorite, current_page: book.current_page, total_pages: book.total_pages, ...changes },
+    { book_id: book.id, shelf: book.shelf, is_favorite: book.is_favorite, current_page: book.current_page, total_pages: book.total_pages, custom: customFields(book), ...changes },
     { onSuccess: () => notify(message, 'success'), onError: (error) => notify(error.message, 'error') },
   )
   const percent = progressOf(book)
@@ -88,7 +88,7 @@ export default function LibraryPage() {
 
   const confirmRemove = () => {
     if (!removing) return
-    remove.mutate(removing.id, {
+    remove.mutate(removing, {
       onSuccess: () => { notify(`“${removing.title}” kitaplığından kaldırıldı.`, 'success'); setRemoving(null) },
       onError: (error) => notify(error.message, 'error'),
     })

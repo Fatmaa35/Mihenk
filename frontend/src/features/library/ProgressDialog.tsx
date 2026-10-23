@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react'
-import { useUpsertLibraryEntry } from '../../shared/api/queries'
+import { customFields, useUpsertLibraryEntry } from '../../shared/api/queries'
 import type { LibraryBook } from '../../shared/api/types'
 import { Button, Dialog, useToast } from '../../shared/ui'
 import '../catalog/catalog.css'
@@ -24,7 +24,7 @@ export function ProgressDialog({ book, onClose }: ProgressDialogProps) {
     }
     const finished = total !== null && current === total
     upsert.mutate(
-      { book_id: book.id, shelf: finished ? 'read' : 'reading', is_favorite: book.is_favorite, current_page: current, total_pages: total },
+      { book_id: book.id, shelf: finished ? 'read' : 'reading', is_favorite: book.is_favorite, current_page: current, total_pages: total, custom: customFields(book) },
       {
         onSuccess: () => {
           notify(finished ? `Tebrikler! “${book.title}” okudukların rafına taşındı.` : 'İlerlemen kaydedildi.', 'success')
