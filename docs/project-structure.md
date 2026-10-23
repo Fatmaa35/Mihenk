@@ -36,15 +36,15 @@ Mihenk/
 │   │   ├── spa/                   # Yeni React uygulaması (router, sayfalar, tema)
 │   │   │   ├── index.html, main.tsx, App.tsx, routes.ts
 │   │   │   ├── layout/            # Uygulama kabuğu, oturum kapısı, hata sınırı
-│   │   │   ├── pages/             # Bugün, Keşfet, Kitaplığım, Kulüpler, Odak, Giriş
+│   │   │   ├── pages/             # Bugün, Keşfet, Kitaplığım, Topluluk, Odak, Profil,
+│   │   │   │                      # Bildirimler, Ayarlar, Yönetim, Giriş
 │   │   │   └── theme/             # tokens.css (açık/koyu), ThemeProvider
 │   │   ├── features/              # Özellik bileşenleri: catalog, library, growth, reading…
 │   │   ├── shared/
 │   │   │   ├── api/               # fetch istemcisi, tipler, TanStack Query kancaları
 │   │   │   └── ui/                # Tasarım sistemi bileşenleri (Button, Tile, Dialog…)
-│   │   ├── legacy/                # Klasik arayüz (/classic), taşındıkça küçülür
-│   │   └── styles/                # Klasik bileşenlerin CSS'i (token'lara bağlı)
-│   ├── public/                    # Yeni uygulamanın statik dosyaları (theme-init.js…)
+│   │   └── styles/                # Kulüp ve okuma modülü CSS'i (token'lara bağlı)
+│   ├── public/                    # Derlemeye kopyalanan dosyalar (theme-init.js)
 │   ├── tests-e2e/
 │   ├── scripts/                   # Derleme boyutu kontrolü
 │   └── …                          # Node, TypeScript ve Vite ayarları
@@ -108,8 +108,7 @@ backend'deki `SPA_ROUTES` listesine eklenir. Renk, boşluk ve köşe değerleri 
 koyu tema kendiliğinden çalışır. Sunucu verisi `shared/api/queries.ts` içindeki
 TanStack Query kancalarıyla okunur; sorgu anahtarları `queryKeys` nesnesindedir.
 
-`/classic` adresi henüz taşınmamış ekranları (topluluk, analiz, fiyat alarmları,
-ayarlar, yönetim) sunar. `?view=alerts` gibi bir parametreyle doğrudan bir bölüm açılır.
+Eski `/classic?view=…` bağlantıları yeni ekranlara yönlendirilir (`CLASSIC_VIEW_ROUTES`).
 
 Frontend bileşenlerini ilgili özellik klasörüne yerleştirin. Ortak modüller
 `shared/`, frontend birim testleri ilgili kaynak dosyanın yanında bulunur.

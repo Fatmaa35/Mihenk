@@ -17,6 +17,7 @@ const CommunityPage = lazy(() => import('./pages/CommunityPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
 const FocusPage = lazy(() => import('./pages/FocusPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
       { path: routes.profile, element: page(<ProfilePage />) },
       { path: routes.notifications, element: page(<NotificationsPage />) },
       { path: routes.settings, element: page(<SettingsPage />) },
+      { path: routes.admin, element: page(<AdminPage />) },
       { path: routes.focus, element: page(<FocusPage />) },
       { path: '*', element: page(<NotFoundPage />) },
     ],

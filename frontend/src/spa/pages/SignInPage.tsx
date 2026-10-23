@@ -1,22 +1,35 @@
 import { FormEvent, useState } from 'react'
 import { Link } from 'react-router'
 import { Eye, EyeOff } from 'lucide-react'
-import { useForgotPassword, useLogin, useRegister } from '../../shared/api/queries'
+import { useForgotPassword, useLogin, useRegister, useResetPassword } from '../../shared/api/queries'
+import { consumeEmailLink, peekEmailLink } from '../emailLink'
 import { Button, SegmentedTabs } from '../../shared/ui'
 import { useTheme } from '../theme/ThemeProvider'
 import './sign-in.css'
 
-type Mode = 'login' | 'register' | 'forgot'
+type Mode = 'login' | 'register' | 'forgot' | 'reset'
+type Message = { tone: 'error' | 'success'; text: string }
+
+/** E-posta bağlantısından gelindiyse sayfanın hangi adımla açılacağını belirler. */
+function initialState(): { mode: Mode; message: Message | null; invite: boolean } {
+  const link = peekEmailLink()
+  if (link.kind === 'recovery' || link.kind === 'invite') return { mode: 'reset', message: null, invite: link.kind === 'invite' }
+  if (link.kind === 'signup') { consumeEmailLink(); return { mode: 'login', invite: false, message: { tone: 'success', text: 'E-posta adresin doğrulandı. Parolanla giriş yapabilirsin.' } } }
+  if (link.kind === 'error') { consumeEmailLink(); return { mode: 'forgot', invite: false, message: { tone: 'error', text: 'Bağlantı geçersiz veya süresi dolmuş. Yeni bir sıfırlama bağlantısı isteyebilirsin; davetler için yöneticiden yeni bağlantı iste.' } } }
+  return { mode: 'login', message: null, invite: false }
+}
 
 export default function SignInPage() {
   const { resolved } = useTheme()
-  const [mode, setMode] = useState<Mode>('login')
+  const [initial] = useState(initialState)
+  const [mode, setMode] = useState<Mode>(initial.mode)
   const [showPassword, setShowPassword] = useState(false)
-  const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [message, setMessage] = useState<Message | null>(initial.message)
+  const reset = useResetPassword()
   const login = useLogin()
   const register = useRegister()
   const forgot = useForgotPassword()
-  const pending = login.isPending || register.isPending || forgot.isPending
+  const pending = login.isPending || register.isPending || forgot.isPending || reset.isPending
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -37,6 +50,19 @@ export default function SignInPage() {
         },
       )
     }
+    if (mode === 'reset') {
+      const link = peekEmailLink()
+      if (password !== String(form.get('password_confirm') ?? '')) { setMessage({ tone: 'error', text: 'Parolalar eşleşmiyor.' }); return }
+      if (!link.token) { setMode('forgot'); setMessage({ tone: 'error', text: 'Yeni bir sıfırlama bağlantısı iste.' }); return }
+      reset.mutate({ recovery_token: link.token, new_password: password }, {
+        onError: fail,
+        onSuccess: () => {
+          consumeEmailLink()
+          setMode('login')
+          setMessage({ tone: 'success', text: initial.invite ? 'Parolan oluşturuldu. Davet edilen e-posta adresin ve yeni parolanla giriş yap.' : 'Parolan güncellendi. Yeni parolanla giriş yapabilirsin.' })
+        },
+      })
+    }
     if (mode === 'forgot') {
       forgot.mutate(email, {
         onError: fail,
@@ -45,7 +71,7 @@ export default function SignInPage() {
     }
   }
 
-  const title = mode === 'login' ? 'Tekrar hoş geldin' : mode === 'register' ? 'Rafını kur' : 'Parolanı sıfırla'
+  const title = mode === 'login' ? 'Tekrar hoş geldin' : mode === 'register' ? 'Rafını kur' : mode === 'reset' ? (initial.invite ? 'Mihenk’e hoş geldin' : 'Yeni parolanı belirle') : 'Parolanı sıfırla'
 
   return (
     <div className="sign-in">
@@ -61,7 +87,7 @@ export default function SignInPage() {
       </section>
 
       <section className="sign-in__card" aria-labelledby="sign-in-title">
-        {mode !== 'forgot' && (
+        {(mode === 'login' || mode === 'register') && (
           <SegmentedTabs
             label="Giriş türü"
             value={mode}
@@ -70,6 +96,7 @@ export default function SignInPage() {
           />
         )}
         <h2 id="sign-in-title">{title}</h2>
+        {mode === 'reset' && <p className="today__muted">{initial.invite ? 'Davetini tamamlamak için bir parola belirle.' : 'Hesabın için yeni bir parola belirle.'}</p>}
         <form className="sign-in__form" onSubmit={submit} noValidate={false}>
           {mode === 'register' && (
             <label className="mh-field">
@@ -77,13 +104,15 @@ export default function SignInPage() {
               <input className="mh-input" name="display_name" autoComplete="name" minLength={2} maxLength={80} required />
             </label>
           )}
-          <label className="mh-field">
-            <span>E-posta</span>
-            <input className="mh-input" name="email" type="email" autoComplete="email" required />
-          </label>
+          {mode !== 'reset' && (
+            <label className="mh-field">
+              <span>E-posta</span>
+              <input className="mh-input" name="email" type="email" autoComplete="email" required />
+            </label>
+          )}
           {mode !== 'forgot' && (
             <label className="mh-field">
-              <span>Parola</span>
+              <span>{mode === 'reset' ? 'Yeni parola' : 'Parola'}</span>
               <span className="sign-in__password">
                 <input
                   className="mh-input"
@@ -97,16 +126,22 @@ export default function SignInPage() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </span>
-              {mode === 'register' && <small>En az 8 karakter.</small>}
+              {(mode === 'register' || mode === 'reset') && <small>En az 8 karakter.</small>}
+            </label>
+          )}
+          {mode === 'reset' && (
+            <label className="mh-field">
+              <span>Parola (tekrar)</span>
+              <input className="mh-input" name="password_confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" minLength={8} required />
             </label>
           )}
           {message && <p className={`sign-in__message sign-in__message--${message.tone}`} role={message.tone === 'error' ? 'alert' : 'status'}>{message.text}</p>}
           <Button type="submit" size="lg" loading={pending}>
-            {mode === 'login' ? 'Giriş yap' : mode === 'register' ? 'Hesap oluştur' : 'Bağlantı gönder'}
+            {mode === 'login' ? 'Giriş yap' : mode === 'register' ? 'Hesap oluştur' : mode === 'reset' ? (initial.invite ? 'Parola oluştur' : 'Parolayı güncelle') : 'Bağlantı gönder'}
           </Button>
         </form>
         {mode === 'login' && <button type="button" className="sign-in__link" onClick={() => { setMode('forgot'); setMessage(null) }}>Parolamı unuttum</button>}
-        {mode === 'forgot' && <button type="button" className="sign-in__link" onClick={() => { setMode('login'); setMessage(null) }}>Girişe dön</button>}
+        {(mode === 'forgot' || mode === 'reset') && <button type="button" className="sign-in__link" onClick={() => { consumeEmailLink(); setMode('login'); setMessage(null) }}>Girişe dön</button>}
         <p className="sign-in__legal">Devam ederek <Link to="/privacy" reloadDocument>gizlilik bildirimini</Link> kabul etmiş olursun.</p>
       </section>
     </div>

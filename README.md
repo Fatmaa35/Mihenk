@@ -46,14 +46,15 @@ olarak kopyalayın.
 ```powershell
 cd frontend
 npm ci
-npm run build      # klasik arayüz + yeni React uygulaması
-npm run dev        # yeni uygulamayı değişiklikte yeniden derler (backend açıkken)
+npm run build      # React uygulamasını derler
+npm run dev        # değişiklikte yeniden derler (backend açıkken)
 ```
 
-Derleme `backend/app/static/generated/` klasörüne yazılır; yeni uygulama
-`generated/app/` altındadır. Uygulama `/` adresinde açılır, henüz taşınmamış
-ekranlar `/classic` adresindeki klasik arayüzde durur. Açık ve koyu tema
-desteklenir; varsayılan olarak sistem ayarı izlenir.
+Derleme `backend/app/static/generated/` klasörüne yazılır ve uygulama `/`
+adresinde açılır. Açık ve koyu tema desteklenir; varsayılan olarak sistem ayarı
+izlenir. Windows'ta `backend\run-local.bat` dosyasına çift tıklamak sanal ortamı
+kurar ve sunucuyu başlatır. Yerel yönetici hesabı için `backend/.env` içine
+`ADMIN_EMAILS=adres@ornek.com` yazın.
 Uygulama [localhost:8010](http://127.0.0.1:8010) adresinde açılır.
 
 ## Testler

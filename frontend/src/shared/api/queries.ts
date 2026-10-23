@@ -68,6 +68,13 @@ export function useForgotPassword() {
   })
 }
 
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (input: { recovery_token: string; new_password: string }) =>
+      api<{ message: string }>('/auth/password/reset', { method: 'POST', ...json(input) }),
+  })
+}
+
 export function useLogout() {
   const client = useQueryClient()
   return useMutation({

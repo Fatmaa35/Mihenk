@@ -1,12 +1,12 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { Bell, BookOpen, Compass, ExternalLink, House, LogOut, Moon, Settings, Sun, Timer, UserRound, Users } from 'lucide-react'
+import { Bell, BookOpen, Compass, House, LogOut, Moon, Settings, ShieldCheck, Sun, Timer, UserRound, Users } from 'lucide-react'
 import { useUnreadCount } from '../../shared/api/alerts'
 import { useLogout } from '../../shared/api/queries'
 import { IconButton, useToast } from '../../shared/ui'
 import { initials } from '../format'
 import { useTheme } from '../theme/ThemeProvider'
-import { classicUrl, routes } from '../routes'
+import { routes } from '../routes'
 import { useSession } from './SessionGate'
 import './shell.css'
 
@@ -30,6 +30,7 @@ const PAGE_TITLES: Record<string, string> = {
   [routes.profile]: 'Profilim',
   [routes.notifications]: 'Bildirimler',
   [routes.settings]: 'Ayarlar',
+  [routes.admin]: 'Yönetim',
 }
 
 function BrandMark({ size = 44 }: { size?: number }) {
@@ -101,8 +102,8 @@ function ProfileMenu() {
           </div>
           <Link role="menuitem" className="profile-menu__item" to={routes.profile}>Profilim<UserRound size={16} aria-hidden="true" /></Link>
           <Link role="menuitem" className="profile-menu__item" to={routes.settings}>Ayarlar<Settings size={16} aria-hidden="true" /></Link>
-          {user.app_role === 'admin' && (
-            <a role="menuitem" className="profile-menu__item" href={classicUrl('quality')}>Yönetim paneli<ExternalLink size={14} aria-hidden="true" /></a>
+          {(user.app_role === 'admin' || user.app_role === 'editor') && (
+            <Link role="menuitem" className="profile-menu__item" to={routes.admin}>Yönetim paneli<ShieldCheck size={16} aria-hidden="true" /></Link>
           )}
           <button type="button" role="menuitem" className="profile-menu__item profile-menu__item--danger" onClick={signOut} disabled={logout.isPending}>
             Çıkış yap<LogOut size={16} aria-hidden="true" />

@@ -6,17 +6,16 @@ import './theme/tokens.css'
 import './theme/base.css'
 import '../shared/ui/ui.css'
 import { App } from './App'
-import { parseEmailLink } from '../features/auth/email-links'
+import { captureEmailLink } from './emailLink'
 
-// Davet, parola sıfırlama ve e-posta doğrulama bağlantılarını şimdilik klasik arayüz işler.
-const emailLink = parseEmailLink(window.location.search, window.location.hash)
-if (emailLink.kind !== 'none') window.location.replace(`/classic${window.location.search}${window.location.hash}`)
+// E-posta bağlantısındaki jetonu router başlamadan önce yakala ve adresten sil.
+captureEmailLink()
 
 const container = document.getElementById('root')
 if (!container) throw new Error('#root bulunamadı')
-if (emailLink.kind === 'none') createRoot(container).render(<StrictMode><App /></StrictMode>)
+createRoot(container).render(<StrictMode><App /></StrictMode>)
 
 // Çevrimdışı kabuk ve web push için servis çalışanı (klasik arayüzle aynı dosya).
-if ('serviceWorker' in navigator && emailLink.kind === 'none') {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('/static/service-worker.js').catch(() => undefined) })
 }

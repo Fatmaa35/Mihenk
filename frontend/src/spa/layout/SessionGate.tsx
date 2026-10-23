@@ -4,6 +4,7 @@ import { ApiError } from '../../shared/api/api'
 import { useBootstrap } from '../../shared/api/queries'
 import type { Bootstrap } from '../../shared/api/types'
 import { ErrorState, Spinner } from '../../shared/ui'
+import { peekEmailLink } from '../emailLink'
 import { routes } from '../routes'
 
 const isUnauthorized = (error: unknown) => error instanceof ApiError && error.status === 401
@@ -25,8 +26,9 @@ export function RedirectIfSignedIn({ children }: { children: ReactNode }) {
   const session = useBootstrap()
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from
-  if (session.isPending) return <div className="mh-fullscreen"><Spinner /></div>
-  if (session.isSuccess) return <Navigate to={from && from !== routes.signIn ? from : routes.today} replace />
+  const settingPassword = ['recovery', 'invite'].includes(peekEmailLink().kind)
+  if (session.isPending && !settingPassword) return <div className="mh-fullscreen"><Spinner /></div>
+  if (session.isSuccess && !settingPassword) return <Navigate to={from && from !== routes.signIn ? from : routes.today} replace />
   return <>{children}</>
 }
 

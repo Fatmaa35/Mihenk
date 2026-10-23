@@ -10,10 +10,9 @@ export const routes = {
   profile: '/profil',
   notifications: '/bildirimler',
   settings: '/ayarlar',
+  admin: '/yonetim',
 } as const
 
-/** Henüz yeni arayüze taşınmamış bölümler klasik arayüzde açılır. */
-export const classicUrl = (view?: string) => (view ? `/classic?view=${encodeURIComponent(view)}` : '/classic')
 
 /** Asistanın "ekranda ne var" bağlamı için rota → backend görünüm adı. */
 export function activeViewFor(pathname: string): 'discover' | 'catalog' | 'library' | 'insights' | 'alerts' {

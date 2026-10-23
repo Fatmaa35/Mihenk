@@ -301,3 +301,6 @@ a.mh-button--primary { color: var(--accent-ink); }
 .mh-switch__input:disabled + .mh-switch__track { opacity: .5; }
 
 select.mh-input { appearance: auto; }
+.bars { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+.bars li { display: grid; grid-template-columns: minmax(0, 160px) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
+.bars__label { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

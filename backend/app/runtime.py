@@ -143,7 +143,6 @@ class CatalogServices:
 services = CatalogServices()
 app.state.services = services
 STATIC_DIR = Path(__file__).parent / "static"
-STATIC_PAGE = STATIC_DIR / "index.html"
 PRIVACY_PAGE = STATIC_DIR / "privacy.html"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 ACCESS_COOKIE = "book_access_token"

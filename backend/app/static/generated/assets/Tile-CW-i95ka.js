@@ -1,0 +1,1 @@
+import{j as s}from"./query-BJ-ER_du.js";function c({tone:i="surface",as:t="div",eyebrow:e,outlined:l=!1,className:m="",children:r,...a}){return s.jsxs(t,{className:`mh-tile mh-tile--${i}${l?" mh-tile--outlined":""} ${m}`.trim(),...a,children:[e&&s.jsx("p",{className:"mh-eyebrow",children:e}),r]})}export{c as T};

@@ -1,24 +1,37 @@
 """Feature-scoped HTTP routes extracted from the application composition root."""
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse, RedirectResponse
 from app.runtime import *  # noqa: F403 - explicit shared runtime boundary
 
 router = APIRouter()
 
-SPA_PAGE = STATIC_DIR / "generated" / "app" / "index.html"
+SPA_PAGE = STATIC_DIR / "generated" / "index.html"
 # React uygulamasının istemci tarafı rotaları. API yollarıyla çakışmaması için açıkça listelenir.
 SPA_ROUTES = (
     "giris", "bugun", "kesfet", "kitapligim", "topluluk", "kulupler", "odak", "profil", "bildirimler", "ayarlar",
+    "yonetim",
+)
+# Eski arayüzün `?view=` bağlantıları (yer imleri, e-postalar) yeni adreslere yönlenir.
+CLASSIC_VIEW_ROUTES = {
+    "discover": "/bugun", "catalog": "/kesfet", "library": "/kitapligim", "community": "/topluluk",
+    "growth": "/topluluk?sekme=kulupler", "reading-mode": "/odak", "insights": "/profil",
+    "alerts": "/bildirimler?sekme=alarmlar", "settings": "/ayarlar", "quality": "/yonetim",
+}
+FRONTEND_MISSING = (
+    "<!doctype html><html lang=\"tr\"><meta charset=\"utf-8\"><title>Mihenk</title>"
+    "<p>Arayüz henüz derlenmedi. <code>frontend</code> klasöründe <code>npm ci</code> ve "
+    "<code>npm run build</code> komutlarını çalıştırın.</p></html>"
 )
 
 
-def spa_page() -> FileResponse:
-    """Yeni arayüz derlenmemişse klasik arayüze düşer; geliştirme ortamı hiç kırılmaz."""
-    page = SPA_PAGE if SPA_PAGE.exists() else STATIC_PAGE
-    return FileResponse(page, media_type="text/html; charset=utf-8", headers={"Cache-Control": "no-cache"})
+def spa_page() -> Response:
+    if not SPA_PAGE.exists():
+        return HTMLResponse(FRONTEND_MISSING, status_code=503)
+    return FileResponse(SPA_PAGE, media_type="text/html; charset=utf-8", headers={"Cache-Control": "no-cache"})
 
 
 @router.get("/", include_in_schema=False)
-def home() -> FileResponse:
+def home() -> Response:
     return spa_page()
 
 
@@ -27,9 +40,9 @@ for _route in SPA_ROUTES:
 
 
 @router.get("/classic", include_in_schema=False)
-def classic_home() -> FileResponse:
-    """Henüz yeni arayüze taşınmamış ekranlar için klasik arayüz."""
-    return FileResponse(STATIC_PAGE, media_type="text/html; charset=utf-8")
+def classic_redirect(view: str | None = None) -> RedirectResponse:
+    """Klasik arayüz kaldırıldı; eski bağlantılar yeni karşılıklarına gider."""
+    return RedirectResponse(CLASSIC_VIEW_ROUTES.get(view or "", "/"), status_code=308)
 
 
 @router.get("/privacy", include_in_schema=False)

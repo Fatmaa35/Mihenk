@@ -11,21 +11,20 @@ async function* files(directory) {
   }
 }
 
-/** Dosya başına üst sınır (bayt). Yeni React uygulaması `app/` altındadır ve parçalara bölünür. */
-function limitFor(name, isApp) {
+/** Dosya başına üst sınır (bayt). Barkod tarayıcı ve React çekirdeği ayrı parçalardır. */
+function limitFor(name) {
   if (name.includes('ISBNScanner')) return 700_000
   if (name.endsWith('.css')) return 120_000
-  if (isApp) return name.startsWith('react-') ? 300_000 : 180_000
-  return name.startsWith('main-') ? 520_000 : 280_000
+  if (name.startsWith('react-')) return 300_000
+  return 180_000
 }
 
 const failures = []
 for await (const path of files(output)) {
   const name = relative(output, path)
   if (!/\.(js|css)$/.test(name)) continue
-  const isApp = name.startsWith('app/')
   const bytes = (await stat(path)).size
-  const limit = limitFor(name.split('/').pop(), isApp)
+  const limit = limitFor(name.split('/').pop())
   if (bytes > limit) failures.push(`${name}: ${bytes} bayt > ${limit} bayt`)
 }
 if (failures.length) {

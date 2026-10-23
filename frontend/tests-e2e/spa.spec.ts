@@ -39,9 +39,3 @@ test('new reader can sign up, shelve a book and switch theme', async ({ page }) 
   await page.getByRole('menuitem', { name: 'Çıkış yap' }).click()
   await expect(page).toHaveURL(/\/giris$/)
 })
-
-test('email links are handed to the classic interface', async ({ page }) => {
-  await page.goto('/?recovery_token=abc')
-  await expect(page).toHaveURL(/\/classic$/)
-  await expect(page.locator('#password-reset-dialog')).toBeVisible()
-})

@@ -11,7 +11,7 @@ export default function AssistantLauncher() {
   return (
     <>
       {!open && (
-        <button type="button" className="assistant-fab" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="assistant-panel">
+        <button type="button" className="assistant-fab" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="assistant-panel" aria-label="Kitap asistanı">
           <Sparkles size={18} aria-hidden="true" />
           <span>Kitap asistanı</span>
         </button>

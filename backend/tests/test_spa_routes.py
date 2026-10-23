@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.routers.platform import SPA_ROUTES, STATIC_PAGE
+from app.routers.platform import CLASSIC_VIEW_ROUTES, SPA_ROUTES
 
 client = TestClient(app)
 
@@ -14,9 +14,15 @@ def test_spa_routes_and_classic_interface_are_served_as_html() -> None:
         response = client.get(path)
         assert response.status_code == 200, path
         assert response.headers["content-type"].startswith("text/html")
-    classic = client.get("/classic")
-    assert classic.status_code == 200
-    assert classic.text == STATIC_PAGE.read_text(encoding="utf-8")
+
+
+def test_classic_links_redirect_to_their_new_screens() -> None:
+    assert client.get("/classic", follow_redirects=False).headers["location"] == "/"
+    for view, target in CLASSIC_VIEW_ROUTES.items():
+        response = client.get(f"/classic?view={view}", follow_redirects=False)
+        assert response.status_code == 308
+        assert response.headers["location"] == target
+        assert target.split("?")[0].strip("/") in SPA_ROUTES
 
 
 def test_spa_route_list_matches_frontend_routes() -> None:
