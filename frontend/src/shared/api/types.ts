@@ -124,6 +124,8 @@ export type LibraryEntryInput = {
   is_favorite?: boolean
   current_page?: number
   total_pages?: number | null
+  /** Kişisel (katalog dışı) kitaplar ayrı uç noktaya yazılır; bu alan verilirse ona göre yönlendirilir. */
+  custom?: Pick<Book, 'title' | 'author' | 'genre' | 'cover_url'>
 }
 
 /* ---------- Profil ve oyunlaştırma ---------- */

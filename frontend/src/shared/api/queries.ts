@@ -139,10 +139,29 @@ export function invalidateReading(client: ReturnType<typeof useQueryClient>) {
   ])
 }
 
+/** Kitaplıktaki bir kitap kişisel kitapsa, güncelleme isteğinin ihtiyaç duyduğu kimlik alanları. */
+export function customFields(book: Book): LibraryEntryInput['custom'] {
+  return book.is_custom ? { title: book.title, author: book.author, genre: book.genre, cover_url: book.cover_url } : undefined
+}
+
 export function useUpsertLibraryEntry() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (input: LibraryEntryInput) => api<unknown>('/me/library', { method: 'PUT', ...json(input) }),
+    mutationFn: ({ custom, ...input }: LibraryEntryInput) => custom
+      ? api<unknown>(`/me/custom-books/${encodeURIComponent(input.book_id)}`, {
+        method: 'PUT',
+        ...json({
+          title: custom.title,
+          author: custom.author || 'Bilinmeyen yazar',
+          genre: custom.genre || 'Genel',
+          cover_url: custom.cover_url ?? null,
+          shelf: input.shelf,
+          is_favorite: input.is_favorite ?? false,
+          current_page: input.current_page ?? 0,
+          total_pages: input.total_pages ?? null,
+        }),
+      })
+      : api<unknown>('/me/library', { method: 'PUT', ...json(input) }),
     onSuccess: () => invalidateReading(client),
   })
 }
@@ -150,7 +169,10 @@ export function useUpsertLibraryEntry() {
 export function useRemoveLibraryEntry() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (bookId: string) => api<void>(`/me/library/${encodeURIComponent(bookId)}`, { method: 'DELETE' }),
+    mutationFn: (book: Pick<Book, 'id' | 'is_custom'>) => api<void>(
+      `${book.is_custom ? '/me/custom-books' : '/me/library'}/${encodeURIComponent(book.id)}`,
+      { method: 'DELETE' },
+    ),
     onSuccess: () => invalidateReading(client),
   })
 }
