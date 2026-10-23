@@ -10,6 +10,7 @@ import { RouteError } from './layout/RouteError'
 import { routes } from './routes'
 
 const SignInPage = lazy(() => import('./pages/SignInPage'))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
 const TodayPage = lazy(() => import('./pages/TodayPage'))
 const DiscoverPage = lazy(() => import('./pages/DiscoverPage'))
 const LibraryPage = lazy(() => import('./pages/LibraryPage'))
@@ -24,12 +25,12 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const page = (element: ReactNode) => <Suspense fallback={<Spinner />}>{element}</Suspense>
 
 const router = createBrowserRouter([
+  { path: '/', element: <RedirectIfSignedIn>{page(<LandingPage />)}</RedirectIfSignedIn>, errorElement: <RouteError /> },
   { path: routes.signIn, element: <RedirectIfSignedIn>{page(<SignInPage />)}</RedirectIfSignedIn>, errorElement: <RouteError /> },
   {
     element: <RequireSession><AppShell /></RequireSession>,
     errorElement: <RouteError />,
     children: [
-      { path: '/', element: <Navigate to={routes.today} replace /> },
       { path: routes.today, element: page(<TodayPage />) },
       { path: routes.discover, element: page(<DiscoverPage />) },
       { path: routes.library, element: page(<LibraryPage />) },

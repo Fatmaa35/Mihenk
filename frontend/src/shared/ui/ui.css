@@ -304,3 +304,22 @@ select.mh-input { appearance: auto; }
 .bars { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
 .bars li { display: grid; grid-template-columns: minmax(0, 160px) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
 .bars__label { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Asistan istemi ---------- */
+.prompt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 860px;
+  min-height: 60px;
+  padding: 6px 6px 6px var(--space-5);
+  border: var(--border-strong);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  box-shadow: var(--shadow-hard);
+  color: var(--ink-2);
+}
+.prompt:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.prompt input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-size: 16px; color: var(--ink); }
+.prompt input::placeholder { color: var(--ink-3); }
+

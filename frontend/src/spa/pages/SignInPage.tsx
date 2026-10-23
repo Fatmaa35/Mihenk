@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { Eye, EyeOff } from 'lucide-react'
 import { useForgotPassword, useLogin, useRegister, useResetPassword } from '../../shared/api/queries'
 import { consumeEmailLink, peekEmailLink } from '../emailLink'
@@ -21,8 +21,9 @@ function initialState(): { mode: Mode; message: Message | null; invite: boolean 
 
 export default function SignInPage() {
   const { resolved } = useTheme()
+  const [params] = useSearchParams()
   const [initial] = useState(initialState)
-  const [mode, setMode] = useState<Mode>(initial.mode)
+  const [mode, setMode] = useState<Mode>(initial.mode === 'login' && params.get('mod') === 'kayit' ? 'register' : initial.mode)
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState<Message | null>(initial.message)
   const reset = useResetPassword()
@@ -76,7 +77,9 @@ export default function SignInPage() {
   return (
     <div className="sign-in">
       <section className="sign-in__story" aria-labelledby="sign-in-story">
-        <img src={`/static/brand/full-${resolved}.webp`} alt="Mihenk" className="sign-in__logo" width={120} height={140} />
+        <Link to="/" className="sign-in__home" aria-label="Mihenk tanıtım sayfasına dön">
+          <img src={`/static/brand/full-${resolved}.webp`} alt="Mihenk" className="sign-in__logo" width={120} height={140} />
+        </Link>
         <h1 id="sign-in-story">Bir sonraki kitabın seni bekliyor.</h1>
         <p>Okuma geçmişini ve ruh hâlini anlat; Mihenk sana uygun kitapları bulsun, ilerlemeni takip etsin, kulübünle birlikte okumanı kolaylaştırsın.</p>
         <ul className="sign-in__points">

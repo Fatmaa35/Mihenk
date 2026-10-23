@@ -1,3 +1,4 @@
+import './bootEmailLink'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/bricolage-grotesque'
@@ -6,10 +7,6 @@ import './theme/tokens.css'
 import './theme/base.css'
 import '../shared/ui/ui.css'
 import { App } from './App'
-import { captureEmailLink } from './emailLink'
-
-// E-posta bağlantısındaki jetonu router başlamadan önce yakala ve adresten sil.
-captureEmailLink()
 
 const container = document.getElementById('root')
 if (!container) throw new Error('#root bulunamadı')

@@ -4,9 +4,9 @@ import { expect, test } from '@playwright/test'
 test('new reader can sign up, shelve a book and switch theme', async ({ page }) => {
   const email = `spa-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@mihenk.test`
   await page.goto('/')
-  await expect(page).toHaveURL(/\/giris$/)
-
-  await page.getByRole('tab', { name: 'Kayıt ol' }).click()
+  await page.getByRole('link', { name: 'Ücretsiz başla' }).first().click()
+  await expect(page).toHaveURL(/\/giris\?mod=kayit$/)
+  await expect(page.getByRole('tab', { name: 'Kayıt ol' })).toHaveAttribute('aria-selected', 'true')
   await page.getByLabel('Adın').fill('Deneme Okur')
   await page.getByLabel('E-posta').fill(email)
   await page.locator('input[name=password]').fill('DenemeParola123!')
