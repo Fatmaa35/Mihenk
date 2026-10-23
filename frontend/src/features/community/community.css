@@ -1,0 +1,71 @@
+.book-community { display: grid; gap: var(--space-5); }
+.rating-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-5);
+  align-items: center;
+  padding: var(--space-4);
+  border-radius: var(--radius-m);
+  background: var(--surface-2);
+}
+.rating-summary__score { display: grid; justify-items: center; }
+.rating-summary__score strong { font-family: var(--font-display); font-size: 40px; line-height: 1; }
+.rating-summary__score span { font-size: 12px; color: var(--ink-2); }
+.rating-summary__bars { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.rating-summary__bars li { display: grid; grid-template-columns: 14px minmax(0, 1fr) 24px; gap: var(--space-2); align-items: center; font-size: 12px; }
+.rating-summary__bars .bars__track { height: 8px; background: var(--surface); }
+.rating-summary__mine { display: grid; gap: 4px; justify-items: center; font-size: 13px; color: var(--ink-2); }
+
+.stars { display: flex; }
+.stars__star { padding: 4px; border: 0; background: none; color: var(--ink-3); cursor: pointer; border-radius: 8px; }
+.stars__star.is-on { color: var(--gold); }
+
+.comment-form { display: grid; gap: var(--space-2); }
+.comment-form__reply { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-s); background: var(--accent-soft); color: var(--accent-soft-ink); font-size: 14px; }
+.comment-form__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.mh-textarea { min-height: 88px; padding: var(--space-3) var(--space-4); resize: vertical; line-height: 1.5; }
+.check-row, .radio-row { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 14px; font-weight: 600; cursor: pointer; }
+.check-row input, .radio-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+.comment-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+.comment-thread { display: grid; gap: var(--space-2); }
+.comment { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: var(--border-soft); border-radius: var(--radius-m); background: var(--surface); }
+.comment--reply { margin-left: var(--space-6); background: var(--surface-2); }
+.comment__head { display: flex; align-items: center; gap: var(--space-2); }
+.comment__head time { margin-left: auto; font-size: 12px; color: var(--ink-3); }
+.comment__verified { color: var(--accent); }
+.comment-text { white-space: pre-line; }
+.comment__actions { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+
+.text-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.text-action:hover:not(:disabled) { color: var(--ink); }
+.text-action[aria-pressed='true'] { color: var(--accent); }
+.text-action--danger { color: var(--danger); }
+.text-action:disabled { opacity: .5; cursor: default; }
+
+.spoiler { position: relative; display: block; width: 100%; padding: var(--space-3); border: 1px dashed var(--line-soft); border-radius: var(--radius-s); background: var(--surface-2); text-align: left; cursor: pointer; overflow: hidden; }
+.spoiler__label { position: relative; z-index: 1; font-size: 13px; font-weight: 700; color: var(--ink); }
+.spoiler__text { display: block; margin-top: 4px; filter: blur(6px); user-select: none; color: var(--ink-2); }
+
+.report-form { display: grid; gap: var(--space-4); }
+.report-form__reasons { border: 0; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
+.report-form__reasons legend { font-weight: 700; margin-bottom: var(--space-2); }
+
+@media (max-width: 640px) {
+  .rating-summary { grid-template-columns: auto minmax(0, 1fr); }
+  .rating-summary__mine { grid-column: 1 / -1; }
+  .comment--reply { margin-left: var(--space-4); }
+}

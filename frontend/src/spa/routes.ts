@@ -4,16 +4,22 @@ export const routes = {
   today: '/bugun',
   discover: '/kesfet',
   library: '/kitapligim',
+  community: '/topluluk',
   clubs: '/kulupler',
   focus: '/odak',
+  profile: '/profil',
+  notifications: '/bildirimler',
+  settings: '/ayarlar',
 } as const
 
 /** Henüz yeni arayüze taşınmamış bölümler klasik arayüzde açılır. */
-export const classicViews = [
-  { view: 'community', label: 'Topluluk' },
-  { view: 'insights', label: 'Okuma analizi' },
-  { view: 'alerts', label: 'Fiyat alarmları' },
-  { view: 'settings', label: 'Ayarlar' },
-] as const
-
 export const classicUrl = (view?: string) => (view ? `/classic?view=${encodeURIComponent(view)}` : '/classic')
+
+/** Asistanın "ekranda ne var" bağlamı için rota → backend görünüm adı. */
+export function activeViewFor(pathname: string): 'discover' | 'catalog' | 'library' | 'insights' | 'alerts' {
+  if (pathname.startsWith(routes.discover)) return 'catalog'
+  if (pathname.startsWith(routes.library)) return 'library'
+  if (pathname.startsWith(routes.profile)) return 'insights'
+  if (pathname.startsWith(routes.notifications)) return 'alerts'
+  return 'discover'
+}

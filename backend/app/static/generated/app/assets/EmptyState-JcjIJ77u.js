@@ -1,1 +1,0 @@
-import{j as e}from"./query-BVM-L1YW.js";function i({icon:s,title:t,description:m,action:r}){return e.jsxs("div",{className:"mh-empty",children:[s&&e.jsx("div",{className:"mh-empty__icon","aria-hidden":"true",children:s}),e.jsx("h3",{children:t}),m&&e.jsx("p",{children:m}),r&&e.jsx("div",{className:"mh-empty__action",children:r})]})}export{i as E};

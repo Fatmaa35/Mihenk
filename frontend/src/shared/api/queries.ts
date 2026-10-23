@@ -13,6 +13,16 @@ export const queryKeys = {
   catalog: (q: string, sort: string) => ['catalog', q, sort] as const,
   book: (id: string) => ['book', id] as const,
   clubs: ['book-clubs'] as const,
+  gamification: ['gamification'] as const,
+  notifications: ['notifications'] as const,
+  priceAlerts: ['price-alerts'] as const,
+  pushCapabilities: ['push-capabilities'] as const,
+  communityFeed: ['community-feed'] as const,
+  bookCommunity: (id: string) => ['book-community', id] as const,
+  preferences: ['preferences'] as const,
+  notificationPreferences: ['notification-preferences'] as const,
+  chatSessions: ['chat-sessions'] as const,
+  chatMessages: (id: string) => ['chat-messages', id] as const,
 }
 
 export function createQueryClient() {
@@ -27,7 +37,7 @@ export function createQueryClient() {
   })
 }
 
-const json = (body: unknown): RequestInit => ({ body: JSON.stringify(body) })
+export const json = (body: unknown): RequestInit => ({ body: JSON.stringify(body) })
 
 /* ---------- Oturum ---------- */
 
@@ -113,11 +123,12 @@ export function useRecommendations() {
 
 /* ---------- Kitaplık ---------- */
 
-function invalidateReading(client: ReturnType<typeof useQueryClient>) {
+export function invalidateReading(client: ReturnType<typeof useQueryClient>) {
   return Promise.all([
     client.invalidateQueries({ queryKey: queryKeys.bootstrap }),
     client.invalidateQueries({ queryKey: queryKeys.weekly }),
     client.invalidateQueries({ queryKey: ['reading-dashboard'] }),
+    client.invalidateQueries({ queryKey: queryKeys.gamification }),
   ])
 }
 

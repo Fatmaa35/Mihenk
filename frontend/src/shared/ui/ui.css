@@ -246,7 +246,7 @@
   position: fixed;
   z-index: 60;
   right: var(--space-4);
-  bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  bottom: calc(88px + env(safe-area-inset-bottom));
   display: grid;
   gap: var(--space-2);
   width: min(380px, calc(100vw - 32px));
@@ -283,3 +283,21 @@
 a.mh-button { text-decoration: none; }
 a.mh-button--secondary, a.mh-button--ghost { color: var(--ink); }
 a.mh-button--primary { color: var(--accent-ink); }
+
+/* ---------- Yatay çubuk (dağılım grafikleri) ---------- */
+.bars__track { display: block; height: 12px; border-radius: var(--radius-pill); background: var(--surface-2); overflow: hidden; }
+.bars__fill { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--accent); }
+
+/* ---------- Anahtar ---------- */
+.mh-switch { position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-3) 0; cursor: pointer; }
+.mh-switch__text { display: grid; gap: 2px; }
+.mh-switch__text small { color: var(--ink-2); font-size: 13px; }
+.mh-switch__input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.mh-switch__track { flex: 0 0 auto; width: 48px; height: 28px; padding: 2px; border: var(--border-strong); border-radius: var(--radius-pill); background: var(--surface-2); transition: background-color .15s var(--ease); }
+.mh-switch__thumb { display: block; width: 20px; height: 20px; border-radius: 50%; background: var(--ink-2); transition: transform .15s var(--ease), background-color .15s var(--ease); }
+.mh-switch__input:checked + .mh-switch__track { background: var(--accent); border-color: var(--accent); }
+.mh-switch__input:checked + .mh-switch__track .mh-switch__thumb { transform: translateX(20px); background: var(--accent-ink); }
+.mh-switch__input:focus-visible + .mh-switch__track { outline: 3px solid var(--focus); outline-offset: 2px; }
+.mh-switch__input:disabled + .mh-switch__track { opacity: .5; }
+
+select.mh-input { appearance: auto; }

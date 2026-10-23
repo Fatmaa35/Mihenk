@@ -1,23 +1,35 @@
-import { useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { BookOpen, Compass, ExternalLink, House, LogOut, Moon, Sun, Timer, Users } from 'lucide-react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { Bell, BookOpen, Compass, ExternalLink, House, LogOut, Moon, Settings, Sun, Timer, UserRound, Users } from 'lucide-react'
+import { useUnreadCount } from '../../shared/api/alerts'
 import { useLogout } from '../../shared/api/queries'
 import { IconButton, useToast } from '../../shared/ui'
+import { initials } from '../format'
 import { useTheme } from '../theme/ThemeProvider'
-import { classicUrl, classicViews, routes } from '../routes'
+import { classicUrl, routes } from '../routes'
 import { useSession } from './SessionGate'
 import './shell.css'
 
+const AssistantLauncher = lazy(() => import('../../features/assistant/AssistantLauncher'))
+
 const NAV_ITEMS = [
-  { to: routes.today, label: 'Bugün', icon: House, title: 'Bugün' },
-  { to: routes.discover, label: 'Keşfet', icon: Compass, title: 'Keşfet' },
-  { to: routes.library, label: 'Kitaplık', icon: BookOpen, title: 'Kitaplığım' },
-  { to: routes.clubs, label: 'Kulüpler', icon: Users, title: 'Kulüpler' },
-  { to: routes.focus, label: 'Odak', icon: Timer, title: 'Okuma modu' },
+  { to: routes.today, label: 'Bugün', icon: House },
+  { to: routes.discover, label: 'Keşfet', icon: Compass },
+  { to: routes.library, label: 'Kitaplık', icon: BookOpen },
+  { to: routes.community, label: 'Topluluk', icon: Users },
+  { to: routes.focus, label: 'Odak', icon: Timer },
 ] as const
 
-function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toLocaleUpperCase('tr')
+const PAGE_TITLES: Record<string, string> = {
+  [routes.today]: 'Bugün',
+  [routes.discover]: 'Keşfet',
+  [routes.library]: 'Kitaplığım',
+  [routes.community]: 'Topluluk',
+  [routes.clubs]: 'Topluluk',
+  [routes.focus]: 'Okuma modu',
+  [routes.profile]: 'Profilim',
+  [routes.notifications]: 'Bildirimler',
+  [routes.settings]: 'Ayarlar',
 }
 
 function BrandMark({ size = 44 }: { size?: number }) {
@@ -31,14 +43,27 @@ function ThemeToggle() {
   return <IconButton label={dark ? 'Açık temaya geç' : 'Koyu temaya geç'} icon={dark ? <Sun size={20} /> : <Moon size={20} />} onClick={toggle} />
 }
 
+function NotificationBell() {
+  const unread = useUnreadCount()
+  const label = unread ? `Bildirimler, ${unread} okunmamış` : 'Bildirimler'
+  return (
+    <NavLink to={routes.notifications} className="bell" aria-label={label} title={label}>
+      <Bell size={20} aria-hidden="true" />
+      {unread > 0 && <span className="bell__count" aria-hidden="true">{unread > 9 ? '9+' : unread}</span>}
+    </NavLink>
+  )
+}
+
 function ProfileMenu() {
   const { user } = useSession()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const logout = useLogout()
   const navigate = useNavigate()
+  const location = useLocation()
   const { notify } = useToast()
 
+  useEffect(() => setOpen(false), [location.pathname])
   useEffect(() => {
     if (!open) return
     const onPointer = (event: PointerEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false) }
@@ -49,7 +74,10 @@ function ProfileMenu() {
   }, [open])
 
   const signOut = () => logout.mutate(undefined, {
-    onSuccess: () => navigate(routes.signIn, { replace: true }),
+    onSuccess: () => {
+      navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_PRIVATE_CACHE' })
+      navigate(routes.signIn, { replace: true })
+    },
     onError: () => notify('Çıkış yapılamadı. Lütfen tekrar dene.', 'error'),
   })
 
@@ -71,12 +99,8 @@ function ProfileMenu() {
             <strong>{user.display_name}</strong>
             {user.email && <span>{user.email}</span>}
           </div>
-          <p className="profile-menu__label">Klasik arayüzde</p>
-          {classicViews.map((item) => (
-            <a key={item.view} role="menuitem" className="profile-menu__item" href={classicUrl(item.view)}>
-              {item.label}<ExternalLink size={14} aria-hidden="true" />
-            </a>
-          ))}
+          <Link role="menuitem" className="profile-menu__item" to={routes.profile}>Profilim<UserRound size={16} aria-hidden="true" /></Link>
+          <Link role="menuitem" className="profile-menu__item" to={routes.settings}>Ayarlar<Settings size={16} aria-hidden="true" /></Link>
           {user.app_role === 'admin' && (
             <a role="menuitem" className="profile-menu__item" href={classicUrl('quality')}>Yönetim paneli<ExternalLink size={14} aria-hidden="true" /></a>
           )}
@@ -89,12 +113,12 @@ function ProfileMenu() {
   )
 }
 
-/** Sayfa başlığını rotaya göre günceller; ekran okuyucular için odak ana içeriğe taşınır. */
+/** Sayfa başlığını rotaya göre günceller. */
 function useDocumentTitle() {
   const location = useLocation()
   useEffect(() => {
-    const item = NAV_ITEMS.find((entry) => location.pathname.startsWith(entry.to))
-    document.title = item ? `${item.title} · Mihenk` : 'Mihenk'
+    const key = Object.keys(PAGE_TITLES).find((path) => location.pathname.startsWith(path))
+    document.title = key ? `${PAGE_TITLES[key]} · Mihenk` : 'Mihenk'
   }, [location.pathname])
 }
 
@@ -117,6 +141,7 @@ export function AppShell() {
           ))}
         </nav>
         <div className="shell__rail-footer">
+          <NotificationBell />
           <ThemeToggle />
           <ProfileMenu />
         </div>
@@ -128,6 +153,7 @@ export function AppShell() {
           <span>Mihenk</span>
         </NavLink>
         <div className="shell__topbar-actions">
+          <NotificationBell />
           <ThemeToggle />
           <ProfileMenu />
         </div>
@@ -145,6 +171,10 @@ export function AppShell() {
           </NavLink>
         ))}
       </nav>
+
+      <Suspense fallback={null}>
+        <AssistantLauncher />
+      </Suspense>
     </div>
   )
 }

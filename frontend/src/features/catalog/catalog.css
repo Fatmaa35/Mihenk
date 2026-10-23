@@ -37,7 +37,8 @@
 .book-detail { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-5); }
 .book-detail__body { display: grid; gap: var(--space-4); align-content: start; }
 .book-detail__author { font-weight: 700; color: var(--ink-2); }
-.book-detail__rating { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.book-detail__rating { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: var(--ink); font-weight: 700; cursor: pointer; }
+.book-detail__rating:hover span { text-decoration: underline; }
 .book-detail__rating span { color: var(--ink-2); font-weight: 500; }
 .book-detail__chips { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; }
 .book-detail__match { display: grid; gap: 4px; padding: var(--space-4); border-radius: var(--radius-m); }
@@ -78,3 +79,10 @@
 }
 .book-grid--row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 1080px) { .book-grid--row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.price-alert-form { display: grid; gap: var(--space-2); }
+.price-alert-form__row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.price-alert-form__input { position: relative; display: inline-flex; align-items: center; }
+.price-alert-form__input .mh-input { width: 160px; padding-right: 40px; }
+.price-alert-form__input span { position: absolute; right: 14px; font-weight: 700; color: var(--ink-2); }
+.book-detail__tabs { margin-bottom: var(--space-4); }

@@ -13,7 +13,10 @@ const SignInPage = lazy(() => import('./pages/SignInPage'))
 const TodayPage = lazy(() => import('./pages/TodayPage'))
 const DiscoverPage = lazy(() => import('./pages/DiscoverPage'))
 const LibraryPage = lazy(() => import('./pages/LibraryPage'))
-const ClubsPage = lazy(() => import('./pages/ClubsPage'))
+const CommunityPage = lazy(() => import('./pages/CommunityPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const FocusPage = lazy(() => import('./pages/FocusPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
@@ -29,7 +32,11 @@ const router = createBrowserRouter([
       { path: routes.today, element: page(<TodayPage />) },
       { path: routes.discover, element: page(<DiscoverPage />) },
       { path: routes.library, element: page(<LibraryPage />) },
-      { path: routes.clubs, element: page(<ClubsPage />) },
+      { path: routes.community, element: page(<CommunityPage />) },
+      { path: routes.clubs, element: <Navigate to={`${routes.community}?sekme=kulupler`} replace /> },
+      { path: routes.profile, element: page(<ProfilePage />) },
+      { path: routes.notifications, element: page(<NotificationsPage />) },
+      { path: routes.settings, element: page(<SettingsPage />) },
       { path: routes.focus, element: page(<FocusPage />) },
       { path: '*', element: page(<NotFoundPage />) },
     ],

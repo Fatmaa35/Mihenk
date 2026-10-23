@@ -6,7 +6,9 @@ router = APIRouter()
 
 SPA_PAGE = STATIC_DIR / "generated" / "app" / "index.html"
 # React uygulamasının istemci tarafı rotaları. API yollarıyla çakışmaması için açıkça listelenir.
-SPA_ROUTES = ("giris", "bugun", "kesfet", "kitapligim", "kulupler", "odak")
+SPA_ROUTES = (
+    "giris", "bugun", "kesfet", "kitapligim", "topluluk", "kulupler", "odak", "profil", "bildirimler", "ayarlar",
+)
 
 
 def spa_page() -> FileResponse:

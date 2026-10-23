@@ -23,7 +23,7 @@ test('new reader can sign up, shelve a book and switch theme', async ({ page }) 
   await card.getByRole('button', { name: 'Okuyacağım' }).click()
   await expect(page.getByRole('status').filter({ hasText: 'okuyacakların rafına eklendi' })).toBeVisible()
 
-  await page.getByRole('link', { name: /Kitaplık/ }).first().click()
+  await page.getByRole("link", { name: /Kitaplık/ }).first().click()
   await page.getByRole('tab', { name: /Okuyacağım/ }).click()
   await expect(page.locator('.library-row', { hasText: 'Frankenstein' })).toBeVisible()
 

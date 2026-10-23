@@ -15,3 +15,8 @@ if (emailLink.kind !== 'none') window.location.replace(`/classic${window.locatio
 const container = document.getElementById('root')
 if (!container) throw new Error('#root bulunamadı')
 if (emailLink.kind === 'none') createRoot(container).render(<StrictMode><App /></StrictMode>)
+
+// Çevrimdışı kabuk ve web push için servis çalışanı (klasik arayüzle aynı dosya).
+if ('serviceWorker' in navigator && emailLink.kind === 'none') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/static/service-worker.js').catch(() => undefined) })
+}

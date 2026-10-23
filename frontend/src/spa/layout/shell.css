@@ -147,5 +147,36 @@
     font-weight: 600;
   }
   .tab-link.active { color: var(--accent-soft-ink); background: var(--accent-soft); font-weight: 800; }
-  .mh-toasts { bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .mh-toasts { bottom: calc(144px + env(safe-area-inset-bottom)); }
 }
+
+/* ---------- Bildirim zili ---------- */
+.bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  border-radius: var(--radius-s);
+  color: var(--ink);
+}
+.bell:hover { background: var(--surface-2); color: var(--ink); }
+.bell.active { background: var(--accent-soft); color: var(--accent-soft-ink); }
+.bell__count {
+  position: absolute;
+  top: 4px; right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  border: 2px solid var(--bg);
+  box-sizing: content-box;
+}
+:root[data-theme='dark'] .bell__count { color: #121218; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .bell__count { color: #121218; } }
