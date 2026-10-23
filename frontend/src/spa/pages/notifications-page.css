@@ -1,0 +1,45 @@
+.stack { display: grid; gap: var(--space-3); }
+.list-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+
+.notification-list, .alert-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+.notification {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-4);
+  border: var(--border-soft);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.notification.is-unread { border: var(--border-strong); }
+.notification__dot { width: 10px; height: 10px; margin-top: 7px; border-radius: 50%; background: transparent; }
+.notification.is-unread .notification__dot { background: var(--accent); }
+.notification__body { display: grid; gap: 2px; }
+.notification__body p { color: var(--ink-2); font-size: 15px; }
+.notification__body time { font-size: 12px; color: var(--ink-3); }
+
+.alert-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-strong);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+}
+.alert-row.is-reached { background: var(--tile-mint); }
+.alert-row__body { display: grid; gap: var(--space-2); justify-items: start; }
+.alert-row__body h3 { font-size: 18px; }
+.alert-row__prices { display: flex; flex-wrap: wrap; gap: var(--space-5); margin: 0; }
+.alert-row__prices dt { font-size: 12px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; }
+.alert-row__prices dd { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 20px; }
+.alert-row__form { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.alert-row__form .mh-input { width: 140px; min-height: 40px; }
+.alert-row__actions { display: flex; gap: var(--space-1); }
+
+@media (max-width: 640px) {
+  .alert-row { grid-template-columns: auto minmax(0, 1fr); }
+  .alert-row__actions { grid-column: 1 / -1; justify-content: flex-end; }
+}

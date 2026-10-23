@@ -3,7 +3,6 @@ import hashlib
 import hmac
 import secrets
 import sqlite3
-import re
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path

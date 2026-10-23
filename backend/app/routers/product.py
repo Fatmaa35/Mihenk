@@ -35,7 +35,7 @@ from app.services.ai.gemini import GeminiExplainer
 from app.services.reading.product_growth import experiment_variant, onboarding_tasks, parse_library_csv
 
 
-def create_product_router(*, repository, recommender, settings,
+def create_product_router(*, repository, services, settings,
                           current_session: Callable, require_role: Callable) -> APIRouter:
     router = APIRouter(tags=["product-growth"])
 
@@ -46,7 +46,7 @@ def create_product_router(*, repository, recommender, settings,
     async def demo_recommendations(payload: CharacterSearchRequest) -> dict:
         profile = {"read_books": [], "reading_books": [], "to_read_books": [], "favorite_books": [],
                    "abandoned_books": [], "recommendation_feedback": [], "feedback_books": [], "preferences": {}}
-        summary, candidates = recommender.recommend(payload.character_description, profile, 40)
+        summary, candidates = services.recommender.recommend(payload.character_description, profile, 40)
         result = await GeminiExplainer("", settings.gemini_model, False).explain(
             profile, payload.character_description, summary, candidates, min(payload.limit, 5)
         )

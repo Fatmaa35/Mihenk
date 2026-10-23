@@ -104,9 +104,6 @@ app.add_middleware(ObservabilityMiddleware)
 repository = create_repository(settings)
 app.state.application_event_sink = repository.application_event
 repository.seed_books(ROOT / "data" / "books.json")
-catalog = repository.list_books()
-search_index = create_search_index(settings, repository, catalog)
-recommender = ConsensusRecommender(catalog, search_index)
 
 
 def record_ai_usage(event: dict) -> None:
@@ -122,9 +119,30 @@ def record_ai_usage(event: dict) -> None:
 
 
 explainer = create_explainer(settings, record_ai_usage)
-chatbot = BookChatbot(recommender, explainer, settings.gemini_model)
+
+
+class CatalogServices:
+    """Katalogdan türeyen arama/öneri nesnelerinin tek sahibi.
+
+    Router'lar bu nesnelerin kopyasını tutmaz; her istekte `services.recommender`
+    gibi okur. Böylece katalog yenilendiğinde tüm uç noktalar güncel durumu görür.
+    """
+
+    def __init__(self) -> None:
+        self.refresh()
+
+    def refresh(self) -> None:
+        catalog = repository.list_books()
+        search_index = create_search_index(settings, repository, catalog)
+        recommender = ConsensusRecommender(catalog, search_index)
+        # Yeni nesneler tamamen kurulduktan sonra tek seferde yayınlanır.
+        self.catalog, self.search_index, self.recommender = catalog, search_index, recommender
+        self.chatbot = BookChatbot(recommender, explainer, settings.gemini_model)
+
+
+services = CatalogServices()
+app.state.services = services
 STATIC_DIR = Path(__file__).parent / "static"
-STATIC_PAGE = STATIC_DIR / "index.html"
 PRIVACY_PAGE = STATIC_DIR / "privacy.html"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 ACCESS_COOKIE = "book_access_token"
@@ -166,11 +184,7 @@ def require_role(request: Request, response: Response, *roles: str) -> dict:
 
 
 def refresh_catalog_state() -> None:
-    global catalog, search_index, recommender, chatbot
-    catalog = repository.list_books()
-    search_index = create_search_index(settings, repository, catalog)
-    recommender = ConsensusRecommender(catalog, search_index)
-    chatbot = BookChatbot(recommender, explainer, settings.gemini_model)
+    services.refresh()
 
 
 def save_isbn_lookup_to_catalog(book: dict, *, source_name: str, source_url: str | None,

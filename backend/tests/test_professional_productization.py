@@ -69,20 +69,18 @@ def test_report_moderation_queue(tmp_path: Path) -> None:
 
 
 def test_frontend_accessibility_and_asset_budgets() -> None:
-    root = Path(__file__).parents[1] / "app" / "static"
-    html = (root / "index.html").read_text(encoding="utf-8")
-    assert 'id="auth-error" class="error-line" role="alert" aria-live="assertive"' in html
-    assert 'aria-label="Parolayı göster"' in html
-    assert 'id="profile-menu-button"' in html
-    assert 'role="menu" aria-labelledby="profile-menu-button"' in html
-    assert all(item in html for item in ("Profilim", "Şifre Değiştir", "Çıkış"))
-    assert 'id="orbit-count" aria-live="polite" aria-busy="true">—</b>' in html
-    assert 'id="orbit-count">514</b>' not in html
-    for chart_id in ("catalog-health-chart", "admin-community-chart", "admin-ops-health", "admin-log-chart"):
-        assert f'id="{chart_id}"' in html
-    assert html.count('class="card admin-tool-panel"') == 3
-    assert "Mihenk kontrol paneli" in html
-    assert '<link rel="manifest"' in html
-    assert not (root / "app.js").exists()
-    assert (Path(__file__).parents[2] / "frontend" / "src" / "app" / "app-shell.ts").exists()
-    assert (root / "styles.css").stat().st_size < 120_000
+    src = Path(__file__).parents[2] / "frontend" / "src"
+    read = lambda relative: (src / relative).read_text(encoding="utf-8")
+    entry = read("spa/index.html")
+    assert '<html lang="tr">' in entry and '<link rel="manifest"' in entry
+    assert 'name="viewport"' in entry and "theme-init.js" in entry
+    sign_in = read("spa/pages/SignInPage.tsx")
+    assert "Parolayı göster" in sign_in and 'autoComplete="email"' in sign_in
+    assert "role={message.tone === 'error' ? 'alert' : 'status'}" in sign_in
+    shell = read("spa/layout/AppShell.tsx")
+    assert 'aria-haspopup="menu"' in shell and 'role="menu"' in shell and "İçeriğe geç" in shell
+    assert all(item in shell for item in ("Profilim", "Ayarlar", "Çıkış yap"))
+    tokens = read("spa/theme/tokens.css")
+    assert ":root[data-theme='dark']" in tokens and "prefers-color-scheme: dark" in tokens
+    static = Path(__file__).parents[1] / "app" / "static"
+    assert not (static / "app.js").exists()

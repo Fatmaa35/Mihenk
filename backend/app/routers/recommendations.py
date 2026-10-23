@@ -18,7 +18,7 @@ async def character_recommendations(
         profile = repository.user_profile(payload.user_id, access_token=session["access_token"])
     except KeyError as error:
         raise HTTPException(status_code=404, detail=error.args[0]) from error
-    summary, candidates = recommender.recommend(
+    summary, candidates = services.recommender.recommend(
         payload.character_description, profile, payload.limit,
         access_token=session["access_token"],
     )
@@ -35,7 +35,7 @@ async def my_recommendations(payload: CharacterSearchRequest, request: Request, 
     user = session["user"]
     profile = repository.user_profile(user["id"], access_token=session["access_token"])
     profile["preferences"] = repository.user_preferences(user["id"], session["access_token"])
-    summary, candidates = recommender.recommend(
+    summary, candidates = services.recommender.recommend(
         payload.character_description, profile, 50,
         access_token=session["access_token"],
     )
@@ -52,11 +52,12 @@ async def my_recommendations(payload: CharacterSearchRequest, request: Request, 
             fallback_used = True
             result = await GeminiExplainer("", settings.gemini_model, False).explain(profile, payload.character_description, summary, candidates, payload.limit)
     recommendation_id = str(uuid4())
-    title_to_id = {book["title"].casefold(): book["id"] for book in catalog}
+    title_to_id = {book["title"].casefold(): book["id"] for book in services.catalog}
     for position, item in enumerate(result.recommended_books, start=1):
+        item.book_id = item.book_id or title_to_id.get(item.book_title.casefold())
         repository.log_recommendation_interaction(user["id"], {
             "recommendation_id": recommendation_id,
-            "book_id": title_to_id.get(item.book_title.casefold()),
+            "book_id": item.book_id,
             "event_type": "impression",
             "position": position,
             "experiment_variant": variant,
@@ -65,14 +66,14 @@ async def my_recommendations(payload: CharacterSearchRequest, request: Request, 
         }, session["access_token"])
     repository.log_recommendation_event(user["id"], payload.character_description, len(result.recommended_books),
                                         fallback_used, round((perf_counter() - started) * 1000), session["access_token"])
-    response.headers["X-Search-Explanation"] = json.dumps(recommender.last_query_explanation, ensure_ascii=True, separators=(",", ":"))[:4000]
+    response.headers["X-Search-Explanation"] = json.dumps(services.recommender.last_query_explanation, ensure_ascii=True, separators=(",", ":"))[:4000]
     return {**result.model_dump(), "recommendation_id": recommendation_id, "experiment_variant": variant}
 
 
 @router.get("/me/recommendations/explanation")
 def my_recommendation_explanation(request: Request, response: Response) -> dict:
     current_session(request, response)
-    return recommender.last_query_explanation
+    return services.recommender.last_query_explanation
 
 
 @router.post("/me/chat", response_model=ChatResponse)
@@ -97,7 +98,7 @@ async def chat_with_book_assistant(
     stored = repository.chat_messages(user_id, chat_session["id"], 12, session["access_token"])
     history = [{"role": item["role"], "content": item["content"]} for item in stored[-8:]] or [item.model_dump() for item in payload.history]
     repository.save_chat_message(user_id, chat_session["id"], "user", payload.message, access_token=session["access_token"])
-    result = await chatbot.reply(
+    result = await services.chatbot.reply(
         payload.message, profile, dashboard, access_token=session["access_token"],
         history=history,
         active_view_context=(
@@ -172,7 +173,7 @@ def execute_chat_action(payload: ChatActionExecute, request: Request, response: 
     existing_result = repository.action_execution(user_id, payload.idempotency_key, token)
     if existing_result is not None:
         return {**existing_result, "replayed": True}
-    book = next((item for item in catalog if item["id"] == action.book_id), None)
+    book = next((item for item in services.catalog if item["id"] == action.book_id), None)
     if not book:
         raise HTTPException(status_code=404, detail="Bu işlem yapılamıyor: kitap katalogda bulunamadı.")
     profile = repository.user_profile(user_id, token)

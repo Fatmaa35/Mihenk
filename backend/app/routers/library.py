@@ -36,6 +36,14 @@ def update_my_library(payload: LibraryEntryUpsert, request: Request, response: R
         raise HTTPException(status_code=400, detail=str(error)) from error
 
 
+@router.delete("/me/library/{book_id}", status_code=204)
+def remove_from_my_library(book_id: str, request: Request, response: Response) -> Response:
+    session = current_session(request, response)
+    repository.remove_library_entry(session["user"]["id"], book_id, access_token=session["access_token"])
+    response.status_code = 204
+    return response
+
+
 @router.post("/me/custom-books", status_code=201)
 def create_my_custom_book(
     payload: CustomBookUpsert, request: Request, response: Response,

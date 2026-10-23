@@ -1,0 +1,125 @@
+/*
+ * Mihenk tasarım token'ları — "Canlı Raf".
+ * Renkler yalnızca burada tanımlanır; bileşenler her zaman var(--…) kullanır.
+ * Açık tema varsayılandır. Koyu tema iki yoldan gelir: kullanıcı seçimi
+ * (data-theme="dark") ya da seçim yoksa sistem tercihi.
+ */
+:root {
+  color-scheme: light;
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'DM Sans Variable', 'DM Sans', system-ui, sans-serif;
+
+  --bg: #FBFAF7;
+  --surface: #FFFFFF;
+  --surface-2: #F3F1EC;
+  --ink: #15151A;
+  --ink-2: #55545E;
+  --ink-3: #6E6D78;
+  --line: #15151A;
+  --line-strong: #15151A;
+  --line-soft: #E7E4DC;
+  --focus: #3D3AC9;
+
+  --accent: #3D3AC9;
+  --accent-hover: #2F2CB0;
+  --accent-strong: #3D3AC9;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E7E5FF;
+  --accent-soft-ink: #2B28A0;
+
+  --tile-mint: #D9F2E3;
+  --tile-mint-ink: #1E4D35;
+  --tile-lilac: #E7E5FF;
+  --tile-butter: #FFE9C7;
+  --tile-peach: #FFDCD2;
+  --gold: #E0A91A;
+
+  --danger: #B42318;
+  --danger-soft: #FDE8E6;
+  --success: #1E7A4C;
+
+  --shadow-hard: 4px 4px 0 var(--line);
+  --shadow-hard-sm: 3px 3px 0 var(--line);
+  --shadow-soft: 0 12px 32px -18px rgba(21, 21, 26, 0.35);
+  --border-strong: 2px solid var(--line-strong);
+  --border-soft: 1px solid var(--line-soft);
+
+  --radius-xs: 8px;
+  --radius-s: 12px;
+  --radius-m: 18px;
+  --radius-l: 26px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --rail-width: 104px;
+  --content-max: 1240px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #121218;
+  --surface: #1B1B24;
+  --surface-2: #24242F;
+  --ink: #F3F2EE;
+  --ink-2: #B9B8C3;
+  --ink-3: #9998A5;
+  --line: #050507;
+  --line-strong: #4A4A5E;
+  --line-soft: #2E2E3B;
+  --focus: #A9A7FF;
+  --accent: #8E8BFF;
+  --accent-hover: #A5A3FF;
+  --accent-strong: #5B58E0;
+  --accent-ink: #121218;
+  --accent-soft: #2A2852;
+  --accent-soft-ink: #D3D2FF;
+  --tile-mint: #183527;
+  --tile-mint-ink: #BDEBD1;
+  --tile-lilac: #26244A;
+  --tile-butter: #372C16;
+  --tile-peach: #3D2420;
+  --danger: #FF8A80;
+  --danger-soft: #3A1F1D;
+  --success: #6FD3A0;
+  --shadow-soft: 0 16px 40px -20px rgba(0, 0, 0, 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #121218;
+    --surface: #1B1B24;
+    --surface-2: #24242F;
+    --ink: #F3F2EE;
+    --ink-2: #B9B8C3;
+    --ink-3: #9998A5;
+    --line: #050507;
+    --line-strong: #4A4A5E;
+    --line-soft: #2E2E3B;
+    --focus: #A9A7FF;
+    --accent: #8E8BFF;
+    --accent-hover: #A5A3FF;
+    --accent-strong: #5B58E0;
+  --accent-strong: #5B58E0;
+    --accent-ink: #121218;
+    --accent-soft: #2A2852;
+    --accent-soft-ink: #D3D2FF;
+    --tile-mint: #183527;
+    --tile-mint-ink: #BDEBD1;
+    --tile-lilac: #26244A;
+    --tile-butter: #372C16;
+    --tile-peach: #3D2420;
+    --danger: #FF8A80;
+    --danger-soft: #3A1F1D;
+    --success: #6FD3A0;
+      --shadow-soft: 0 16px 40px -20px rgba(0, 0, 0, 0.8);
+  }
+}

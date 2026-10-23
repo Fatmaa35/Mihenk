@@ -338,6 +338,7 @@ class CharacterSearchRequest(BaseModel):
 
 
 class RecommendedBook(BaseModel):
+    book_id: str | None = None
     book_title: str
     author: str
     match_score: float = Field(ge=0, le=1)

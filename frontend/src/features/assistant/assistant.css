@@ -1,0 +1,103 @@
+.assistant-fab {
+  position: fixed;
+  z-index: 30;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  border: var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  border-color: var(--line-strong);
+  color: var(--accent-ink);
+  font-weight: 800;
+  box-shadow: var(--shadow-hard);
+  cursor: pointer;
+}
+.assistant-fab:hover { background: var(--accent-hover); }
+
+.assistant {
+  position: fixed;
+  z-index: 45;
+  top: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  width: min(440px, calc(100vw - 32px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  border: var(--border-strong);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  box-shadow: var(--shadow-hard), var(--shadow-soft);
+  overflow: hidden;
+  animation: assistant-in .2s var(--ease);
+}
+.assistant[hidden] { display: none; }
+@keyframes assistant-in { from { opacity: 0; transform: translateX(16px); } }
+
+.assistant__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); padding: var(--space-4) var(--space-3) var(--space-3) var(--space-5); border-bottom: var(--border-soft); }
+.assistant__head h2 { font-size: 20px; }
+.assistant__session { margin-top: 4px; max-width: 240px; padding: 4px 8px; border: var(--border-soft); border-radius: var(--radius-xs); background: var(--surface); color: var(--ink-2); font-size: 13px; }
+.assistant__tools { display: flex; }
+
+.assistant__messages { list-style: none; margin: 0; padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); overflow-y: auto; }
+.chat-message { max-width: 88%; padding: var(--space-3) var(--space-4); border-radius: var(--radius-m); line-height: 1.5; }
+.chat-message p { white-space: pre-line; }
+.chat-message--assistant { align-self: flex-start; background: var(--surface-2); border-bottom-left-radius: 6px; }
+.chat-message--user { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 6px; }
+.chat-message--typing { color: var(--ink-2); font-style: italic; }
+.chat-message__books { list-style: none; padding: 0; margin: var(--space-3) 0 0; display: grid; gap: var(--space-2); }
+.chat-message__books button {
+  display: grid;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.chat-message__books button:hover { border-color: var(--accent); }
+.chat-message__books span { font-size: 13px; color: var(--ink-2); }
+
+.assistant__suggestions { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0 var(--space-5) var(--space-3); }
+.assistant__suggestions button {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.assistant__suggestions button:hover { background: var(--accent-soft); color: var(--accent-soft-ink); }
+
+.assistant__form { display: flex; align-items: flex-end; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); border-top: var(--border-soft); }
+.assistant__form textarea {
+  flex: 1;
+  min-height: 48px;
+  max-height: 140px;
+  padding: var(--space-3);
+  border: var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 15px;
+  resize: vertical;
+}
+
+.action-preview { display: grid; gap: var(--space-3); margin: 0; }
+.action-preview dt { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.action-preview dd { margin: 2px 0 0; font-weight: 600; }
+
+@media (max-width: 760px) {
+  .assistant-fab { right: var(--space-4); bottom: calc(84px + env(safe-area-inset-bottom)); min-height: 48px; padding: 0 var(--space-4); }
+  .assistant-fab span { display: none; }
+  .assistant { inset: 0; width: 100%; border-radius: 0; border: 0; }
+}
