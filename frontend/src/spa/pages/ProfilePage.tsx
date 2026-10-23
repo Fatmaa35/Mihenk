@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { Check, Pencil } from 'lucide-react'
 import { BadgeIcon } from '../../features/profile/BadgeIcon'
+import { BadgeShelf } from '../../features/profile/BadgeShelf'
 import { YearHeatmap } from '../../features/profile/YearHeatmap'
 import { useGamification, useReadingDashboardDetails, useUpdateReadingGoal, useUpdateShowcase } from '../../shared/api/profile'
 import type { Badge } from '../../shared/api/types'
@@ -33,29 +34,6 @@ function GoalEditor({ target, onDone }: { target: number; onDone: () => void }) 
   )
 }
 
-function BadgeCard({ badge, onToggle, disabled }: { badge: Badge; onToggle: () => void; disabled: boolean }) {
-  return (
-    <li className={`badge-card${badge.earned ? ' is-earned' : ''}`}>
-      <BadgeIcon code={badge.code} earned={badge.earned} xpReward={badge.xp_reward} />
-      <div className="badge-card__body">
-        <strong>{badge.name}</strong>
-        <span>{badge.description}</span>
-        {badge.earned ? (
-          <button type="button" className="badge-card__showcase" aria-pressed={badge.showcased} onClick={onToggle} disabled={disabled}>
-            {badge.showcased ? 'Vitrinden kaldır' : 'Vitrine koy'}
-          </button>
-        ) : (
-          <div className="badge-card__progress">
-            <Progress value={badge.progress_percent} label={`${badge.name} ilerlemesi`} size="sm" tone="accent" />
-            <small>{badge.progress}/{badge.goal}</small>
-          </div>
-        )}
-      </div>
-      <span className="badge-card__xp">+{badge.xp_reward} XP</span>
-    </li>
-  )
-}
-
 export default function ProfilePage() {
   const { user } = useSession()
   const year = new Date().getFullYear()
@@ -76,9 +54,6 @@ export default function ProfilePage() {
   }
 
   const level = gamification.data?.level
-  const nextBadge = gamification.data?.badges
-    .filter((badge) => !badge.earned)
-    .sort((a, b) => b.progress_percent - a.progress_percent)[0]
   const showcased = gamification.data?.badges.filter((badge) => badge.showcased) ?? []
   const data = dashboard.data
   const maxGenre = Math.max(1, ...(data?.genre_distribution.map((item) => item.count) ?? [1]))
@@ -168,20 +143,13 @@ export default function ProfilePage() {
 
       <section aria-labelledby="badges-title">
         <div className="section-head">
-          <h2 id="badges-title">Rozetler</h2>
+          <h2 id="badges-title">Rozet rafın</h2>
           {gamification.data && <span className="mh-chip mh-chip--muted">{gamification.data.earned_count} / {gamification.data.total_badges} kazanıldı</span>}
         </div>
-        {nextBadge && (
-          <p className="profile__next">
-            Sıradaki rozet: <strong>{nextBadge.name}</strong> · {Math.max(0, nextBadge.goal - nextBadge.progress)} adım kaldı
-          </p>
-        )}
         {gamification.isError && <ErrorState message={gamification.error.message} onRetry={() => gamification.refetch()} />}
-        <ul className="badge-grid">
-          {gamification.data?.badges.map((badge) => (
-            <BadgeCard key={badge.code} badge={badge} onToggle={() => toggleShowcase(badge)} disabled={showcase.isPending} />
-          ))}
-        </ul>
+        {gamification.data
+          ? <BadgeShelf badges={gamification.data.badges} onToggle={toggleShowcase} disabled={showcase.isPending} />
+          : !gamification.isError && <Skeleton height={220} />}
       </section>
     </div>
   )
