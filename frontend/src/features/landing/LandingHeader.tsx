@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '../../spa/theme/ThemeProvider'
 import { routes } from '../../spa/routes'
+import { Brand } from '../../shared/brand/Brand'
 
 const SIGN_UP = `${routes.signIn}?mod=kayit`
 
@@ -20,10 +21,7 @@ export function Header() {
   return (
     <header className={`lp-header${scrolled ? ' is-scrolled' : ''}`}>
       <div className="lp-container lp-header__inner">
-        <a href="#top" className="lp-brand" aria-label="Mihenk, sayfanın başına dön">
-          <img src={`/static/brand/mark-${resolved}.webp`} alt="" width={36} height={36} />
-          <span>Mihenk</span>
-        </a>
+        <Brand href="#top" label="Mihenk, sayfanın başına dön" />
         <nav className="lp-nav" aria-label="Sayfa bölümleri">
           <a href="#nasil-calisir">Nasıl çalışır</a>
           <a href="#ozellikler">Özellikler</a>

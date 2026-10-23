@@ -1,8 +1,8 @@
 import { Link } from 'react-router'
 import { ArrowRight, BellRing, BookOpen, Check, ChevronDown, Compass, Download, Lock, MessagesSquare, Sparkles, Target, Timer, Trash2, Users } from 'lucide-react'
 import { Progress } from '../../shared/ui'
-import { useTheme } from '../../spa/theme/ThemeProvider'
 import { routes } from '../../spa/routes'
+import { Brand } from '../../shared/brand/Brand'
 
 const SIGN_UP = `${routes.signIn}?mod=kayit`
 
@@ -209,11 +209,10 @@ export function FinalCta() {
 }
 
 export function Footer() {
-  const { resolved } = useTheme()
   return (
     <footer className="lp-footer">
       <div className="lp-container lp-footer__inner">
-        <div className="lp-brand"><img src={`/static/brand/mark-${resolved}.webp`} alt="" width={28} height={28} /><span>Mihenk</span></div>
+        <Brand href="#top" size="sm" label="Mihenk, sayfanın başına dön" />
         <nav aria-label="Alt bağlantılar">
           <a href="#ozellikler">Özellikler</a>
           <a href="#sss">SSS</a>

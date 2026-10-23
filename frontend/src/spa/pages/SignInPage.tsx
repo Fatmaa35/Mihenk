@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useForgotPassword, useLogin, useRegister, useResetPassword } from '../../shared/api/queries'
 import { consumeEmailLink, peekEmailLink } from '../emailLink'
 import { Button, SegmentedTabs } from '../../shared/ui'
-import { useTheme } from '../theme/ThemeProvider'
+import { Brand } from '../../shared/brand/Brand'
 import './sign-in.css'
 
 type Mode = 'login' | 'register' | 'forgot' | 'reset'
@@ -20,7 +20,6 @@ function initialState(): { mode: Mode; message: Message | null; invite: boolean 
 }
 
 export default function SignInPage() {
-  const { resolved } = useTheme()
   const [params] = useSearchParams()
   const [initial] = useState(initialState)
   const [mode, setMode] = useState<Mode>(initial.mode === 'login' && params.get('mod') === 'kayit' ? 'register' : initial.mode)
@@ -75,11 +74,13 @@ export default function SignInPage() {
   const title = mode === 'login' ? 'Tekrar hoş geldin' : mode === 'register' ? 'Rafını kur' : mode === 'reset' ? (initial.invite ? 'Mihenk’e hoş geldin' : 'Yeni parolanı belirle') : 'Parolanı sıfırla'
 
   return (
+    <div className="sign-in-page">
+      <header className="sign-in__top">
+        <Brand to="/" label="Mihenk tanıtım sayfasına dön" />
+        <Link to="/" className="sign-in__back">← Tanıtım sayfası</Link>
+      </header>
     <div className="sign-in">
       <section className="sign-in__story" aria-labelledby="sign-in-story">
-        <Link to="/" className="sign-in__home" aria-label="Mihenk tanıtım sayfasına dön">
-          <img src={`/static/brand/full-${resolved}.webp`} alt="Mihenk" className="sign-in__logo" width={120} height={140} />
-        </Link>
         <h1 id="sign-in-story">Bir sonraki kitabın seni bekliyor.</h1>
         <p>Okuma geçmişini ve ruh hâlini anlat; Mihenk sana uygun kitapları bulsun, ilerlemeni takip etsin, kulübünle birlikte okumanı kolaylaştırsın.</p>
         <ul className="sign-in__points">
@@ -147,6 +148,7 @@ export default function SignInPage() {
         {(mode === 'forgot' || mode === 'reset') && <button type="button" className="sign-in__link" onClick={() => { consumeEmailLink(); setMode('login'); setMessage(null) }}>Girişe dön</button>}
         <p className="sign-in__legal">Devam ederek <Link to="/privacy" reloadDocument>gizlilik bildirimini</Link> kabul etmiş olursun.</p>
       </section>
+    </div>
     </div>
   )
 }

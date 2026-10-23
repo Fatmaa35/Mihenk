@@ -14,9 +14,7 @@ html:has(.lp) { scroll-behavior: smooth; }
   transition: border-color .2s var(--ease);
 }
 .lp-header.is-scrolled { border-bottom-color: var(--line-soft); }
-.lp-header__inner { display: flex; align-items: center; gap: var(--space-5); min-height: 72px; }
-.lp-brand { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--ink); text-decoration: none; font-family: var(--font-display); font-weight: 800; font-size: 22px; }
-.lp-brand img { object-fit: contain; }
+.lp-header__inner { display: flex; align-items: center; gap: var(--space-5); min-height: 80px; }
 .lp-nav { display: flex; gap: var(--space-1); margin-left: var(--space-4); }
 .lp-nav a { padding: var(--space-2) var(--space-3); border-radius: var(--radius-s); color: var(--ink-2); font-weight: 600; text-decoration: none; }
 .lp-nav a:hover { background: var(--surface-2); color: var(--ink); }
