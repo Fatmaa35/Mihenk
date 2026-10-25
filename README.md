@@ -72,6 +72,4 @@ ve `npm run build` çalıştırılır. Uygulama açıkken frontend klasöründe
 Docker imajı depo kökünden `docker build -t mihenk .` ile oluşturulur.
 Render aynı kök `Dockerfile` dosyasını kullanır.
 
-## Ekran görüntüsü
 
-![Mihenk ana sayfa](docs/assets/Mihenk·Landing Page.png)
