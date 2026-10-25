@@ -74,4 +74,4 @@ Render aynı kök `Dockerfile` dosyasını kullanır.
 
 ## Ekran görüntüsü
 
-![Mihenk ana sayfa](docs/assets/LandingPage.png)
+![Mihenk ana sayfa](docs/assets/Mihenk · Landing Page.png)
