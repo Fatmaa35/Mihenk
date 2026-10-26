@@ -75,6 +75,7 @@ Render aynı kök `Dockerfile` dosyasını kullanır.
 
 ## Landing Page
 
+
 <p align="center">
-  <img src="docs/assets/Mihenk%20%C2%B7%20Landing%20Page.png" alt="Mihenk landing page" width="900">
+  <img src="docs/assets/landing-page.png" alt="Mihenk landing page" width="900">
 </p>
