@@ -48,3 +48,15 @@ def test_bearer_header_is_ignored_for_browser_clients() -> None:
     access = registered.headers["x-session-access-token"]
     client.cookies.clear()
     assert client.get("/auth/me", headers={"Authorization": f"Bearer {access}"}).status_code == 401
+
+
+def test_data_export_downloads_a_json_file() -> None:
+    client = _mobile_client()
+    email = f"mobile-{uuid4().hex[:8]}@example.com"
+    registered = client.post("/auth/register", headers=MOBILE,
+                             json={"display_name": "Mobil Okur", "email": email, "password": "en-az-sekiz"})
+    authed = {**MOBILE, "Authorization": f"Bearer {registered.headers['x-session-access-token']}"}
+    exported = client.get("/me/data-export", headers=authed)
+    assert exported.status_code == 200
+    assert "attachment" in exported.headers["content-disposition"]
+    assert exported.json()["account"]["email"] == email

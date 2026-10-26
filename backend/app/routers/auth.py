@@ -148,11 +148,16 @@ def export_my_data(request: Request, response: Response) -> Response:
         session["user"]["id"], session["access_token"]
     )
     body = json.dumps(payload, ensure_ascii=False, indent=2, default=str)
-    response.body = body.encode("utf-8")
-    response.media_type = "application/json"
-    response.headers["Content-Type"] = "application/json; charset=utf-8"
-    response.headers["Content-Disposition"] = "attachment; filename=mihenk-verilerim.json"
-    return response
+    export = Response(
+        content=body.encode("utf-8"),
+        media_type="application/json; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=mihenk-verilerim.json"},
+    )
+    # Keep a refreshed session (cookies or mobile token headers) set on the injected response.
+    for key, value in response.raw_headers:
+        if key.lower() in {b"set-cookie", b"x-session-access-token", b"x-session-refresh-token", b"cache-control"}:
+            export.raw_headers.append((key, value))
+    return export
 
 
 @router.get("/me/profile")
