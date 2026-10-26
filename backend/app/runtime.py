@@ -149,15 +149,45 @@ ACCESS_COOKIE = "book_access_token"
 REFRESH_COOKIE = "book_refresh_token"
 
 
+MOBILE_CLIENT_HEADER = "x-mihenk-client"
+MOBILE_REFRESH_HEADER = "x-refresh-token"
+MOBILE_ACCESS_RESPONSE_HEADER = "X-Session-Access-Token"
+MOBILE_REFRESH_RESPONSE_HEADER = "X-Session-Refresh-Token"
+
+
+def is_mobile_client(request: Request) -> bool:
+    """Mobil uygulama oturumu çerez yerine başlıklarla taşır."""
+    return request.headers.get(MOBILE_CLIENT_HEADER, "").casefold() == "mobile"
+
+
+def session_tokens(request: Request) -> tuple[str | None, str | None]:
+    """Tarayıcı için çerezler, mobil uygulama için Bearer + yenileme başlığı."""
+    access, refresh = request.cookies.get(ACCESS_COOKIE), request.cookies.get(REFRESH_COOKIE)
+    if access or refresh or not is_mobile_client(request):
+        return access, refresh
+    authorization = request.headers.get("authorization", "")
+    bearer = authorization[7:].strip() if authorization[:7].casefold() == "bearer " else ""
+    return bearer or None, request.headers.get(MOBILE_REFRESH_HEADER) or None
+
+
+def deliver_session(request: Request, response: Response, session: dict) -> None:
+    """Yeni ya da yenilenmiş oturumu istemcinin taşıdığı biçimde geri verir."""
+    if is_mobile_client(request):
+        response.headers[MOBILE_ACCESS_RESPONSE_HEADER] = session["access_token"]
+        if session.get("refresh_token"):
+            response.headers[MOBILE_REFRESH_RESPONSE_HEADER] = session["refresh_token"]
+        response.headers["Cache-Control"] = "no-store"
+        return
+    set_session_cookies(response, session)
+
+
 def current_session(request: Request, response: Response) -> dict:
-    session = repository.resolve_session(
-        request.cookies.get(ACCESS_COOKIE),
-        request.cookies.get(REFRESH_COOKIE),
-    )
+    access, refresh = session_tokens(request)
+    session = repository.resolve_session(access, refresh)
     if not session:
         raise HTTPException(status_code=401, detail="Oturum açmanız gerekiyor.")
-    if session.get("access_token") != request.cookies.get(ACCESS_COOKIE):
-        set_session_cookies(response, session)
+    if session.get("access_token") != access:
+        deliver_session(request, response, session)
     user = session["user"]
     try:
         account = repository.account_status(user["id"], session.get("access_token"))
