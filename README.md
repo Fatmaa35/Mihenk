@@ -73,3 +73,8 @@ Docker imajı depo kökünden `docker build -t mihenk .` ile oluşturulur.
 Render aynı kök `Dockerfile` dosyasını kullanır.
 
 
+## Landing Page
+
+<p align="center">
+  <img src="docs/assets/Mihenk%20%C2%B7%20Landing%20Page.png" alt="Mihenk landing page" width="900">
+</p>
