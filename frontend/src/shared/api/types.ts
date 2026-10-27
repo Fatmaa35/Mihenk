@@ -254,3 +254,30 @@ export type ChatReply = { intent: string; answer: string; books: ChatBook[]; sug
 export type ChatSession = { id: string; title: string; updated_at?: string; is_pinned?: boolean }
 export type ChatMessage = { id?: string; role: 'user' | 'assistant'; content: string; books?: ChatBook[] }
 export type ActiveView = 'discover' | 'catalog' | 'library' | 'insights' | 'alerts' | 'quality'
+
+/* ---------- Okuma seansları ve alıntılar ---------- */
+
+export type ReadingSession = {
+  id: string
+  book_id: string | null
+  custom_book_id: string | null
+  book_title: string | null
+  start_page: number
+  end_page: number
+  pages_read: number
+  duration_minutes: number
+  session_date: string
+  created_at: string
+}
+
+export type Quote = {
+  id: string
+  book_id: string | null
+  custom_book_id: string | null
+  book_title: string | null
+  quote_text: string
+  page_number: number | null
+  tags: string[]
+  source_type: string
+  created_at: string
+}

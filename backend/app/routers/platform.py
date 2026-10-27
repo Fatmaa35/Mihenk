@@ -9,7 +9,7 @@ SPA_PAGE = STATIC_DIR / "generated" / "index.html"
 # React uygulamasının istemci tarafı rotaları. API yollarıyla çakışmaması için açıkça listelenir.
 SPA_ROUTES = (
     "giris", "bugun", "kesfet", "kitapligim", "topluluk", "kulupler", "odak", "profil", "bildirimler", "ayarlar",
-    "yonetim",
+    "yonetim", "ozet", "alintilar",
 )
 # Eski arayüzün `?view=` bağlantıları (yer imleri, e-postalar) yeni adreslere yönlenir.
 CLASSIC_VIEW_ROUTES = {

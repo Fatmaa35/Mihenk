@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ExternalLink, Star } from 'lucide-react'
+import { Link } from 'react-router'
+import { ExternalLink, Quote, Star } from 'lucide-react'
 import { useBookDetails, useBootstrap } from '../../shared/api/queries'
 import type { RetailOffer } from '../../shared/api/types'
 import { BookCover, Dialog, ErrorState, SegmentedTabs, Skeleton } from '../../shared/ui'
@@ -8,6 +9,7 @@ import { BookCommunityPanel } from '../community/BookCommunityPanel'
 import { ShelfPicker } from '../library/ShelfPicker'
 import { libraryIndex } from '../library/shelves'
 import { PriceAlertForm } from '../pricing/PriceAlertForm'
+import { routes } from '../../spa/routes'
 import './catalog.css'
 
 export type BookDetailTab = 'genel' | 'yorumlar'
@@ -95,6 +97,11 @@ export function BookDetailDialog({ bookId, onClose, initialTab = 'genel' }: Book
                 <section aria-labelledby="detail-shelf">
                   <h3 id="detail-shelf" className="book-detail__heading">Kitaplığına ekle</h3>
                   <ShelfPicker bookId={book.id} title={book.title} current={entry?.shelf} totalPages={entry?.total_pages ?? book.page_count} />
+                  {entry && (
+                    <Link to={`${routes.quotes}?kitap=${encodeURIComponent(book.id)}`} className="book-detail__quote-link">
+                      <Quote size={16} aria-hidden="true" /> Bu kitaptan alıntı kartı yap
+                    </Link>
+                  )}
                 </section>
                 <section aria-labelledby="detail-offers">
                   <h3 id="detail-offers" className="book-detail__heading">Fiyatlar</h3>

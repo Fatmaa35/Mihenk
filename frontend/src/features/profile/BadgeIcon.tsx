@@ -1,5 +1,6 @@
 import { Award, BookMarked, BookOpen, CalendarCheck, Compass, Flame, MessageSquare, PenLine, Star, Target } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import './profile.css'
 
 /** Rozet kodlarını tutarlı çizgi ikonlarla eşler; bilinmeyen rozet genel ödül ikonunu alır. */
 const ICONS: Record<string, LucideIcon> = {

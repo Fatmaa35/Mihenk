@@ -23,6 +23,8 @@ export const queryKeys = {
   notificationPreferences: ['notification-preferences'] as const,
   chatSessions: ['chat-sessions'] as const,
   chatMessages: (id: string) => ['chat-messages', id] as const,
+  readingSessions: ['reading-sessions'] as const,
+  quotes: ['quotes'] as const,
 }
 
 export function createQueryClient() {
@@ -136,6 +138,7 @@ export function invalidateReading(client: ReturnType<typeof useQueryClient>) {
     client.invalidateQueries({ queryKey: queryKeys.weekly }),
     client.invalidateQueries({ queryKey: ['reading-dashboard'] }),
     client.invalidateQueries({ queryKey: queryKeys.gamification }),
+    client.invalidateQueries({ queryKey: queryKeys.readingSessions }),
   ])
 }
 

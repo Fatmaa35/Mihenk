@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './api'
 import { invalidateReading, json, queryKeys } from './queries'
-import type { GamificationDetails, ReadingDashboardDetails } from './types'
+import type { GamificationDetails, Quote, ReadingDashboardDetails, ReadingSession } from './types'
 
 /** Okuma analizi, seviye/rozetler ve yıllık hedef. */
 
@@ -26,5 +26,25 @@ export function useUpdateShowcase() {
   return useMutation({
     mutationFn: (badgeCodes: string[]) => api<GamificationDetails>('/me/gamification/showcase', { method: 'PUT', ...json({ badge_codes: badgeCodes }) }),
     onSuccess: (data) => client.setQueryData(queryKeys.gamification, data),
+  })
+}
+
+export function useReadingSessions() {
+  return useQuery({ queryKey: queryKeys.readingSessions, queryFn: () => api<ReadingSession[]>('/me/reading-sessions') })
+}
+
+/* ---------- Alıntılar ---------- */
+
+export function useQuotes() {
+  return useQuery({ queryKey: queryKeys.quotes, queryFn: () => api<Quote[]>('/me/quotes') })
+}
+
+export type QuoteInput = { book_id?: string | null; custom_book_id?: string | null; quote_text: string; page_number: number | null }
+
+export function useSaveQuote() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (input: QuoteInput) => api<Quote>('/me/quotes', { method: 'POST', ...json({ ...input, tags: [], source_type: 'manual' }) }),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.quotes }),
   })
 }
