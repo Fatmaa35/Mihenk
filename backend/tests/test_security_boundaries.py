@@ -194,3 +194,16 @@ def test_production_rejects_unsafe_cors_configuration(origin):
         recovery_redirect_url="https://mihenk.test/", allowed_origins=(origin,))
     with pytest.raises(ValueError):
         config.validate()
+
+
+def test_native_mobile_client_may_write_without_origin_only_when_cookieless():
+    client = secured_client()
+    mobile = {"X-Mihenk-Client": "mobile"}
+    assert client.post("/auth/login", headers=mobile).status_code == 200
+    # A browser-style request (cookies attached) never gets the exemption.
+    client.cookies.set("book_access_token", "stolen")
+    assert client.post("/auth/login", headers=mobile).status_code == 403
+    client.cookies.clear()
+    # Foreign origins stay blocked even with the mobile header.
+    assert client.post("/auth/login", headers={**mobile, "Origin": "https://evil.test"}).status_code == 403
+    assert client.post("/auth/login", headers={"X-Mihenk-Client": "web"}).status_code == 403

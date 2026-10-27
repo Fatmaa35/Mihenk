@@ -44,7 +44,7 @@ def user_profile(user_id: str, request: Request, response: Response) -> dict:
     except KeyError as error:
         raise HTTPException(status_code=404, detail=error.args[0]) from error
 @router.post("/auth/register", status_code=201)
-def register(payload: RegisterRequest, response: Response) -> dict:
+def register(payload: RegisterRequest, request: Request, response: Response) -> dict:
     if not settings.allow_registration:
         raise HTTPException(status_code=403, detail="Yeni kayıtlar şu anda davetle açılıyor.")
     guard_auth_email(payload.email)
@@ -53,7 +53,7 @@ def register(payload: RegisterRequest, response: Response) -> dict:
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     if session.get("access_token"):
-        set_session_cookies(response, session)
+        deliver_session(request, response, session)
     return {
         **public_account(session["user"]),
         "email_confirmation_required": session.get("email_confirmation_required", False),
@@ -61,7 +61,7 @@ def register(payload: RegisterRequest, response: Response) -> dict:
 
 
 @router.post("/auth/login")
-def login(payload: LoginRequest, response: Response) -> dict:
+def login(payload: LoginRequest, request: Request, response: Response) -> dict:
     try:
         session = repository.open_login_session(payload.email, payload.password)
     except ValueError as error:
@@ -70,7 +70,7 @@ def login(payload: LoginRequest, response: Response) -> dict:
         if error.status_code in {400, 401, 422}:
             raise HTTPException(status_code=401, detail="E-posta veya parola hatalı.") from error
         raise
-    set_session_cookies(response, session)
+    deliver_session(request, response, session)
     return public_account(session["user"])
 
 
@@ -103,10 +103,7 @@ def resend_confirmation(payload: ConfirmationResendRequest) -> dict:
 
 @router.post("/auth/logout", status_code=204)
 def logout(request: Request, response: Response) -> Response:
-    repository.close_session(
-        request.cookies.get(ACCESS_COOKIE),
-        request.cookies.get(REFRESH_COOKIE),
-    )
+    repository.close_session(*session_tokens(request))
     response.delete_cookie(ACCESS_COOKIE, path="/")
     response.delete_cookie(REFRESH_COOKIE, path="/")
     response.status_code = 204
@@ -151,11 +148,16 @@ def export_my_data(request: Request, response: Response) -> Response:
         session["user"]["id"], session["access_token"]
     )
     body = json.dumps(payload, ensure_ascii=False, indent=2, default=str)
-    response.body = body.encode("utf-8")
-    response.media_type = "application/json"
-    response.headers["Content-Type"] = "application/json; charset=utf-8"
-    response.headers["Content-Disposition"] = "attachment; filename=mihenk-verilerim.json"
-    return response
+    export = Response(
+        content=body.encode("utf-8"),
+        media_type="application/json; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=mihenk-verilerim.json"},
+    )
+    # Keep a refreshed session (cookies or mobile token headers) set on the injected response.
+    for key, value in response.raw_headers:
+        if key.lower() in {b"set-cookie", b"x-session-access-token", b"x-session-refresh-token", b"cache-control"}:
+            export.raw_headers.append((key, value))
+    return export
 
 
 @router.get("/me/profile")

@@ -176,8 +176,18 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             and request.headers.get("sec-fetch-mode") == "navigate"
             and request.headers.get("sec-fetch-dest") == "document"
         )
+        # The native mobile app sends no Origin. It authenticates with a Bearer
+        # header instead of cookies, so a cookieless request carrying the custom
+        # client header cannot be a cross-site browser forgery (browsers always
+        # send Origin on cross-site writes, and the custom header forces a CORS
+        # preflight that foreign origins fail).
+        native_client = (
+            not origin
+            and request.headers.get("x-mihenk-client", "").casefold() == "mobile"
+            and not request.cookies
+        )
         if (origin and not origin_allowed) or (
-            self.strict_origin and unsafe and not origin
+            self.strict_origin and unsafe and not origin and not native_client
             and request.url.path != "/internal/pipelines/prices"
         ) or (self.strict_origin and request.headers.get("sec-fetch-site") == "cross-site"
               and not origin_allowed and not public_navigation):
