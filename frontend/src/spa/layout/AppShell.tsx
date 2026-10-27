@@ -11,6 +11,7 @@ import { useSession } from './SessionGate'
 import './shell.css'
 
 const AssistantLauncher = lazy(() => import('../../features/assistant/AssistantLauncher'))
+const BadgeCelebration = lazy(() => import('../../features/profile/BadgeCelebration').then((module) => ({ default: module.BadgeCelebration })))
 
 const NAV_ITEMS = [
   { to: routes.today, label: 'Bugün', icon: House },
@@ -127,6 +128,7 @@ function useDocumentTitle() {
 
 export function AppShell() {
   useDocumentTitle()
+  const { user } = useSession()
   return (
     <div className="shell">
       <a className="skip-link" href="#main">İçeriğe geç</a>
@@ -177,6 +179,7 @@ export function AppShell() {
 
       <Suspense fallback={null}>
         <AssistantLauncher />
+        <BadgeCelebration userId={user.id} displayName={user.display_name} />
       </Suspense>
     </div>
   )
