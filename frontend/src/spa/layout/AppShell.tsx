@@ -31,6 +31,8 @@ const PAGE_TITLES: Record<string, string> = {
   [routes.notifications]: 'Bildirimler',
   [routes.settings]: 'Ayarlar',
   [routes.admin]: 'Yönetim',
+  [routes.wrapped]: 'Okuma yılın',
+  [routes.quotes]: 'Alıntılarım',
 }
 
 function BrandMark({ size = 44 }: { size?: number }) {

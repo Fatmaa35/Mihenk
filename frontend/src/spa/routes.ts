@@ -11,6 +11,8 @@ export const routes = {
   notifications: '/bildirimler',
   settings: '/ayarlar',
   admin: '/yonetim',
+  wrapped: '/ozet',
+  quotes: '/alintilar',
 } as const
 
 

@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react'
 import { Check, Pencil } from 'lucide-react'
 import { BadgeIcon } from '../../features/profile/BadgeIcon'
 import { BadgeShelf } from '../../features/profile/BadgeShelf'
+import { WrappedBanner } from '../../features/wrapped/WrappedBanner'
 import { YearHeatmap } from '../../features/profile/YearHeatmap'
 import { useGamification, useReadingDashboardDetails, useUpdateReadingGoal, useUpdateShowcase } from '../../shared/api/profile'
 import type { Badge } from '../../shared/api/types'
@@ -84,6 +85,8 @@ export default function ProfilePage() {
       </header>
 
       {dashboard.isError && <ErrorState message={dashboard.error.message} onRetry={() => dashboard.refetch()} />}
+
+      <WrappedBanner />
 
       <section className="profile__stats" aria-label="Okuma istatistikleri">
         <Tile tone="butter" className="profile__goal">

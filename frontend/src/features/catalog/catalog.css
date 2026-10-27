@@ -86,3 +86,4 @@
 .price-alert-form__input .mh-input { width: 160px; padding-right: 40px; }
 .price-alert-form__input span { position: absolute; right: 14px; font-weight: 700; color: var(--ink-2); }
 .book-detail__tabs { margin-bottom: var(--space-4); }
+.book-detail__quote-link { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-3); font-weight: 700; color: var(--accent); }

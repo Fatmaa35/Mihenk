@@ -101,7 +101,10 @@ export default function LibraryPage() {
           <h1>Kitaplığım</h1>
           <p>Başladığın, sürdürdüğün ve bitirdiğin kitaplar tek yerde.</p>
         </div>
-        <Link className="mh-button mh-button--primary mh-button--md" to={routes.discover}>Kitap ekle</Link>
+        <div className="library__header-actions">
+          <Link className="mh-button mh-button--secondary mh-button--md" to={routes.quotes}>Alıntılarım</Link>
+          <Link className="mh-button mh-button--primary mh-button--md" to={routes.discover}>Kitap ekle</Link>
+        </div>
       </header>
 
       <SegmentedTabs

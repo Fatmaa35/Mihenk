@@ -226,7 +226,7 @@
 
 /* ---------- Form alanları ---------- */
 .mh-field { display: grid; gap: 6px; }
-.mh-field > span { font-size: 14px; font-weight: 700; }
+.mh-field > span, .mh-field > label { font-size: 14px; font-weight: 700; }
 .mh-field small { color: var(--ink-2); font-size: 13px; }
 .mh-input {
   width: 100%;

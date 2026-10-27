@@ -5,6 +5,8 @@ import { BookCard } from '../../features/catalog/BookCard'
 import { BookDetailDialog } from '../../features/catalog/BookDetailDialog'
 import { ProgressDialog } from '../../features/library/ProgressDialog'
 import { libraryIndex, progressOf } from '../../features/library/shelves'
+import { WrappedBanner } from '../../features/wrapped/WrappedBanner'
+import { isWrappedSeason } from '../../features/wrapped/summary'
 import { useBookClubs, useReadingDashboard, useUpsertLibraryEntry, useWeeklySummary } from '../../shared/api/queries'
 import type { LibraryBook } from '../../shared/api/types'
 import { BookCover, Button, EmptyState, ErrorState, Progress, Skeleton, Tile, useToast } from '../../shared/ui'
@@ -116,6 +118,8 @@ export default function TodayPage() {
         <input id="today-prompt" name="istek" placeholder="Yağmurlu bir akşam için kısa ve gizemli bir şey…" autoComplete="off" maxLength={500} />
         <Button type="submit" icon={<Sparkles size={16} aria-hidden="true" />}>Eşleştir</Button>
       </form>
+
+      {isWrappedSeason() && <WrappedBanner />}
 
       <section className="today__bento" aria-label="Okuma özetin">
         <ContinueReading books={profile.reading_books} onProgress={setProgressBook} />
