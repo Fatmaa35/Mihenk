@@ -5,6 +5,7 @@ import { BookCard } from '../../features/catalog/BookCard'
 import { BookDetailDialog } from '../../features/catalog/BookDetailDialog'
 import { ProgressDialog } from '../../features/library/ProgressDialog'
 import { libraryIndex, progressOf } from '../../features/library/shelves'
+import { InstallAppCard } from '../../features/pwa/InstallApp'
 import { WrappedBanner } from '../../features/wrapped/WrappedBanner'
 import { isWrappedSeason } from '../../features/wrapped/summary'
 import { useBookClubs, useReadingDashboard, useUpsertLibraryEntry, useWeeklySummary } from '../../shared/api/queries'
@@ -120,6 +121,7 @@ export default function TodayPage() {
       </form>
 
       {isWrappedSeason() && <WrappedBanner />}
+      <InstallAppCard />
 
       <section className="today__bento" aria-label="Okuma özetin">
         <ContinueReading books={profile.reading_books} onProgress={setProgressBook} />

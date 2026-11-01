@@ -1,5 +1,5 @@
-const CACHE = 'mihenk-shell-v38';
-const SHELL = ['/', '/static/manifest.webmanifest', '/static/brand/favicon.png', '/static/brand/mark-light.webp', '/static/brand/mark-dark.webp', '/static/pwa-icon-192.png', '/static/pwa-icon-512.png'];
+const CACHE = 'mihenk-shell-v39';
+const SHELL = ['/', '/static/manifest.webmanifest', '/static/pwa-maskable-512.png', '/static/brand/favicon.png', '/static/brand/mark-light.webp', '/static/brand/mark-dark.webp', '/static/pwa-icon-192.png', '/static/pwa-icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', event => {
@@ -22,6 +22,11 @@ self.addEventListener('fetch', event => {
       const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(event.request, copy)); return response;
     }).catch(() => caches.match(event.request).then(hit => hit || caches.match('/'))));
   }
+});
+// Çıkış yapılınca önbellekte kişisel yanıt kalmasın; yalnızca uygulama kabuğu yeniden yüklenir.
+self.addEventListener('message', event => {
+  if (event.data?.type !== 'CLEAR_PRIVATE_CACHE') return;
+  event.waitUntil(caches.delete(CACHE).then(() => caches.open(CACHE)).then(cache => cache.addAll(SHELL)).catch(() => undefined));
 });
 self.addEventListener('push', event => {
   let payload = {title: 'Mihenk', body: 'Okuma hatırlatıcın hazır.', url: '/'};

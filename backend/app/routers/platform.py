@@ -45,6 +45,13 @@ def classic_redirect(view: str | None = None) -> RedirectResponse:
     return RedirectResponse(CLASSIC_VIEW_ROUTES.get(view or "", "/"), status_code=308)
 
 
+@router.get("/service-worker.js", include_in_schema=False)
+def service_worker() -> FileResponse:
+    """Servis çalışanı kökten sunulur; böylece tüm uygulama sayfalarını kontrol edebilir (PWA)."""
+    return FileResponse(STATIC_DIR / "service-worker.js", media_type="text/javascript; charset=utf-8",
+                        headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"})
+
+
 @router.get("/privacy", include_in_schema=False)
 def privacy_notice() -> FileResponse:
     return FileResponse(PRIVACY_PAGE, media_type="text/html; charset=utf-8")
