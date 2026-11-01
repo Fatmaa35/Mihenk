@@ -7,12 +7,22 @@ import './theme/tokens.css'
 import './theme/base.css'
 import '../shared/ui/ui.css'
 import { App } from './App'
+import { setupInstallCapture } from '../features/pwa/install'
 
 const container = document.getElementById('root')
 if (!container) throw new Error('#root bulunamadı')
 createRoot(container).render(<StrictMode><App /></StrictMode>)
 
-// Çevrimdışı kabuk ve web push için servis çalışanı (klasik arayüzle aynı dosya).
+// "Ana ekrana ekle" olayı sayfa açılır açılmaz gelir; bileşenler yüklenmeden yakalanmalı.
+setupInstallCapture()
+
+// Çevrimdışı kabuk ve web push için servis çalışanı. Kökten sunulur ki tüm sayfaları kontrol edebilsin;
+// eski /static/ kaydı yalnızca kendi klasörünü yönetiyordu, kaldırılır.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('/static/service-worker.js').catch(() => undefined) })
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.getRegistrations().then((registrations) => Promise.all(
+      registrations.filter((registration) => new URL(registration.scope).pathname.startsWith('/static/')).map((registration) => registration.unregister()),
+    )).catch(() => undefined)
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => undefined)
+  })
 }
