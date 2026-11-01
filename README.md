@@ -7,8 +7,6 @@ alıntılar ve fiyat alarmları sunan bir web uygulamasıdır. Telefona uygulama
 gibi kurulabilir (PWA) ve arkadaşlarla birlikte okumak ya da ders çalışmak için
 canlı odalar sunar.
 
-Geliştirici: Fatma Kaplan ([@Fatmaa35](https://github.com/Fatmaa35))
-
 ## Özellikler
 
 - **Ruh hâline göre öneri:** "Yağmurlu bir akşam için kısa ve gizemli bir şey"
