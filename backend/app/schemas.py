@@ -664,3 +664,30 @@ class BookClubRoomSessionComplete(BaseModel):
 
 class BookClubRoomMessageCreate(PlainCommentModel):
     content: str = Field(min_length=1, max_length=1000)
+
+
+class LiveRoomCreate(BaseModel):
+    title: str = Field(min_length=2, max_length=80)
+    purpose: Literal["reading", "study", "other"] = "reading"
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def clean_title(cls, value):
+        return clean_comment(value) if isinstance(value, str) else value
+
+
+class LiveRoomJoin(BaseModel):
+    invite_code: str = Field(min_length=4, max_length=40)
+
+
+class LiveRoomMessageCreate(PlainCommentModel):
+    content: str = Field(min_length=1, max_length=500)
+
+
+class LiveRoomStatus(BaseModel):
+    status_text: str | None = Field(default=None, max_length=80)
+
+    @field_validator("status_text", mode="before")
+    @classmethod
+    def clean_status(cls, value):
+        return clean_comment(value) if isinstance(value, str) else value

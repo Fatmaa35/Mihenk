@@ -12,9 +12,10 @@ from app.services.catalog.catalog_quality import canonical_work_key, deduplicate
 from app.services.reading.gamification import BADGE_RULES, build_gamification_summary, earned_badge_codes
 from app.services.reading.reading_planner import build_schedule, reminder_datetime_utc, schedule_summary
 from app.services.reading.product_growth import funnel_metrics, weekly_window
+from app.repositories.sqlite.live_rooms import SQLiteLiveRoomsMixin
 
 
-class Repository:
+class Repository(SQLiteLiveRoomsMixin):
     """Yerel SQLite deposu; servis katmanı bu sınıfın SQL ayrıntılarını bilmez."""
 
     def __init__(self, path: Path) -> None:
@@ -611,7 +612,7 @@ class Repository:
             "notifications", "recommendation_feedback", "book_ratings", "book_comments",
             "comment_helpful_votes", "comment_reports", "user_badges", "user_badge_showcase",
             "chat_sessions", "chat_messages", "reading_plans", "reading_plan_days",
-            "reminder_deliveries", "action_executions",
+            "reminder_deliveries", "action_executions", "live_room_members", "live_room_messages",
             "product_events", "beta_feedback",
         )
         with self.connect() as connection:

@@ -165,6 +165,10 @@ class SupabaseAuthMixin:
                 "GET", "/rest/v1/product_events", admin=True,
                 params={"select": "*", "user_id": f"eq.{user_id}"},
             ).json()
+            for table in ("live_room_members", "live_room_messages"):
+                records[table] = self._request(
+                    "GET", f"/rest/v1/{table}", admin=True, params={"select": "*", "user_id": f"eq.{user_id}"},
+                ).json()
             records["web_push_subscriptions"] = self._request(
                 "GET", "/rest/v1/web_push_subscriptions", token=access_token,
                 params={"select": "id,user_id,user_agent,created_at,updated_at", "user_id": f"eq.{user_id}"},

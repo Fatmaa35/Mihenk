@@ -64,5 +64,5 @@ def test_parameter_names_match_contract(implementation):
 def test_every_domain_store_is_used():
     assert set(DOMAIN_STORES) == {
         "auth", "catalog", "library", "reading", "notifications", "pricing",
-        "recommendations", "assistant", "community", "clubs", "admin", "telemetry",
+        "recommendations", "assistant", "community", "clubs", "admin", "live_rooms", "telemetry",
     }

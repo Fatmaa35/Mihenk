@@ -11,6 +11,7 @@ from app.repositories.supabase.assistant import SupabaseAssistantMixin
 from app.repositories.supabase.community import SupabaseCommunityMixin
 from app.repositories.supabase.clubs import SupabaseClubsMixin
 from app.repositories.supabase.admin import SupabaseAdminMixin
+from app.repositories.supabase.live_rooms import SupabaseLiveRoomsMixin
 from app.repositories.supabase.telemetry import SupabaseTelemetryMixin
 
 
@@ -26,6 +27,7 @@ class SupabaseRepository(
     SupabaseCommunityMixin,
     SupabaseClubsMixin,
     SupabaseAdminMixin,
+    SupabaseLiveRoomsMixin,
     SupabaseTelemetryMixin,
     SupabaseBase,
 ):
