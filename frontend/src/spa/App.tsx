@@ -22,6 +22,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 const FocusPage = lazy(() => import('./pages/FocusPage'))
 const WrappedPage = lazy(() => import('./pages/WrappedPage'))
 const QuotesPage = lazy(() => import('./pages/QuotesPage'))
+const LiveRoomsPage = lazy(() => import('./pages/LiveRoomsPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 const page = (element: ReactNode) => <Suspense fallback={<Spinner />}>{element}</Suspense>
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: routes.focus, element: page(<FocusPage />) },
       { path: routes.wrapped, element: page(<WrappedPage />) },
       { path: routes.quotes, element: page(<QuotesPage />) },
+      { path: routes.liveRooms, element: page(<LiveRoomsPage />) },
       { path: '*', element: page(<NotFoundPage />) },
     ],
   },

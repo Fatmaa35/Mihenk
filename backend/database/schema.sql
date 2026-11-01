@@ -810,3 +810,37 @@ CREATE TABLE IF NOT EXISTS book_club_room_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_book_club_room_messages_room ON book_club_room_messages(room_id, created_at ASC);
 
+
+-- Canlı odalar: arkadaşlarla birlikte okuma ya da ders çalışma. Kamera/mikrofon yok; katılımcı listesi ve sohbet.
+CREATE TABLE IF NOT EXISTS live_rooms (
+    id TEXT PRIMARY KEY,
+    owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 2 AND 80),
+    purpose TEXT NOT NULL DEFAULT 'reading' CHECK(purpose IN ('reading','study','other')),
+    invite_code TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL,
+    closed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_live_rooms_owner ON live_rooms(owner_id);
+
+CREATE TABLE IF NOT EXISTS live_room_members (
+    room_id TEXT NOT NULL REFERENCES live_rooms(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('owner','member')),
+    status_text TEXT CHECK(status_text IS NULL OR length(status_text) <= 80),
+    joined_at TEXT NOT NULL,
+    last_seen_at TEXT,
+    removed_at TEXT,
+    PRIMARY KEY(room_id,user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_live_room_members_user ON live_room_members(user_id);
+
+CREATE TABLE IF NOT EXISTS live_room_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id TEXT NOT NULL REFERENCES live_rooms(id) ON DELETE CASCADE,
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL DEFAULT 'text' CHECK(kind IN ('text','joined','left','removed')),
+    content TEXT NOT NULL CHECK(length(content) BETWEEN 1 AND 500),
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_live_room_messages_room ON live_room_messages(room_id,id);

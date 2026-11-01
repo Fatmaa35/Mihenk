@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { BookOpen, Flame, Search, Sparkles, Users } from 'lucide-react'
+import { BookOpen, Flame, Radio, Search, Sparkles, Users } from 'lucide-react'
 import { BookCard } from '../../features/catalog/BookCard'
 import { BookDetailDialog } from '../../features/catalog/BookDetailDialog'
 import { ProgressDialog } from '../../features/library/ProgressDialog'
@@ -74,7 +74,10 @@ function ClubTile() {
       <p className="today__muted">
         {club ? (club.description || 'Tartışmalar, etkinlikler ve ortak okuma ilerlemesi seni bekliyor.') : 'Arkadaşlarınla ortak bir kitap seç, ilerlemenizi birlikte takip edin.'}
       </p>
-      <Link to={routes.clubs} className="today__link"><Users size={16} aria-hidden="true" /> {club ? 'Kulübe git' : 'Kulüpleri gör'}</Link>
+      <div className="today__links">
+        <Link to={routes.clubs} className="today__link"><Users size={16} aria-hidden="true" /> {club ? 'Kulübe git' : 'Kulüpleri gör'}</Link>
+        <Link to={routes.liveRooms} className="today__link"><Radio size={16} aria-hidden="true" /> Canlı odada birlikte oku</Link>
+      </div>
     </Tile>
   )
 }

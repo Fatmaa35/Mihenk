@@ -14,6 +14,7 @@ from app.routers.admin import router as admin_router
 from app.routers.community import router as community_router
 from app.routers.catalog import router as catalog_router
 from app.routers.pricing import router as pricing_router
+from app.routers.live_rooms import router as live_rooms_router
 from app.routers.product import create_product_router
 from app.routers.beta import create_beta_router
 
@@ -47,6 +48,7 @@ for feature_router in (
     community_router,
     catalog_router,
     pricing_router,
+    live_rooms_router,
 ):
     app.include_router(feature_router)
 

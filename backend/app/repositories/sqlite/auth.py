@@ -184,7 +184,7 @@ class SQLiteAuthMixin:
             "notifications", "recommendation_feedback", "book_ratings", "book_comments",
             "comment_helpful_votes", "comment_reports", "user_badges", "user_badge_showcase",
             "chat_sessions", "chat_messages", "reading_plans", "reading_plan_days",
-            "reminder_deliveries", "action_executions",
+            "reminder_deliveries", "action_executions", "live_room_members", "live_room_messages",
             "product_events", "beta_feedback",
         )
         with self.connect() as connection:

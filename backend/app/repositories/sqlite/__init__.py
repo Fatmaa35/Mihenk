@@ -11,6 +11,7 @@ from app.repositories.sqlite.assistant import SQLiteAssistantMixin
 from app.repositories.sqlite.community import SQLiteCommunityMixin
 from app.repositories.sqlite.clubs import SQLiteClubsMixin
 from app.repositories.sqlite.admin import SQLiteAdminMixin
+from app.repositories.sqlite.live_rooms import SQLiteLiveRoomsMixin
 from app.repositories.sqlite.telemetry import SQLiteTelemetryMixin
 
 
@@ -26,6 +27,7 @@ class SQLiteRepository(
     SQLiteCommunityMixin,
     SQLiteClubsMixin,
     SQLiteAdminMixin,
+    SQLiteLiveRoomsMixin,
     SQLiteTelemetryMixin,
     SQLiteBase,
 ):

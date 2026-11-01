@@ -281,3 +281,45 @@ export type Quote = {
   source_type: string
   created_at: string
 }
+
+/* ---------- Canlı odalar ---------- */
+
+export type LiveRoomPurpose = 'reading' | 'study' | 'other'
+
+export type LiveRoom = {
+  id: string
+  title: string
+  purpose: LiveRoomPurpose
+  owner_id: string
+  invite_code: string
+  created_at: string
+  closed: boolean
+  role: 'owner' | 'member' | null
+  member_count?: number
+  present_count?: number
+}
+
+export type LiveParticipant = {
+  user_id: string
+  display_name: string
+  role: 'owner' | 'member'
+  status_text: string | null
+  present: boolean
+  last_seen_at: string | null
+}
+
+export type LiveMessage = {
+  id: number
+  user_id: string | null
+  display_name: string
+  kind: 'text' | 'joined' | 'left' | 'removed'
+  content: string
+  created_at: string
+}
+
+export type LiveRoomState = {
+  room: LiveRoom
+  participants: LiveParticipant[]
+  present_count: number
+  messages: LiveMessage[]
+}

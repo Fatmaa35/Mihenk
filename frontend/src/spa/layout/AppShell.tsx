@@ -34,6 +34,7 @@ const PAGE_TITLES: Record<string, string> = {
   [routes.admin]: 'Yönetim',
   [routes.wrapped]: 'Okuma yılın',
   [routes.quotes]: 'Alıntılarım',
+  [routes.liveRooms]: 'Canlı odalar',
 }
 
 function BrandMark({ size = 44 }: { size?: number }) {
@@ -129,6 +130,9 @@ function useDocumentTitle() {
 export function AppShell() {
   useDocumentTitle()
   const { user } = useSession()
+  const location = useLocation()
+  // Canlı odada sohbet kutusu ekranın altında; yüzen asistan düğmesi mesaj alanını örtmesin.
+  const inLiveRoom = location.pathname === routes.liveRooms && new URLSearchParams(location.search).has('oda')
   return (
     <div className="shell">
       <a className="skip-link" href="#main">İçeriğe geç</a>
@@ -178,7 +182,7 @@ export function AppShell() {
       </nav>
 
       <Suspense fallback={null}>
-        <AssistantLauncher />
+        {!inLiveRoom && <AssistantLauncher />}
         <BadgeCelebration userId={user.id} displayName={user.display_name} />
       </Suspense>
     </div>

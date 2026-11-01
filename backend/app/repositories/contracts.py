@@ -760,6 +760,30 @@ class TelemetryStore(Protocol):
     ) -> dict: ...
 
 
+class LiveRoomsStore(Protocol):
+    def create_live_room(self, user_id: str, title: str, purpose: str, access_token: str | None = None) -> dict: ...
+
+    def list_live_rooms(self, user_id: str, access_token: str | None = None) -> list[dict]: ...
+
+    def join_live_room(self, user_id: str, invite_code: str, access_token: str | None = None) -> dict: ...
+
+    def live_room_state(self, user_id: str, room_id: str, after_id: int | None = None,
+                        access_token: str | None = None) -> dict: ...
+
+    def post_live_room_message(self, user_id: str, room_id: str, content: str,
+                               access_token: str | None = None) -> dict: ...
+
+    def set_live_room_status(self, user_id: str, room_id: str, status_text: str | None,
+                             access_token: str | None = None) -> dict: ...
+
+    def leave_live_room(self, user_id: str, room_id: str, access_token: str | None = None) -> None: ...
+
+    def remove_live_room_member(self, owner_id: str, room_id: str, target_user_id: str,
+                                access_token: str | None = None) -> None: ...
+
+    def close_live_room(self, owner_id: str, room_id: str, access_token: str | None = None) -> None: ...
+
+
 class RepositoryContract(
     AuthStore,
     CatalogStore,
@@ -772,6 +796,7 @@ class RepositoryContract(
     CommunityStore,
     ClubsStore,
     AdminStore,
+    LiveRoomsStore,
     TelemetryStore,
     Protocol,
 ):
@@ -793,5 +818,6 @@ DOMAIN_STORES: dict[str, type] = {
     "community": CommunityStore,
     "clubs": ClubsStore,
     "admin": AdminStore,
+    "live_rooms": LiveRoomsStore,
     "telemetry": TelemetryStore,
 }
