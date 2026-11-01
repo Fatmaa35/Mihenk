@@ -1,6 +1,7 @@
 import { FormEvent, ReactNode, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Download, ExternalLink, KeyRound, Monitor, Moon, Sun } from 'lucide-react'
+import { InstallAppSettings } from '../../features/pwa/InstallApp'
 import { useForgotPassword } from '../../shared/api/queries'
 import {
   useBetaFeedback, useDeleteAccount, useNotificationPreferences, usePreferences, useUpdateNotificationPreferences, useUpdatePreferences,
@@ -341,6 +342,7 @@ export default function SettingsPage() {
         <nav className="settings-nav" aria-label="Ayar bölümleri">
           <a href="#settings-account">Hesap</a>
           <a href="#settings-appearance">Görünüm</a>
+          <a href="#settings-install">Uygulama</a>
           <a href="#settings-taste">Okuma zevki</a>
           <a href="#settings-notifications">Bildirimler</a>
           <a href="#settings-privacy">Gizlilik</a>
@@ -349,6 +351,9 @@ export default function SettingsPage() {
         <div className="settings-sections">
           <AccountSection />
           <AppearanceSection />
+          <Section id="settings-install" title="Uygulama olarak kullan" description="Mihenk'i telefonunun ya da bilgisayarının ana ekranına ekle.">
+            <InstallAppSettings />
+          </Section>
           <TasteSection />
           <NotificationSection />
           <PrivacySection />
