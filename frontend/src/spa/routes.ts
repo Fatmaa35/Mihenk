@@ -13,6 +13,7 @@ export const routes = {
   admin: '/yonetim',
   wrapped: '/ozet',
   quotes: '/alintilar',
+  liveRooms: '/odalar',
 } as const
 
 

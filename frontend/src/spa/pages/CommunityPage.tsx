@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { BadgeCheck, MessagesSquare } from 'lucide-react'
+import { BadgeCheck, MessagesSquare, Radio } from 'lucide-react'
 import { SpoilerText } from '../../features/community/SpoilerText'
 import { BookDetailDialog } from '../../features/catalog/BookDetailDialog'
 import { ClubsPanel } from '../../features/growth/ClubsPanel'
@@ -68,6 +68,7 @@ export default function CommunityPage() {
           <h1>Topluluk</h1>
           <p>Takip ettiğin okurların izlenimleri ve birlikte okuduğun kulüpler.</p>
         </div>
+        <Link to={routes.liveRooms} className="mh-button mh-button--secondary mh-button--md"><Radio size={16} aria-hidden="true" /> Canlı odalar</Link>
       </header>
       <SegmentedTabs
         label="Topluluk bölümü"
