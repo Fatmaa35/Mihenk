@@ -16,6 +16,30 @@ def book_offers(book_id: str) -> list[dict]:
     return repository.list_retail_offers(book_id=book_id)
 
 
+@router.post("/books/{book_id}/offers/live", status_code=202)
+def start_live_book_offers(book_id: str, request: Request, response: Response, force: bool = False) -> dict:
+    """Kitabı izinli mağazalarda canlı arar; sonucu beklemeden ilk durumu döner.
+
+    ``force`` kişi "fiyatları yenile" dediğinde gelir: bekleme süresi kısalır ama
+    yine de aynı kitap on dakikada birden sık mağazalara sorulmaz.
+    """
+    current_session(request, response)
+    book = next((item for item in services.catalog if item["id"] == book_id), None)
+    if not book:
+        raise HTTPException(status_code=404, detail="Kitap bulunamadı.")
+    try:
+        return live_lookups.start(repository, book, fresh_for=MANUAL_FRESH_FOR if force else None)
+    except LiveLookupBusy as error:
+        raise HTTPException(status_code=429, detail=error.args[0]) from error
+
+
+@router.get("/books/{book_id}/offers/live")
+def live_book_offers(book_id: str, request: Request, response: Response) -> dict:
+    """Süren ya da yeni bitmiş aramanın mağaza mağaza durumu."""
+    current_session(request, response)
+    return live_lookups.snapshot(book_id) or idle_snapshot(book_id)
+
+
 @router.get("/me/price-alerts")
 def my_price_alerts(request: Request, response: Response) -> list[dict]:
     session = current_session(request, response)
