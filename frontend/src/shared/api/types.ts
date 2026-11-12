@@ -109,6 +109,27 @@ export type RetailOffer = {
   is_stale?: boolean
 }
 
+/** Canlı fiyat aramasında bir mağazanın durumu. */
+export type LivePriceStep = {
+  retailer_id: string
+  retailer_name: string
+  state: 'pending' | 'searching' | 'found' | 'missing' | 'blocked' | 'error'
+  message: string | null
+  price_minor: number | null
+  currency: string | null
+  product_url: string | null
+  stock_status: string | null
+}
+
+export type LivePriceLookup = {
+  book_id: string
+  status: 'idle' | 'waiting' | 'running' | 'done'
+  started_at: string | null
+  finished_at: string | null
+  retailers: LivePriceStep[]
+  found: number
+}
+
 export type BookDetails = {
   book: Book
   community: { rating_average: number; rating_count: number; comments: unknown[] }
