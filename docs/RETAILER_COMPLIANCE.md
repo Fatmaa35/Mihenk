@@ -13,4 +13,9 @@ Son kontrol: 11 Ağustos 2026. Kurallar değişebileceği için kolektör her is
 | Trendyol | **Scraping kapalı**; yazılı izin/resmî API gerekli | Üyelik sözleşmesi izinsiz screen scraping'i yasaklıyor |
 | Amazon Türkiye | **Scraping kapalı**; Product Advertising API gerekli | Kullanım koşulları fiyat/ürün listesi veritabanı için robot kullanımını yasaklıyor |
 
+Aynı kurallar kitap açıldığında yapılan canlı aramada da geçerlidir. Canlı arama yalnızca
+yukarıda izinli görünen mağazalara gider; ek olarak aynı mağazaya iki istek arasında en az
+dört saniye bırakılır, aynı anda en çok iki kitap aranır ve aynı kitap altı saat içinde
+yeniden taranmaz. Kişinin "yenile" demesi bu süreyi on dakikaya indirir, daha aşağı inmez.
+
 Teknik olarak erişilebilir olmak, yeniden yayınlama veya ticari kullanım izni anlamına gelmez. Üretime geçmeden önce mağazalarla affiliate/feed anlaşması yapılmalıdır. Fiyat kayıtları kaynak URL ve kontrol zamanı olmadan gösterilmez.
