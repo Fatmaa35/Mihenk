@@ -31,8 +31,9 @@ canlı odalar sunar.
   çalışma. Ayrıntılar aşağıda.
 - **Kitap asistanı:** yapay zekâ destekli sohbet; rafa ekleme gibi işlemleri
   yalnızca kullanıcının onayıyla yapar.
-- **Fiyatlar ve alarmlar:** mağaza fiyat karşılaştırması ve hedef fiyata
-  düşünce bildirim.
+- **Fiyatlar ve alarmlar:** kitap açıldığında izinli mağazalarda canlı fiyat
+  araması (sonuçlar mağaza mağaza düşer), günlük otomatik tarama ve hedef
+  fiyata düşünce bildirim.
 - **Bildirimler ve hatırlatmalar:** uygulama içi bildirimler ve web push ile
   okuma hatırlatmaları.
 - **Yönetim paneli (`/yonetim`):** kullanıcılar, yorum şikâyetleri, katalog,

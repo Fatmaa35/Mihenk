@@ -9,17 +9,35 @@ Aşağıdaki Python komutları `backend/` klasöründen çalıştırılır.
 - Migrasyonlar ileri yönlü ve tekrar çalıştırılabilir tutulur. Veri kaybettiren geri dönüş yerine önce eski uygulama sürümüne dönüş, ardından telafi migrasyonu uygulanır.
 - Feature flag kayıtları `feature_flags` tablosunda tutulur; production açılışları kullanıcı kimliğinin deterministik yüzdelik dilimiyle kademeli yapılır.
 - Supabase Auth panelinde sızdırılmış parola koruması açılmalıdır; bu ayar SQL migrasyonundan yönetilmez.
-## Günlük fiyat veri hattı
+## Fiyat veri hattı
 
-`infra/n8n/mihenk-daily-price-pipeline.json` n8n'e aktarılır. n8n ortamındaki
-Uygulama ve n8n aynı `PIPELINE_WEBHOOK_SECRET` ortam değişkenini kullanmalıdır.
-Docker içinden yerel uygulamanın varsayılan adresi `http://host.docker.internal:8010`'dur.
-n8n yalnızca zamanlama ve yeniden denemeyi yönetir; doğrulama, idempotency, loglama ve
-tahmin Python servisinde kalır. Elle çalıştırmak için:
+İki yol vardır; ikisi de aynı Python servisini çalıştırır, doğrulama, idempotency,
+loglama ve tahmin orada kalır.
+
+**Günlük tarama (zamanlanmış).** `.github/workflows/scheduled-operations.yml`
+içindeki `prices` işi her gün 04:15 UTC'de çalışır; `Run workflow → prices` ile elle de
+başlatılabilir. İş, hattı kendi sürecinde çalıştırır: Render'ın ücretsiz örneği uykuda
+olsa bile tarama yapılır. BKM Kitap aramasının tarayıcı yedeği için iş, Chromium'u
+kendisi kurar. Çalışma kayıtları yönetici panelindeki **Veri hattı** sekmesinde görünür.
+
+**Kitap açıldığında canlı arama.** Kişi bir kitabı açtığında sunucu izinli mağazalarda
+(Kitapseç, Kitapsepeti, BKM Kitap) aynı anda arama yapar ve sonuçlar geldikçe ekrana
+düşer. Bulunan fiyatlar kayda geçtiği için kitap ikinci açılışta anında dolu gelir.
+Mağazaları yormamak için: aynı mağazaya iki istek arasında en az dört saniye bırakılır,
+aynı anda en çok iki kitap aranır, aynı kitap altı saatte bir (kişi "yenile" derse on
+dakikada bir) yeniden aranır. Hata veren mağaza `live_price_lookup` olayıyla
+`/admin/metrics` olay akışına yazılır.
+
+Elle çalıştırmak için:
 
 ```powershell
 python -m scripts.refresh_retail_prices --limit 40 --discover-books 15 --orchestrator cli
 ```
+
+`infra/n8n/mihenk-daily-price-pipeline.json` isteğe bağlı bir alternatiftir: kendi n8n
+kurulumu olanlar hattı `/internal/pipelines/prices` üzerinden tetikleyebilir. Uygulama ve
+n8n aynı `PIPELINE_WEBHOOK_SECRET` değerini kullanır; Docker içinden yerel uygulamanın
+varsayılan adresi `http://host.docker.internal:8010`'dur.
 
 # Authentication and community alerts
 

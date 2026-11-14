@@ -4,12 +4,13 @@ on:
   schedule:
     - cron: "*/15 * * * *"
     - cron: "10 1 * * *"
+    - cron: "15 4 * * *"
   workflow_dispatch:
     inputs:
       operation:
         type: choice
         required: true
-        options: [reminders, retention]
+        options: [reminders, retention, prices]
 
 permissions:
   contents: read
@@ -78,3 +79,26 @@ jobs:
           cache-dependency-path: backend/requirements.lock.txt
       - run: python -m pip install -r requirements.lock.txt
       - run: python -m scripts.enforce_data_retention
+
+  # Günlük mağaza fiyatı taraması. Render'ın uyuyan örneğine bağlı kalmamak için
+  # hat burada, iş akışının kendi sürecinde çalışır.
+  prices:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'prices' || github.event_name == 'schedule' && github.event.schedule == '15 4 * * *'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 60
+    env: *production-env
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.lock.txt
+      - run: python -m pip install -r requirements.lock.txt
+      # BKM Kitap aramasının tarayıcı yedeği için; web imajında Chromium yok.
+      # Tarayıcı, uygulamanın varsayılan olarak baktığı klasöre kurulur.
+      - run: python -m playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/backend/data/ms-playwright
+      - run: python -m scripts.refresh_retail_prices --orchestrator cron --limit 40 --discover-books 15

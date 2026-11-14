@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { ExternalLink, Quote, Star } from 'lucide-react'
+import { Quote, Star } from 'lucide-react'
 import { useBookDetails, useBootstrap } from '../../shared/api/queries'
 import type { RetailOffer } from '../../shared/api/types'
 import { BookCover, Dialog, ErrorState, SegmentedTabs, Skeleton } from '../../shared/ui'
-import { formatMoney } from '../../spa/format'
 import { BookCommunityPanel } from '../community/BookCommunityPanel'
 import { ShelfPicker } from '../library/ShelfPicker'
 import { libraryIndex } from '../library/shelves'
+import { BookPrices } from '../pricing/BookPrices'
 import { PriceAlertForm } from '../pricing/PriceAlertForm'
 import { routes } from '../../spa/routes'
 import './catalog.css'
@@ -16,22 +16,6 @@ export type BookDetailTab = 'genel' | 'yorumlar'
 
 function availableOffers(offers: RetailOffer[]) {
   return offers.filter((offer) => offer.price_minor != null).sort((a, b) => (a.price_minor ?? 0) - (b.price_minor ?? 0))
-}
-
-function Offers({ offers }: { offers: RetailOffer[] }) {
-  if (!offers.length) return <p className="book-detail__muted">Bu kitap için henüz doğrulanmış mağaza fiyatı yok.</p>
-  return (
-    <ul className="book-detail__offers">
-      {offers.slice(0, 4).map((offer) => (
-        <li key={`${offer.retailer_name}-${offer.product_url}`}>
-          <span>{offer.retailer_name}{offer.is_stale && <small> · güncel olmayabilir</small>}</span>
-          <a href={offer.product_url} target="_blank" rel="noopener noreferrer">
-            {formatMoney(offer.price_minor, offer.currency)} <ExternalLink size={14} aria-hidden="true" />
-          </a>
-        </li>
-      ))}
-    </ul>
-  )
 }
 
 type BookDetailDialogProps = { bookId: string | null; onClose: () => void; initialTab?: BookDetailTab }
@@ -105,7 +89,7 @@ export function BookDetailDialog({ bookId, onClose, initialTab = 'genel' }: Book
                 </section>
                 <section aria-labelledby="detail-offers">
                   <h3 id="detail-offers" className="book-detail__heading">Fiyatlar</h3>
-                  <Offers offers={offers} />
+                  <BookPrices bookId={book.id} offers={offers} />
                 </section>
                 <section aria-labelledby="detail-alert">
                   <h3 id="detail-alert" className="book-detail__heading">Fiyat alarmı</h3>
