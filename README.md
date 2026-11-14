@@ -216,7 +216,7 @@ Mihenk tek bir Docker imajıdır: FastAPI sunucusu hem API'yi hem de derlenmiş
 React uygulamasını aynı adresten sunar. Canlıda Render'da (Frankfurt) çalışır;
 veriler ve kimlik doğrulama Supabase'de, hız sınırı ve metrikler Redis'te
 tutulur. Yapay zekâ, katalog, e-posta ve fiyat kaynakları dış servislerdir;
-zamanlanmış işler GitHub Actions ve n8n üzerinden çalışır.
+zamanlanmış işler GitHub Actions üzerinde çalışır.
 
 ```mermaid
 flowchart TB
@@ -240,8 +240,8 @@ flowchart TB
     Push["Tarayıcı push servisi"]
   end
   subgraph Zaman["Zamanlanmış işler"]
-    N8N["n8n<br/>her gün 04:15"]
     GHA["GitHub Actions<br/>hatırlatma, saklama, yedek"]
+    GHAP["GitHub Actions<br/>fiyat taraması, her gün 04:15"]
   end
   SPA -- "HTTPS + HTTP-only çerez" --> API
   SW -. "kabuk önbelleği" .-> SPA
@@ -251,11 +251,11 @@ flowchart TB
   API --> AI
   API --> Catalog
   API --> SMTP
-  API --> Shops
+  API -- "kitap açılınca canlı arama" --> Shops
   API -- "VAPID" --> Push
   Push -.-> SW
-  N8N -- "/internal/pipelines/prices" --> API
   GHA --> PG
+  GHAP --> Shops
 ```
 
 | Bileşen | Görevi | Kod |
@@ -267,8 +267,7 @@ flowchart TB
 | Depo katmanı | 13 alanlı veri sözleşmesi; yerelde SQLite, canlıda Supabase | `backend/app/repositories` |
 | Supabase | PostgreSQL, satır düzeyinde güvenlik (RLS), kimlik doğrulama, vektör arama | `backend/supabase/migrations` |
 | Redis | Dağıtık hız sınırı, e-posta gönderim koruması, metrikler | `backend/app/services/common/security.py` |
-| n8n | Günlük fiyat hattını tetikler | `infra/n8n` |
-| GitHub Actions | Test ve güvenlik taraması, hatırlatmalar, veri saklama, şifreli yedek, imaj yayını | `.github/workflows` |
+| GitHub Actions | Test ve güvenlik taraması, hatırlatmalar, veri saklama, günlük fiyat taraması, şifreli yedek, imaj yayını | `.github/workflows` |
 
 ### Sunucunun katmanları
 
@@ -345,6 +344,40 @@ sequenceDiagram
   A->>API: Sayfadan çıkınca POST /me/live-rooms/{id}/leave
 ```
 
+### Fiyatların toplanma şekli
+
+Fiyatlar iki yoldan gelir. Kitap açıldığında sunucu izinli mağazalarda
+(Kitapseç, Kitapsepeti, BKM Kitap) **canlı** arama başlatır; mağazalar
+birbirini beklemez, her sonuç geldiği anda ekrana düşer ve aynı anda kayda
+geçer, böylece kitap ikinci açılışta dolu gelir. İkinci yol, her gün 04:15'te
+GitHub Actions üzerinde çalışan toplu taramadır; bu, uzun süredir açılmamış
+kitapların fiyatlarını da tazeler ve fiyat tahminlerini günceller.
+
+```mermaid
+sequenceDiagram
+  actor Okur
+  participant API as FastAPI
+  participant DB as Veritabanı
+  participant Shop as İzinli mağazalar
+  Okur->>API: Kitabı açar → POST /books/{id}/offers/live
+  API-->>Okur: 202, mağazalar "sıra bekliyor"
+  par Her mağaza kendi sırasında
+    API->>Shop: robots.txt denetimi, arama ve ürün sayfası
+    Shop-->>API: Fiyat ya da sonuç yok
+    API->>DB: Bulunan fiyatı kaydet
+  end
+  loop İki saniyede bir, arama bitene kadar
+    Okur->>API: GET /books/{id}/offers/live
+    API-->>Okur: Mağaza mağaza durum ve fiyatlar
+  end
+```
+
+Mağazalara yük bindirmemek için aynı mağazaya iki istek arasında en az dört
+saniye bırakılır, aynı anda en çok iki kitap aranır ve aynı kitap altı saatte
+bir (kişi "yenile" derse on dakikada bir) yeniden taranır. Hangi mağazanın
+neden açık ya da kapalı olduğu `docs/RETAILER_COMPLIANCE.md` dosyasındadır;
+Trendyol ve Amazon TR resmî API gerektirdiği için taranmaz.
+
 ### Test, yayın ve zamanlanmış işler
 
 ```mermaid
@@ -366,7 +399,7 @@ flowchart LR
 | Okuma hatırlatmaları | 15 dakikada bir | Zamanı gelen hatırlatmaları e-posta ve web push ile gönderir |
 | Veri saklama | Her gün 01:10 (UTC) | Süresi dolan olay kayıtlarını, okunmuş bildirimleri ve eski asistan sohbetlerini siler |
 | Şifreli yedek | Her gün 00:00 (UTC) | Supabase veritabanının mantıksal yedeğini alır |
-| Fiyat hattı (n8n) | Her gün 04:15 | Mağaza fiyatlarını yeniler ve fiyat tahminlerini günceller |
+| Fiyat taraması | Her gün 04:15 (UTC) | İzinli mağazaların fiyatlarını yeniler ve fiyat tahminlerini günceller |
 
 ## Proje yapısı
 
