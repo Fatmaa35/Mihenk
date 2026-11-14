@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test'
 import { signUp } from './helpers'
 
 test('friends meet in a live room: invite link, participant list and chat', async ({ browser, baseURL }) => {
+  // İki kayıt ve altı ayrı yoklama beklemesi var; oda 4 saniyede bir yoklandığı için
+  // senaryo yavaş bir CI makinesinde 20 saniyelik genel bütçeyi aşabiliyor.
+  test.setTimeout(60_000)
   const hostContext = await browser.newContext({ baseURL })
   const guestContext = await browser.newContext({ baseURL })
   const host = await hostContext.newPage()
