@@ -42,9 +42,6 @@ canlı odalar sunar.
 
 ## Ekran görüntüleri
 
-Görüntüler örnek bir okur hesabıyla yerel sunucudan alındı; kitap kapakları
-test kataloğunda üretilmiş kapaklardır.
-
 <table>
   <tr>
     <td width="50%" valign="top">
