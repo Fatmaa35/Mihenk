@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Mihenk",
+    "slug": "mihenk",
+    "scheme": "mihenk",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mihenk.app"
+    },
+    "android": {
+      "package": "com.mihenk.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#faf7f2",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#faf7f2"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Kitabın arkasındaki ISBN barkodunu okutmak için kamera gerekiyor."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "https://mihenk-web-production.onrender.com"
+    }
+  }
+}
