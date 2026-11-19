@@ -95,9 +95,12 @@ export function Pill({ label, tone = 'soft', count }: {
 export function Cover({ title, size = 'm' }: { title: string; size?: 's' | 'm' | 'l' }) {
   const index = [...title].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % COVER_COLORS.length
   const box = size === 'l' ? styles.coverLarge : size === 's' ? styles.coverSmall : styles.coverMedium
+  const label = size === 'l' ? styles.coverLabelLarge : size === 's' ? styles.coverLabelSmall : null
   return (
     <View style={[styles.cover, box, { backgroundColor: COVER_COLORS[index] }]}>
-      <Text style={styles.coverLabel} numberOfLines={size === 'l' ? 5 : 3}>{title}</Text>
+      <Text style={[styles.coverLabel, label]} numberOfLines={size === 'l' ? 5 : 3} adjustsFontSizeToFit>
+        {title}
+      </Text>
     </View>
   )
 }
@@ -209,6 +212,8 @@ const styles = StyleSheet.create({
   coverMedium: { width: 56, height: 78 },
   coverLarge: { width: 104, height: 146 },
   coverLabel: { color: '#fff', fontFamily: fonts.bodyBold, fontSize: 10, textAlign: 'center', lineHeight: 13 },
+  coverLabelSmall: { fontSize: 8, lineHeight: 10 },
+  coverLabelLarge: { fontSize: 12, lineHeight: 16 },
 
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
   progressTrack: {
