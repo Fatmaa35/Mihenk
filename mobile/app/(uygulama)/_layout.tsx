@@ -51,7 +51,6 @@ export default function AppTabs() {
           tabBarIcon: ({ focused }) => <TabIcon name="user" focused={focused} />,
         }}
       />
-      <Tabs.Screen name="kitap/[id]" options={{ href: null, title: 'Kitap' }} />
     </Tabs>
   )
 }

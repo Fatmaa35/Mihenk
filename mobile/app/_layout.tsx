@@ -17,13 +17,15 @@ function Gate({ children }: { children: React.ReactNode }) {
   const { status } = useSession()
   const segments = useSegments()
   const router = useRouter()
-  const inApp = segments[0] === '(uygulama)'
+  // Giriş ekranı dışındaki her sayfa oturum ister; kitap ayrıntısı sekmelerin
+  // üstünde açıldığı için grup adına değil, giriş ekranında olup olmadığımıza bakılır.
+  const onAuthScreen = segments[0] === 'giris' || segments[0] === undefined
 
   useEffect(() => {
     if (status === 'loading') return
-    if (status === 'signed-out' && inApp) router.replace('/giris')
-    if (status === 'signed-in' && !inApp) router.replace('/(uygulama)/kitaplik')
-  }, [status, inApp, router])
+    if (status === 'signed-out' && !onAuthScreen) router.replace('/giris')
+    if (status === 'signed-in' && onAuthScreen) router.replace('/(uygulama)/kitaplik')
+  }, [status, onAuthScreen, router])
 
   if (status === 'loading') return <Loading label="Mihenk açılıyor…" />
   return <>{children}</>

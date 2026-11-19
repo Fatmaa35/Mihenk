@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Feather } from '@expo/vector-icons'
-import { Link } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SHELF_LABEL, SHELVES, booksOnShelf, useBootstrap } from '../../src/api/library'
 import type { LibraryBook, Shelf } from '../../src/api/types'
@@ -14,7 +14,12 @@ function ShelfTabs({ value, onChange, counts }: {
   counts: Record<Shelf, number>
 }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.tabsScroll}
+      contentContainerStyle={styles.tabs}
+    >
       {SHELVES.map((shelf) => (
         <Pressable
           key={shelf}
@@ -34,9 +39,15 @@ function ShelfTabs({ value, onChange, counts }: {
 }
 
 function BookRow({ book }: { book: LibraryBook }) {
+  const router = useRouter()
   return (
-    <Link href={{ pathname: '/(uygulama)/kitap/[id]', params: { id: book.id } }} asChild>
-      <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? styles.pressed : undefined)}>
+    <>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${book.title}, ${book.author}`}
+        onPress={() => router.push({ pathname: '/kitap/[id]', params: { id: book.id } })}
+        style={({ pressed }) => (pressed ? styles.pressed : undefined)}
+      >
         <Hard style={styles.rowShadow}>
           <View style={styles.row}>
             <Cover title={book.title} />
@@ -53,7 +64,7 @@ function BookRow({ book }: { book: LibraryBook }) {
           </View>
         </Hard>
       </Pressable>
-    </Link>
+    </>
   )
 }
 
@@ -99,7 +110,10 @@ export default function KitaplikScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: space[4], gap: space[3] },
-  tabs: { gap: space[2], paddingVertical: space[1], paddingRight: space[4] },
+  // Yatay listenin dikeyde büyümemesi için: esnek kapsayıcıda ScrollView
+  // yoksa boş alanın tamamını kaplar ve raf listesi aşağı itilir.
+  tabsScroll: { flexGrow: 0, flexShrink: 0 },
+  tabs: { gap: space[2], paddingVertical: space[1], paddingRight: space[4], alignItems: 'center' },
   list: { paddingTop: space[1], paddingBottom: space[6], gap: space[3] },
   rowShadow: { marginRight: SHADOW_OFFSET, marginBottom: SHADOW_OFFSET },
   row: {

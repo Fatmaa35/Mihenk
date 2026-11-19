@@ -5,12 +5,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   SHELF_LABEL, SHELVES, booksOnShelf, useBootstrap, useRemoveEntry, useSaveEntry,
-} from '../../../src/api/library'
-import type { LibraryBook, Shelf } from '../../../src/api/types'
+} from '../../src/api/library'
+import type { LibraryBook, Shelf } from '../../src/api/types'
 import {
   Button, Card, Cover, Field, Loading, Notice, Pill, Progress,
-} from '../../../src/ui/components'
-import { fonts, space, theme } from '../../../src/ui/theme'
+} from '../../src/ui/components'
+import { fonts, space, theme } from '../../src/ui/theme'
 
 export default function KitapScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
