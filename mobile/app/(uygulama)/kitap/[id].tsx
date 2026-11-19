@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   SHELF_LABEL, SHELVES, booksOnShelf, useBootstrap, useRemoveEntry, useSaveEntry,
 } from '../../../src/api/library'
 import type { LibraryBook, Shelf } from '../../../src/api/types'
-import { Button, Card, Field, Loading, Notice } from '../../../src/ui/components'
-import { theme } from '../../../src/ui/theme'
+import {
+  Button, Card, Cover, Field, Loading, Notice, Pill, Progress,
+} from '../../../src/ui/components'
+import { fonts, space, theme } from '../../../src/ui/theme'
 
 export default function KitapScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -30,9 +33,9 @@ export default function KitapScreen() {
   if (bootstrap.isPending) return <Loading label="Kitap getiriliyor…" />
   if (!book) {
     return (
-      <View style={[styles.page, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.page, { paddingTop: insets.top + space[4] }]}>
         <Notice message="Bu kitap kitaplığında görünmüyor." />
-        <Button label="Kitaplığa dön" variant="ghost" onPress={() => router.replace('/(uygulama)/kitaplik')} />
+        <Button label="Kitaplığa dön" variant="secondary" onPress={() => router.replace('/(uygulama)/kitaplik')} />
       </View>
     )
   }
@@ -65,16 +68,25 @@ export default function KitapScreen() {
   return (
     <ScrollView
       style={styles.flex}
-      contentContainerStyle={[styles.page, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 24 }]}
+      contentContainerStyle={[
+        styles.page,
+        { paddingTop: insets.top + space[3], paddingBottom: insets.bottom + space[6] },
+      ]}
     >
-      <Pressable accessibilityRole="button" onPress={() => router.back()}>
-        <Text style={styles.back}>‹ Kitaplık</Text>
+      <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.back}>
+        <Feather name="chevron-left" size={20} color={theme.accentSoftInk} />
+        <Text style={styles.backLabel}>Kitaplık</Text>
       </Pressable>
 
       <View style={styles.header}>
-        <Text style={styles.title}>{book.title}</Text>
-        <Text style={styles.author}>{book.author}</Text>
-        {book.is_custom ? <Text style={styles.badge}>Kendi eklediğin kitap</Text> : null}
+        <Cover title={book.title} size="l" />
+        <View style={styles.headerText}>
+          <Text style={styles.title}>{book.title}</Text>
+          <Text style={styles.author}>{book.author}{book.genre ? ` · ${book.genre}` : ''}</Text>
+          {book.is_custom ? (
+            <View style={styles.badgeRow}><Pill label="Kendi eklediğin kitap" /></View>
+          ) : null}
+        </View>
       </View>
 
       {error ? <Notice message={error} /> : null}
@@ -88,11 +100,8 @@ export default function KitapScreen() {
               accessibilityRole="radio"
               accessibilityState={{ selected: shelf === book.shelf }}
               onPress={() => changeShelf(shelf)}
-              style={[styles.shelf, shelf === book.shelf && styles.shelfActive]}
             >
-              <Text style={[styles.shelfLabel, shelf === book.shelf && styles.shelfLabelActive]}>
-                {SHELF_LABEL[shelf]}
-              </Text>
+              <Pill label={SHELF_LABEL[shelf]} tone={shelf === book.shelf ? 'active' : 'plain'} />
             </Pressable>
           ))}
         </View>
@@ -100,6 +109,7 @@ export default function KitapScreen() {
 
       <Card>
         <Text style={styles.cardTitle}>Nerede kaldın?</Text>
+        {total ? <Progress page={book.current_page ?? 0} total={total} /> : null}
         <Field
           label={total ? `Sayfa (toplam ${total})` : 'Sayfa'}
           value={currentPage}
@@ -124,16 +134,14 @@ export default function KitapScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: theme.bg },
-  page: { paddingHorizontal: 16, gap: 14 },
-  back: { color: theme.accent, fontWeight: '600', fontSize: 16, paddingVertical: 4 },
-  header: { gap: 4 },
-  title: { fontSize: 24, fontWeight: '800', color: theme.ink },
-  author: { fontSize: 16, color: theme.ink2 },
-  badge: { marginTop: 4, color: theme.accent, fontSize: 13, fontWeight: '600' },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: theme.ink },
-  shelfRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  shelf: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, backgroundColor: theme.surfaceMuted },
-  shelfActive: { backgroundColor: theme.accent },
-  shelfLabel: { color: theme.ink2, fontWeight: '600', fontSize: 14 },
-  shelfLabelActive: { color: '#fff' },
+  page: { paddingHorizontal: space[4], gap: space[3] },
+  back: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingVertical: space[1] },
+  backLabel: { fontFamily: fonts.bodyBold, fontSize: 15, color: theme.accentSoftInk },
+  header: { flexDirection: 'row', gap: space[4], alignItems: 'flex-start', marginBottom: space[1] },
+  headerText: { flex: 1, gap: space[1] },
+  title: { fontFamily: fonts.displayExtra, fontSize: 24, color: theme.ink, letterSpacing: -0.4 },
+  author: { fontFamily: fonts.body, fontSize: 15, color: theme.ink2 },
+  badgeRow: { flexDirection: 'row', marginTop: space[1] },
+  cardTitle: { fontFamily: fonts.display, fontSize: 17, color: theme.ink },
+  shelfRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
 })

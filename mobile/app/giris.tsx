@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSession } from '../src/session/SessionProvider'
-import { Button, Field, Notice } from '../src/ui/components'
-import { theme } from '../src/ui/theme'
+import { Button, Card, Field, Notice } from '../src/ui/components'
+import { fonts, space, theme } from '../src/ui/theme'
 
 type Mode = 'signin' | 'signup'
 
@@ -37,15 +37,22 @@ export default function GirisScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={[styles.page, { paddingTop: insets.top + 36, paddingBottom: insets.bottom + 24 }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.page,
+          { paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[5] },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
-          <Text style={styles.title}>Mihenk</Text>
-          <Text style={styles.subtitle}>
+          <Text style={styles.brand}>Mihenk</Text>
+          <Text style={styles.tagline}>
             Okuduklarını takip et, ruh hâline göre öneri al, fiyatları izle.
           </Text>
         </View>
 
-        <View style={styles.form}>
+        <Card>
+          <Text style={styles.cardTitle}>{mode === 'signin' ? 'Giriş yap' : 'Hesap oluştur'}</Text>
           {mode === 'signup' && (
             <Field label="Adın" value={displayName} onChangeText={setDisplayName}
               autoCapitalize="words" autoComplete="name" textContentType="name" />
@@ -53,9 +60,12 @@ export default function GirisScreen() {
           <Field label="E-posta" value={email} onChangeText={setEmail} autoCapitalize="none"
             keyboardType="email-address" autoComplete="email" textContentType="emailAddress" />
           <Field label="Parola" value={password} onChangeText={setPassword} secureTextEntry
+            hint={mode === 'signup' ? 'En az sekiz karakter.' : undefined}
             autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
           {error ? <Notice message={error} /> : null}
-          <Button label={mode === 'signin' ? 'Giriş yap' : 'Hesap oluştur'} onPress={() => void submit()} loading={busy} />
+          <View style={styles.action}>
+            <Button label={mode === 'signin' ? 'Giriş yap' : 'Hesap oluştur'} onPress={() => void submit()} loading={busy} />
+          </View>
           <Pressable
             accessibilityRole="button"
             onPress={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null) }}
@@ -64,7 +74,7 @@ export default function GirisScreen() {
               {mode === 'signin' ? 'Hesabın yok mu? Hesap oluştur' : 'Hesabın var mı? Giriş yap'}
             </Text>
           </Pressable>
-        </View>
+        </Card>
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -72,10 +82,14 @@ export default function GirisScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: theme.bg },
-  page: { paddingHorizontal: 20, gap: 28 },
-  header: { gap: 8 },
-  title: { fontSize: 34, fontWeight: '800', color: theme.ink },
-  subtitle: { fontSize: 16, color: theme.ink2, lineHeight: 22 },
-  form: { gap: 14 },
-  switch: { textAlign: 'center', color: theme.accent, fontWeight: '600', paddingVertical: 8 },
+  page: { paddingHorizontal: space[4], gap: space[5] },
+  header: { gap: space[2] },
+  brand: { fontFamily: fonts.displayExtra, fontSize: 40, color: theme.ink, letterSpacing: -1 },
+  tagline: { fontFamily: fonts.body, fontSize: 16, color: theme.ink2, lineHeight: 23 },
+  cardTitle: { fontFamily: fonts.display, fontSize: 20, color: theme.ink, marginBottom: space[1] },
+  action: { marginTop: space[2] },
+  switch: {
+    textAlign: 'center', color: theme.accentSoftInk, fontFamily: fonts.bodyBold,
+    paddingVertical: space[2], fontSize: 15,
+  },
 })

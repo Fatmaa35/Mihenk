@@ -1,11 +1,21 @@
 import { useState } from 'react'
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Feather } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { api, API_URL } from '../../src/api/client'
 import { SHELVES, booksOnShelf, useBootstrap } from '../../src/api/library'
 import { useSession } from '../../src/session/SessionProvider'
-import { Button, Card, Loading, Notice } from '../../src/ui/components'
-import { theme } from '../../src/ui/theme'
+import { Button, Card, Heading, Loading, Notice } from '../../src/ui/components'
+import { BORDER, fonts, radius, space, theme } from '../../src/ui/theme'
+
+function Stat({ value, label, tone }: { value: number; label: string; tone: string }) {
+  return (
+    <View style={[styles.stat, { backgroundColor: tone }]}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  )
+}
 
 /**
  * Profil ve hesap. Play Store, uygulama içinden hesap silme yolu sunulmasını
@@ -43,34 +53,38 @@ export default function ProfilScreen() {
   return (
     <ScrollView
       style={styles.flex}
-      contentContainerStyle={[styles.page, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 24 }]}
+      contentContainerStyle={[
+        styles.page,
+        { paddingTop: insets.top + space[3], paddingBottom: insets.bottom + space[6] },
+      ]}
     >
-      <Text style={styles.heading}>{bootstrap.data?.user.display_name ?? 'Profil'}</Text>
+      <Heading title={bootstrap.data?.user.display_name ?? 'Profil'} subtitle="Okuma durumun ve hesap ayarların." />
 
-      <Card>
-        <Text style={styles.cardTitle}>Kitaplığın</Text>
-        <View style={styles.stats}>
-          <View style={styles.stat}><Text style={styles.statValue}>{total}</Text><Text style={styles.statLabel}>kitap</Text></View>
-          <View style={styles.stat}><Text style={styles.statValue}>{reading}</Text><Text style={styles.statLabel}>okuyorsun</Text></View>
-          <View style={styles.stat}><Text style={styles.statValue}>{read}</Text><Text style={styles.statLabel}>bitirdin</Text></View>
-        </View>
-      </Card>
+      <View style={styles.stats}>
+        <Stat value={total} label="kitap" tone="#D9F2E3" />
+        <Stat value={reading} label="okuyorsun" tone="#E7E5FF" />
+        <Stat value={read} label="bitirdin" tone="#FFE9C7" />
+      </View>
 
       <Card>
         <Text style={styles.cardTitle}>Gizlilik</Text>
-        <Text style={styles.cardText}>
-          Verilerinin nasıl kullanıldığını gizlilik metninde bulabilirsin.
-        </Text>
+        <Text style={styles.cardText}>Verilerinin nasıl kullanıldığını gizlilik metninde bulabilirsin.</Text>
         <Button
           label="Gizlilik metnini aç"
-          variant="ghost"
+          variant="secondary"
+          icon={<Feather name="external-link" size={17} color={theme.ink} />}
           onPress={() => void Linking.openURL(`${API_URL}/privacy`)}
         />
       </Card>
 
-      <Button label="Çıkış yap" variant="ghost" onPress={() => void signOut()} />
+      <Button
+        label="Çıkış yap"
+        variant="quiet"
+        icon={<Feather name="log-out" size={17} color={theme.ink} />}
+        onPress={() => void signOut()}
+      />
 
-      <Card style={styles.dangerCard}>
+      <Card tone="danger">
         <Text style={styles.cardTitle}>Hesabı sil</Text>
         <Text style={styles.cardText}>
           Hesabın, kitaplığın, notların ve alıntıların kalıcı olarak silinir. Bu işlem geri alınamaz.
@@ -78,8 +92,12 @@ export default function ProfilScreen() {
         {error ? <Notice message={error} /> : null}
         {confirming ? (
           <View style={styles.confirmRow}>
-            <Button label="Vazgeç" variant="ghost" onPress={() => setConfirming(false)} />
-            <Button label="Kalıcı olarak sil" variant="danger" loading={busy} onPress={() => void deleteAccount()} />
+            <View style={styles.confirmItem}>
+              <Button label="Vazgeç" variant="secondary" onPress={() => setConfirming(false)} />
+            </View>
+            <View style={styles.confirmItem}>
+              <Button label="Kalıcı olarak sil" variant="danger" loading={busy} onPress={() => void deleteAccount()} />
+            </View>
           </View>
         ) : (
           <Button label="Hesabımı sil" variant="danger" onPress={() => setConfirming(true)} />
@@ -91,14 +109,16 @@ export default function ProfilScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: theme.bg },
-  page: { paddingHorizontal: 16, gap: 14 },
-  heading: { fontSize: 26, fontWeight: '800', color: theme.ink },
-  cardTitle: { fontSize: 17, fontWeight: '700', color: theme.ink },
-  cardText: { fontSize: 14, color: theme.ink2, lineHeight: 20 },
-  stats: { flexDirection: 'row', gap: 10 },
-  stat: { flex: 1, backgroundColor: theme.surfaceMuted, borderRadius: theme.radius, padding: 12, alignItems: 'center' },
-  statValue: { fontSize: 22, fontWeight: '800', color: theme.ink },
-  statLabel: { fontSize: 13, color: theme.ink2 },
-  dangerCard: { borderColor: theme.danger },
-  confirmRow: { flexDirection: 'row', gap: 10 },
+  page: { paddingHorizontal: space[4], gap: space[3] },
+  stats: { flexDirection: 'row', gap: space[2] },
+  stat: {
+    flex: 1, borderRadius: radius.m, borderWidth: BORDER, borderColor: theme.line,
+    paddingVertical: space[3], alignItems: 'center', gap: 2,
+  },
+  statValue: { fontFamily: fonts.displayExtra, fontSize: 24, color: theme.ink },
+  statLabel: { fontFamily: fonts.bodyMedium, fontSize: 13, color: theme.ink2 },
+  cardTitle: { fontFamily: fonts.display, fontSize: 17, color: theme.ink },
+  cardText: { fontFamily: fonts.body, fontSize: 14, color: theme.ink2, lineHeight: 20 },
+  confirmRow: { flexDirection: 'row', gap: space[2] },
+  confirmItem: { flex: 1 },
 })

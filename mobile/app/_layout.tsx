@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { SessionProvider, useSession } from '../src/session/SessionProvider'
 import { Loading } from '../src/ui/components'
+import { useBrandFonts } from '../src/ui/fonts'
 import { theme } from '../src/ui/theme'
 
 const client = new QueryClient({
@@ -29,6 +30,9 @@ function Gate({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
+  const fontsReady = useBrandFonts()
+  if (!fontsReady) return null
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={client}>
