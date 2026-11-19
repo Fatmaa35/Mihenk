@@ -12,6 +12,8 @@ from urllib.parse import urlsplit
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+
+from app.services.common.spa_pages import SPA_PATHS
 from starlette.concurrency import run_in_threadpool
 
 
@@ -168,10 +170,12 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         # Explicit foreign origins are rejected even for reads. A missing Origin
         # is normal for navigation/health checks, but not for browser mutations.
         unsafe = request.method not in {"GET", "HEAD", "OPTIONS"}
-        # Email redirects may retain cross-site Fetch Metadata. Only the public
-        # landing document is exempt, never API reads, writes or iframe loads.
+        # Dışarıdan tıklanan bağlantılar (oda daveti, e-posta, paylaşılan kitap)
+        # tarayıcıya çapraz köken bilgisi taşır. React uygulamasının sayfalarının
+        # bu şekilde açılabilmesi gerekir; API okumaları, yazmalar ve iframe
+        # yüklemeleri yine kapalıdır.
         public_navigation = (
-            request.method in {"GET", "HEAD"} and request.url.path == "/"
+            request.method in {"GET", "HEAD"} and request.url.path in SPA_PATHS
             and not origin
             and request.headers.get("sec-fetch-mode") == "navigate"
             and request.headers.get("sec-fetch-dest") == "document"

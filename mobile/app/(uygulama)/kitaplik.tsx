@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { Link } from 'expo-router'
+import { Feather } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SHELF_LABEL, SHELVES, booksOnShelf, useBootstrap } from '../../src/api/library'
 import type { LibraryBook, Shelf } from '../../src/api/types'
-import { Empty, Loading, Notice } from '../../src/ui/components'
-import { theme } from '../../src/ui/theme'
+import { Cover, Empty, Hard, Heading, Loading, Notice, Pill, Progress } from '../../src/ui/components'
+import { BORDER, SHADOW_OFFSET, fonts, radius, space, theme } from '../../src/ui/theme'
 
 function ShelfTabs({ value, onChange, counts }: {
   value: Shelf
@@ -13,49 +14,57 @@ function ShelfTabs({ value, onChange, counts }: {
   counts: Record<Shelf, number>
 }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
-      {SHELVES.map((shelf) => {
-        const active = shelf === value
-        return (
-          <Pressable
-            key={shelf}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
-            onPress={() => onChange(shelf)}
-            style={[styles.tab, active && styles.tabActive]}
-          >
-            <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
-              {SHELF_LABEL[shelf]} {counts[shelf] ? `· ${counts[shelf]}` : ''}
-            </Text>
-          </Pressable>
-        )
-      })}
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.tabsScroll}
+      contentContainerStyle={styles.tabs}
+    >
+      {SHELVES.map((shelf) => (
+        <Pressable
+          key={shelf}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: shelf === value }}
+          onPress={() => onChange(shelf)}
+        >
+          <Pill
+            label={SHELF_LABEL[shelf]}
+            tone={shelf === value ? 'active' : 'plain'}
+            count={counts[shelf]}
+          />
+        </Pressable>
+      ))}
     </ScrollView>
   )
 }
 
 function BookRow({ book }: { book: LibraryBook }) {
-  const progress = book.progress_percent ?? 0
+  const router = useRouter()
   return (
-    <Link href={{ pathname: '/(uygulama)/kitap/[id]', params: { id: book.id } }} asChild>
-      <Pressable accessibilityRole="link" style={styles.row}>
-        <View style={styles.rowText}>
-          <Text style={styles.rowTitle} numberOfLines={2}>{book.title}</Text>
-          <Text style={styles.rowAuthor} numberOfLines={1}>{book.author}</Text>
-          {book.shelf === 'reading' && book.total_pages ? (
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${Math.min(100, progress)}%` }]} />
+    <>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${book.title}, ${book.author}`}
+        onPress={() => router.push({ pathname: '/kitap/[id]', params: { id: book.id } })}
+        style={({ pressed }) => (pressed ? styles.pressed : undefined)}
+      >
+        <Hard style={styles.rowShadow}>
+          <View style={styles.row}>
+            <Cover title={book.title} />
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle} numberOfLines={2}>{book.title}</Text>
+              <Text style={styles.rowAuthor} numberOfLines={1}>
+                {book.author}{book.genre ? ` · ${book.genre}` : ''}
+              </Text>
+              {book.shelf === 'reading' && book.total_pages ? (
+                <Progress page={book.current_page ?? 0} total={book.total_pages} />
+              ) : null}
             </View>
-          ) : null}
-          {book.shelf === 'reading' && book.total_pages ? (
-            <Text style={styles.rowMeta}>
-              {book.current_page ?? 0} / {book.total_pages} sayfa
-            </Text>
-          ) : null}
-        </View>
-        <Text style={styles.chevron}>›</Text>
+            <Feather name="chevron-right" size={20} color={theme.ink2} />
+          </View>
+        </Hard>
       </Pressable>
-    </Link>
+    </>
   )
 }
 
@@ -71,8 +80,8 @@ export default function KitaplikScreen() {
   const books = booksOnShelf(bootstrap.data, shelf)
 
   return (
-    <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
-      <Text style={styles.heading}>Kitaplığım</Text>
+    <View style={[styles.page, { paddingTop: insets.top + space[3] }]}>
+      <Heading title="Kitaplığım" subtitle="Başladığın, sürdürdüğün ve bitirdiğin kitaplar tek yerde." />
       <ShelfTabs value={shelf} onChange={setShelf} counts={counts} />
       {bootstrap.isPending ? <Loading label="Kitaplığın geliyor…" /> : null}
       {bootstrap.isError ? <Notice message={(bootstrap.error as Error).message} /> : null}
@@ -82,13 +91,15 @@ export default function KitaplikScreen() {
           keyExtractor={(book) => book.id}
           renderItem={({ item }) => <BookRow book={item} />}
           contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={bootstrap.isFetching} onRefresh={() => void bootstrap.refetch()} />
+            <RefreshControl refreshing={bootstrap.isFetching} onRefresh={() => void bootstrap.refetch()}
+              tintColor={theme.accent} />
           }
           ListEmptyComponent={
             <Empty
               title={`${SHELF_LABEL[shelf]} rafı boş`}
-              description="Kitap ekle sekmesinden barkod okutarak ya da adıyla arayarak kitap ekleyebilirsin."
+              description="Kitap ekle sekmesinden barkod okutarak ya da adıyla yazarak kitap ekleyebilirsin."
             />
           }
         />
@@ -98,28 +109,19 @@ export default function KitaplikScreen() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 16, gap: 10 },
-  heading: { fontSize: 26, fontWeight: '800', color: theme.ink },
-  tabs: { gap: 8, paddingVertical: 4 },
-  tab: {
-    paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999,
-    backgroundColor: theme.surfaceMuted,
-  },
-  tabActive: { backgroundColor: theme.accent },
-  tabLabel: { color: theme.ink2, fontWeight: '600', fontSize: 14 },
-  tabLabelActive: { color: '#fff' },
-  list: { paddingVertical: 8, gap: 10 },
+  page: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: space[4], gap: space[3] },
+  // Yatay listenin dikeyde büyümemesi için: esnek kapsayıcıda ScrollView
+  // yoksa boş alanın tamamını kaplar ve raf listesi aşağı itilir.
+  tabsScroll: { flexGrow: 0, flexShrink: 0 },
+  tabs: { gap: space[2], paddingVertical: space[1], paddingRight: space[4], alignItems: 'center' },
+  list: { paddingTop: space[1], paddingBottom: space[6], gap: space[3] },
+  rowShadow: { marginRight: SHADOW_OFFSET, marginBottom: SHADOW_OFFSET },
   row: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: theme.surface,
-    borderRadius: theme.radius, borderWidth: 1, borderColor: theme.border, padding: 14,
+    flexDirection: 'row', alignItems: 'center', gap: space[3], backgroundColor: theme.surface,
+    borderRadius: radius.m, borderWidth: BORDER, borderColor: theme.line, padding: space[3],
   },
-  rowText: { flex: 1, gap: 4 },
-  rowTitle: { fontSize: 16, fontWeight: '700', color: theme.ink },
-  rowAuthor: { fontSize: 14, color: theme.ink2 },
-  rowMeta: { fontSize: 13, color: theme.ink2 },
-  progressTrack: {
-    height: 6, borderRadius: 3, backgroundColor: theme.surfaceMuted, overflow: 'hidden', marginTop: 2,
-  },
-  progressFill: { height: 6, backgroundColor: theme.accent },
-  chevron: { fontSize: 28, color: theme.ink2 },
+  rowText: { flex: 1, gap: space[1] },
+  rowTitle: { fontFamily: fonts.display, fontSize: 17, color: theme.ink },
+  rowAuthor: { fontFamily: fonts.body, fontSize: 14, color: theme.ink2 },
+  pressed: { opacity: 0.85 },
 })

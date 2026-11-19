@@ -207,3 +207,22 @@ def test_native_mobile_client_may_write_without_origin_only_when_cookieless():
     # Foreign origins stay blocked even with the mobile header.
     assert client.post("/auth/login", headers={**mobile, "Origin": "https://evil.test"}).status_code == 403
     assert client.post("/auth/login", headers={"X-Mihenk-Client": "web"}).status_code == 403
+
+
+def test_shared_links_open_the_app_but_not_the_api():
+    """Oda daveti gibi dışarıdan tıklanan bağlantılar sayfayı açabilmeli."""
+    client = secured_client()
+    navigation = {"Sec-Fetch-Site": "cross-site", "Sec-Fetch-Mode": "navigate",
+                  "Sec-Fetch-Dest": "document"}
+
+    invite = client.get("/odalar?davet=ABCD2345", headers=navigation)
+    assert invite.status_code != 403
+    for page in ["/", "/kitapligim", "/kesfet", "/giris"]:
+        assert client.get(page, headers=navigation).status_code != 403
+
+    # API yolları, yazmalar ve iframe yüklemeleri kapalı kalır.
+    assert client.get("/auth/login", headers=navigation).status_code == 403
+    assert client.get("/me/bootstrap", headers=navigation).status_code == 403
+    assert client.post("/odalar", headers=navigation).status_code == 403
+    assert client.get("/odalar", headers={**navigation, "Sec-Fetch-Dest": "iframe"}).status_code == 403
+    assert client.get("/odalar", headers={**navigation, "Origin": "https://evil.test"}).status_code == 403
