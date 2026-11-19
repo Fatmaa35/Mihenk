@@ -38,6 +38,13 @@ export default function AppTabs() {
         }}
       />
       <Tabs.Screen
+        name="odak"
+        options={{
+          title: 'Odak',
+          tabBarIcon: ({ focused }) => <TabIcon name="clock" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="ekle"
         options={{
           title: 'Kitap ekle',
