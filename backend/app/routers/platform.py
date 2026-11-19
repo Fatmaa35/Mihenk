@@ -2,15 +2,11 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.runtime import *  # noqa: F403 - explicit shared runtime boundary
+from app.services.common.spa_pages import SPA_ROUTES
 
 router = APIRouter()
 
 SPA_PAGE = STATIC_DIR / "generated" / "index.html"
-# React uygulamasının istemci tarafı rotaları. API yollarıyla çakışmaması için açıkça listelenir.
-SPA_ROUTES = (
-    "giris", "bugun", "kesfet", "kitapligim", "topluluk", "kulupler", "odak", "profil", "bildirimler", "ayarlar",
-    "yonetim", "ozet", "alintilar", "odalar",
-)
 # Eski arayüzün `?view=` bağlantıları (yer imleri, e-postalar) yeni adreslere yönlenir.
 CLASSIC_VIEW_ROUTES = {
     "discover": "/bugun", "catalog": "/kesfet", "library": "/kitapligim", "community": "/topluluk",
