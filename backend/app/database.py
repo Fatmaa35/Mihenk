@@ -13,6 +13,7 @@ from app.services.reading.gamification import BADGE_RULES, build_gamification_su
 from app.services.reading.reading_planner import build_schedule, reminder_datetime_utc, schedule_summary
 from app.services.reading.product_growth import funnel_metrics, weekly_window
 from app.repositories.sqlite.live_rooms import SQLiteLiveRoomsMixin
+from app.services.common.editions import primary_isbn_by_book
 
 
 class Repository(SQLiteLiveRoomsMixin):
@@ -924,8 +925,16 @@ class Repository(SQLiteLiveRoomsMixin):
             custom_rows = connection.execute(
                 "SELECT * FROM user_custom_books WHERE user_id=? ORDER BY title", (user_id,)
             ).fetchall()
+            # Kapak görseli ISBN üzerinden bulunabilsin diye her kitabın baskısı okunur.
+            isbns = primary_isbn_by_book(
+                dict(edition) for edition in connection.execute(
+                    """SELECT e.isbn, e.book_id, e.language, e.verification_status FROM editions e
+                       JOIN user_books ub ON ub.book_id=e.book_id WHERE ub.user_id=?""", (user_id,),
+                ).fetchall()
+            )
         entries = [{
-            **self._book(row), "shelf": row["shelf"], "is_favorite": bool(row["is_favorite"]),
+            **self._book(row), "isbn": isbns.get(row["id"]),
+            "shelf": row["shelf"], "is_favorite": bool(row["is_favorite"]),
             "current_page": row["current_page"], "total_pages": row["total_pages"],
             "progress_percent": round(row["current_page"] / row["total_pages"] * 100, 1)
             if row["total_pages"] else 0,

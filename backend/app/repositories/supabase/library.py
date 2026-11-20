@@ -6,6 +6,7 @@ from typing import Any
 
 from app.services.catalog.catalog_quality import canonical_work_key, deduplicate_library_entries
 from app.repositories.supabase.base import SupabaseRequestError
+from app.services.common.editions import primary_isbn_by_book
 
 class SupabaseLibraryMixin:
     def remove_library_entry(self, user_id: str, book_id: str, access_token: str | None = None) -> None:
@@ -381,6 +382,18 @@ class SupabaseLibraryMixin:
         return rows[0]
 
 
+    def _primary_isbns(self, book_ids: list[str]) -> dict[str, str]:
+        """Kitapların kapak aramasında kullanılacak ISBN'leri; baskı yoksa boş kalır."""
+        unique = sorted({book_id for book_id in book_ids if book_id})
+        if not unique:
+            return {}
+        rows = self._request(
+            "GET", "/rest/v1/editions", admin=True,
+            params={"select": "isbn,book_id,language,verification_status",
+                    "book_id": f"in.({','.join(unique)})", "limit": 2000},
+        ).json()
+        return primary_isbn_by_book(rows)
+
     def user_profile(self, user_id: str, access_token: str | None = None) -> dict:
         if not access_token:
             raise SupabaseRequestError("Oturum açmanız gerekiyor.", 401)
@@ -410,9 +423,11 @@ class SupabaseLibraryMixin:
             "GET", "/rest/v1/user_custom_books", token=access_token,
             params={"select": "*", "user_id": f"eq.{user_id}", "order": "title.asc", "limit": 1000},
         ).json()
+        isbns = self._primary_isbns([row["book"]["id"] for row in rows])
         entries = [
             {
-                **self._book(row["book"]), "shelf": row["shelf"],
+                **self._book(row["book"]), "isbn": isbns.get(row["book"]["id"]),
+                "shelf": row["shelf"],
                 "is_favorite": row["is_favorite"], "current_page": row["current_page"],
                 "total_pages": row.get("total_pages"),
                 "progress_percent": round(
