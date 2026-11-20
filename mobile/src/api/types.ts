@@ -6,6 +6,7 @@ export type LibraryBook = {
   author: string
   genre?: string
   cover_url?: string | null
+  isbn?: string | null
   shelf: Shelf
   is_favorite?: boolean
   current_page?: number

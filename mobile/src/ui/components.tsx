@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import {
-  ActivityIndicator, Pressable, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle,
+  ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle,
 } from 'react-native'
 import { BORDER, COVER_COLORS, SHADOW_OFFSET, fonts, radius, space, theme } from './theme'
 
@@ -92,10 +93,39 @@ export function Pill({ label, tone = 'soft', count }: {
 }
 
 /** Kapak görseli yoksa başlığı taşıyan renkli karo; web'deki karşılığıyla aynı fikir. */
-export function Cover({ title, size = 'm' }: { title: string; size?: 's' | 'm' | 'l' }) {
+/**
+ * Kitap kapağı. Sunucudan kapak adresi geldiyse görsel gösterilir; gelmediyse
+ * ISBN üzerinden Open Library denenir; o da yoksa başlığı taşıyan renkli karo
+ * çizilir. Karo rengi başlıktan üretilir, aynı kitap hep aynı renkte görünür.
+ */
+export function Cover({ title, url, isbn, size = 'm' }: {
+  title: string
+  url?: string | null
+  isbn?: string | null
+  size?: 's' | 'm' | 'l'
+}) {
+  const [broken, setBroken] = useState(false)
   const index = [...title].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % COVER_COLORS.length
   const box = size === 'l' ? styles.coverLarge : size === 's' ? styles.coverSmall : styles.coverMedium
   const label = size === 'l' ? styles.coverLabelLarge : size === 's' ? styles.coverLabelSmall : null
+  const digits = (isbn ?? '').replace(/[^0-9Xx]/g, '')
+  // `default=false` olmadan Open Library kapağı olmayan kitap için boş bir
+  // görsel döner; bu haliyle 404 verir ve karoya düşeriz.
+  const source = url || (digits ? `https://covers.openlibrary.org/b/isbn/${digits}-M.jpg?default=false` : null)
+
+  if (source && !broken) {
+    return (
+      <Image
+        source={{ uri: source }}
+        style={[styles.cover, box]}
+        resizeMode="cover"
+        accessibilityIgnoresInvertColors
+        accessible
+        accessibilityLabel={`${title} kapağı`}
+        onError={() => setBroken(true)}
+      />
+    )
+  }
   return (
     <View style={[styles.cover, box, { backgroundColor: COVER_COLORS[index] }]}>
       <Text style={[styles.coverLabel, label]} numberOfLines={size === 'l' ? 5 : 3} adjustsFontSizeToFit>

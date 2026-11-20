@@ -35,7 +35,7 @@ function BookPicker({ books, selected, onSelect }: {
             onPress={() => onSelect(book)}
             style={[styles.pickerItem, active && styles.pickerItemActive]}
           >
-            <Cover title={book.title} size="s" />
+            <Cover title={book.title} url={book.cover_url} isbn={book.isbn} size="s" />
             <Text style={styles.pickerTitle} numberOfLines={2}>{book.title}</Text>
           </Pressable>
         )

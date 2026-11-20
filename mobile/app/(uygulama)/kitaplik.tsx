@@ -50,7 +50,7 @@ function BookRow({ book }: { book: LibraryBook }) {
       >
         <Hard style={styles.rowShadow}>
           <View style={styles.row}>
-            <Cover title={book.title} />
+            <Cover title={book.title} url={book.cover_url} isbn={book.isbn} />
             <View style={styles.rowText}>
               <Text style={styles.rowTitle} numberOfLines={2}>{book.title}</Text>
               <Text style={styles.rowAuthor} numberOfLines={1}>
