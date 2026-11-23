@@ -10,6 +10,7 @@ import type { LibraryBook, Shelf } from '../../src/api/types'
 import {
   Button, Card, Cover, Field, Loading, Notice, Pill, Progress,
 } from '../../src/ui/components'
+import { BookPrices } from '../../src/features/pricing/BookPrices'
 import { fonts, space, theme } from '../../src/ui/theme'
 
 export default function KitapScreen() {
@@ -79,7 +80,7 @@ export default function KitapScreen() {
       </Pressable>
 
       <View style={styles.header}>
-        <Cover title={book.title} size="l" />
+        <Cover title={book.title} url={book.cover_url} isbn={book.isbn} size="l" />
         <View style={styles.headerText}>
           <Text style={styles.title}>{book.title}</Text>
           <Text style={styles.author}>{book.author}{book.genre ? ` · ${book.genre}` : ''}</Text>
@@ -118,6 +119,8 @@ export default function KitapScreen() {
         />
         <Button label="İlerlemeyi kaydet" onPress={saveProgress} loading={save.isPending} />
       </Card>
+
+      <BookPrices bookId={book.id} />
 
       <Button
         label="Kitaplığımdan çıkar"
