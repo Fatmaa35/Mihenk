@@ -7,6 +7,8 @@ from datetime import date, datetime, timezone
 from uuid import uuid4
 
 from app.services.catalog.catalog_quality import canonical_work_key, deduplicate_library_entries
+from app.services.common.editions import primary_isbn_by_book
+
 
 class SQLiteLibraryMixin:
     def remove_library_entry(self, user_id: str, book_id: str, access_token: str | None = None) -> None:
@@ -195,8 +197,15 @@ class SQLiteLibraryMixin:
             custom_rows = connection.execute(
                 "SELECT * FROM user_custom_books WHERE user_id=? ORDER BY title", (user_id,)
             ).fetchall()
+            isbns = primary_isbn_by_book(
+                dict(edition) for edition in connection.execute(
+                    """SELECT e.isbn, e.book_id, e.language, e.verification_status FROM editions e
+                       JOIN user_books ub ON ub.book_id=e.book_id WHERE ub.user_id=?""", (user_id,),
+                ).fetchall()
+            )
         entries = [{
-            **self._book(row), "shelf": row["shelf"], "is_favorite": bool(row["is_favorite"]),
+            **self._book(row), "isbn": isbns.get(row["id"]),
+            "shelf": row["shelf"], "is_favorite": bool(row["is_favorite"]),
             "current_page": row["current_page"], "total_pages": row["total_pages"],
             "progress_percent": round(row["current_page"] / row["total_pages"] * 100, 1)
             if row["total_pages"] else 0,
