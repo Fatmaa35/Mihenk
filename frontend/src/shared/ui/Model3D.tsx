@@ -21,17 +21,23 @@ declare module 'react' {
         poster?: string
         alt?: string
         'camera-controls'?: boolean
-        'auto-rotate'?: boolean
+        'camera-orbit'?: string
+        'min-camera-orbit'?: string
+        'max-camera-orbit'?: string
+        'interpolation-decay'?: string
         'disable-zoom'?: boolean
         'interaction-prompt'?: string
         'shadow-intensity'?: string
-        'rotation-per-second'?: string
         exposure?: string
         reveal?: string
       }
     }
   }
 }
+
+/** Salınımın iki yana açısı ve bir turunun süresi. */
+const SALINIM_ACISI = 26
+const SALINIM_SURESI = 9000
 
 let loader: Promise<unknown> | null = null
 const loadViewer = () => {
@@ -68,6 +74,21 @@ export function Model3D({ name, alt, size = 'm', interactive = false }: {
   const reduced = typeof window !== 'undefined'
     && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
+  // Modeller düz görselden çıkarılmış kabartmalar: yandan bakınca incelirler.
+  // Bu yüzden tam tur dönmek yerine iki yana hafifçe salınıyorlar. Görüntüleyici
+  // verilen açıya kendisi yumuşak geçiş yaptığı için saniyede birkaç adım yeter.
+  useEffect(() => {
+    const viewer = host.current?.querySelector('model-viewer') as HTMLElement | null
+    if (!ready || failed || reduced || interactive || !viewer) return
+    const basladi = performance.now()
+    const zamanlayici = window.setInterval(() => {
+      if (document.hidden) return
+      const faz = (performance.now() - basladi) / SALINIM_SURESI
+      viewer.setAttribute('camera-orbit', `${(Math.sin(faz * 2 * Math.PI) * SALINIM_ACISI).toFixed(1)}deg 76deg auto`)
+    }, 140)
+    return () => window.clearInterval(zamanlayici)
+  }, [ready, failed, reduced, interactive])
+
   return (
     <div ref={host} className={`model3d model3d--${size}`} data-ready={ready}>
       {ready && !failed ? (
@@ -75,9 +96,10 @@ export function Model3D({ name, alt, size = 'm', interactive = false }: {
           src={asset('glb')}
           poster={poster}
           alt={alt}
-          auto-rotate={!reduced}
-          rotation-per-second="18deg"
           camera-controls={interactive}
+          min-camera-orbit={`-${SALINIM_ACISI}deg 60deg auto`}
+          max-camera-orbit={`${SALINIM_ACISI}deg 92deg auto`}
+          interpolation-decay="260"
           disable-zoom
           interaction-prompt="none"
           shadow-intensity="0.6"
