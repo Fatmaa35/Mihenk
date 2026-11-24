@@ -101,3 +101,6 @@
   .assistant-fab span { display: none; }
   .assistant { inset: 0; width: 100%; border-radius: 0; border: 0; }
 }
+
+/* Asistan ilk açıldığında konuşmayı karşılayan baykuş. */
+.assistant__mascot { display: flex; justify-content: center; padding: 8px 0 0; }

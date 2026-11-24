@@ -279,3 +279,8 @@ html:has(.lp) { scroll-behavior: smooth; }
   .lp-demo__prompt .mh-button span { display: inline; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-preview__float { animation: none; } html:has(.lp) { scroll-behavior: auto; } }
+
+/* Kahraman bölümündeki üç boyutlu süs: metnin akışını bozmadan sağ üstte durur. */
+.lp-hero__copy { position: relative; }
+.lp-hero__ornament { position: absolute; top: -34px; right: 0; width: 120px; pointer-events: none; }
+@media (max-width: 900px) { .lp-hero__ornament { display: none; } }
