@@ -282,5 +282,8 @@ html:has(.lp) { scroll-behavior: smooth; }
 
 /* Kahraman bölümündeki üç boyutlu süs: metnin akışını bozmadan sağ üstte durur. */
 .lp-hero__copy { position: relative; }
-.lp-hero__ornament { position: absolute; top: -34px; right: 0; width: 120px; pointer-events: none; }
-@media (max-width: 900px) { .lp-hero__ornament { display: none; } }
+.lp-hero__ornament { position: absolute; top: -38px; right: 0; width: 148px; pointer-events: none; }
+/* Dar ekranda metnin sağına sığmaz; başlığın üstüne, akışın içine geçer. */
+@media (max-width: 900px) {
+  .lp-hero__ornament { position: static; width: 104px; margin: 0 0 4px; }
+}

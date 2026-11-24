@@ -1,6 +1,6 @@
 /* Üç boyutlu süs öğesi: model yüklenene kadar aynı yeri kaplayan durağan görsel. */
 .model3d { position: relative; display: block; width: 100%; aspect-ratio: 1 / 1; }
-.model3d--s { max-width: 120px; }
+.model3d--s { max-width: 148px; }
 .model3d--m { max-width: 220px; }
 .model3d--l { max-width: 340px; }
 .model3d img,
