@@ -6,7 +6,7 @@ import {
 } from '../../shared/api/assistant'
 import { useBootstrap } from '../../shared/api/queries'
 import type { ChatAction, ChatBook, ChatMessage } from '../../shared/api/types'
-import { Button, Dialog, IconButton, useToast } from '../../shared/ui'
+import { Button, Dialog, IconButton, Model3D, useToast } from '../../shared/ui'
 import { activeViewFor } from '../../spa/routes'
 import { BookDetailDialog } from '../catalog/BookDetailDialog'
 
@@ -148,6 +148,12 @@ export function AssistantPanel({ open, onClose }: { open: boolean; onClose: () =
             <IconButton label="Asistanı kapat" icon={<X size={20} />} onClick={onClose} />
           </div>
         </header>
+
+        {!messages.length && (
+          <div className="assistant__mascot" aria-hidden="true">
+            <Model3D name="baykus" alt="" size="m" />
+          </div>
+        )}
 
         <ol className="assistant__messages" ref={listRef} aria-live="polite">
           {shown.map((message, index) => <Message key={`${index}-${message.role}`} message={message} onOpenBook={setOpenBook} />)}
