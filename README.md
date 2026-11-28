@@ -45,67 +45,67 @@ canlı odalar sunar.
 <table>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/bugun.png" alt="Bugün" width="430"><br>
+      <img src="docs/assets/screenshots/web/bugun.749bf2.png" alt="Bugün" width="430"><br>
       <b>Bugün</b><br>
       Günün başlangıcı: kaldığın kitap ve ilerlemen, bu haftaki okuma süren, yıllık hedefin ve kulübün. Altında rafına göre seçilmiş öneriler.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/kesfet.png" alt="Keşfet" width="430"><br>
+      <img src="docs/assets/screenshots/web/kesfet.06b689.png" alt="Keşfet" width="430"><br>
       <b>Keşfet</b><br>
       Ne okumak istediğini kendi cümlenle anlatırsın; katalog da tür, yazar ve ada göre taranabilir. Her kitap bir uyum yüzdesiyle gelir.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/kitap-detayi.png" alt="Kitap ayrıntısı" width="430"><br>
+      <img src="docs/assets/screenshots/web/kitap-detayi.323b0a.png" alt="Kitap ayrıntısı" width="430"><br>
       <b>Kitap ayrıntısı</b><br>
       Kitabın künyesi, temaları ve sana uyumu; tek dokunuşla rafa ekleme, mağaza fiyatları ve hedef fiyat alarmı.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/alintilar.png" alt="Alıntılar" width="430"><br>
+      <img src="docs/assets/screenshots/web/alintilar.788cba.png" alt="Alıntılar" width="430"><br>
       <b>Alıntılar</b><br>
       Okurken kaydettiğin alıntılar; kapağın renkleriyle paylaşılabilir karta dönüşür.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/kitapligim.png" alt="Kitaplığım" width="430"><br>
+      <img src="docs/assets/screenshots/web/kitapligim.1a9547.png" alt="Kitaplığım" width="430"><br>
       <b>Kitaplığım</b><br>
       Okuyorum, okuyacağım, okudum, bıraktım ve favoriler rafları; sayfa ilerlemesi her satırda görünür.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/topluluk.png" alt="Topluluk" width="430"><br>
+      <img src="docs/assets/screenshots/web/topluluk.457efd.png" alt="Topluluk" width="430"><br>
       <b>Topluluk</b><br>
       Kitaplara puan ve yorum, spoiler gizleme ve takip ettiğin okurlar.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/odak.png" alt="Okuma modu" width="430"><br>
+      <img src="docs/assets/screenshots/web/odak.de543c.png" alt="Okuma modu" width="430"><br>
       <b>Okuma modu</b><br>
       Pomodoro sayacı ve ortam seçimiyle okuma seansı; altında yıllık okuma takvimi ve hedef ilerlemesi.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/profil.png" alt="Profil" width="430"><br>
+      <img src="docs/assets/screenshots/web/profil.e69dc3.png" alt="Profil" width="430"><br>
       <b>Profil</b><br>
       Okuma istatistiklerin, rozetlerin ve yıllık hedefin bir arada.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/yillik-ozet.png" alt="Yıllık özet" width="430"><br>
+      <img src="docs/assets/screenshots/web/yillik-ozet.5b50dc.png" alt="Yıllık özet" width="430"><br>
       <b>Yıllık özet</b><br>
       Yılın okuma karnesi: sayfalar, en sevdiğin tür, en uzun serin ve okur tipin.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/bugun-koyu.png" alt="Koyu tema" width="430"><br>
+      <img src="docs/assets/screenshots/web/bugun-koyu.8ead75.png" alt="Koyu tema" width="430"><br>
       <b>Koyu tema</b><br>
       Tüm ekranlar koyu temayı destekler; varsayılan olarak sistem ayarı izlenir.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/landing.png" alt="Tanıtım sayfası" width="430"><br>
+      <img src="docs/assets/screenshots/web/landing.dbebe8.png" alt="Tanıtım sayfası" width="430"><br>
       <b>Tanıtım sayfası</b><br>
       Giriş yapmadan görünen karşılama sayfası.
     </td>
@@ -134,55 +134,55 @@ Telefon görüntüleri 390×844 telefon görünümünde alındı; kurulum kartla
 <table>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/android-yukle.png" alt="Android: tek dokunuşla kurulum" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/android-yukle.bb5f46.png" alt="Android: tek dokunuşla kurulum" width="260"><br>
       <b>Android: tek dokunuşla kurulum</b><br>
       Chrome, Edge ve Samsung Internet'te Bugün ekranında kart çıkar; “Yükle” tarayıcının kendi kurulum penceresini açar. Kart kapatılırsa bir süre gösterilmez.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/iphone-ana-ekran.png" alt="iPhone: Ana Ekrana Ekle" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/iphone-ana-ekran.46856e.png" alt="iPhone: Ana Ekrana Ekle" width="260"><br>
       <b>iPhone: Ana Ekrana Ekle</b><br>
       Safari kurulum penceresi sunmadığı için kart iki adımı gösterir: Paylaş simgesi, ardından Ana Ekrana Ekle.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/ayarlar-uygulama.png" alt="Ayarlar › Uygulama olarak kullan" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/ayarlar-uygulama.651300.png" alt="Ayarlar › Uygulama olarak kullan" width="260"><br>
       <b>Ayarlar › Uygulama olarak kullan</b><br>
       Kurulum durumu her zaman buradadır: yüklüyse bunu söyler, değilse cihaza uygun yolu anlatır.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/bugun.png" alt="Telefonda Bugün" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/bugun.17f9ee.png" alt="Telefonda Bugün" width="260"><br>
       <b>Telefonda Bugün</b><br>
       Kaldığın kitap, ilerlemen ve günün önerileri tek sütunda; altta beş sekmeli gezinme çubuğu.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/kesfet.png" alt="Telefonda Keşfet" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/kesfet.6f9b54.png" alt="Telefonda Keşfet" width="260"><br>
       <b>Telefonda Keşfet</b><br>
       Öneriler ve katalog tek sütunda; arama kutusu üstte sabit kalır.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/kitaplik.png" alt="Telefonda kitaplık" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/kitaplik.8c25a1.png" alt="Telefonda kitaplık" width="260"><br>
       <b>Telefonda kitaplık</b><br>
       Raflar arasında yatay sekmelerle geçilir; her satırda sayfa ilerlemesi görünür.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/okuma-modu.png" alt="Telefonda okuma modu" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/okuma-modu.dbf463.png" alt="Telefonda okuma modu" width="260"><br>
       <b>Telefonda okuma modu</b><br>
       Kitap seçimi, barkodla kitap ekleme ve ortam ayarları; sayaç tam ekranda telefonu okuma saatine çevirir.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/rozetler.png" alt="Rozet rafı" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/rozetler.b7c297.png" alt="Rozet rafı" width="260"><br>
       <b>Rozet rafı</b><br>
       Kazanılan ve sıradaki rozetler, ne kadar kaldığıyla birlikte.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/pwa/canli-oda.png" alt="Telefonda canlı oda" width="260"><br>
+      <img src="docs/assets/screenshots/pwa/canli-oda.4a9101.png" alt="Telefonda canlı oda" width="260"><br>
       <b>Telefonda canlı oda</b><br>
       Katılımcılar üstte kısa bir liste, altında sohbet.
     </td>
