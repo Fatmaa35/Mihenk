@@ -964,6 +964,15 @@ class Repository(SQLiteLiveRoomsMixin):
             "feedback_books": [book for book in self.list_books() if book["id"] in feedback_ids],
         }
 
+    def custom_book(self, user_id: str, custom_book_id: str, access_token: str | None = None) -> dict | None:
+        """Kullanıcının kendi eklediği kitabı okur. Katalogda karşılığı yoktur."""
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM user_custom_books WHERE id=? AND user_id=?", (custom_book_id, user_id)
+            ).fetchone()
+        return self._custom_book(row) if row else None
+
+
     @staticmethod
     def _custom_book(row: sqlite3.Row | dict) -> dict:
         item = dict(row)

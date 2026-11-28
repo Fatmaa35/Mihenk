@@ -26,11 +26,33 @@ def catalog_coverage() -> dict:
     return repository.catalog_coverage()
 
 
+
+def _custom_book_details(book: dict) -> dict:
+    """Kişisel kitap için katalog detayının boş karşılığı."""
+    return {
+        "book": book,
+        "community": {
+            "rating_count": 0, "rating_average": 0.0, "popularity_score": 0.0,
+            "own_rating": None, "rating_distribution": {str(value): 0 for value in range(1, 6)},
+            "comments": [],
+        },
+        "offers": [], "price_history": [], "price_forecasts": [],
+        "price_intelligence": price_intelligence([]),
+        "ai_match": {"score": 0.0, "reasons": ["Kendi eklediğin kitap; katalog sinyali yok."],
+                     "deterministic": True},
+    }
+
 @router.get("/books/{book_id}/details")
 def book_details(book_id: str, request: Request, response: Response) -> dict:
     session = current_session(request, response)
     book = find_book(book_id)
     if not book:
+        # Kullanıcının kendi eklediği kitaplar katalogda değil, ayrı tabloda
+        # durur. Kitaplıkta ve asistan yanıtlarında göründükleri için detayları
+        # da açılabilmeli; katalogdan gelen alanlar (fiyat, topluluk) boştur.
+        custom = repository.custom_book(session["user"]["id"], book_id, session["access_token"])
+        if custom:
+            return _custom_book_details(custom)
         raise HTTPException(status_code=404, detail="Kitap bulunamadı.")
     community = repository.book_community(book_id, session["user"]["id"], session["access_token"])
     offers = repository.list_retail_offers(book_id=book_id)
