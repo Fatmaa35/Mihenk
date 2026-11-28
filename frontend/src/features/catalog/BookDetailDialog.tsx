@@ -30,6 +30,9 @@ export function BookDetailDialog({ bookId, onClose, initialTab = 'genel' }: Book
   const book = details.data?.book
   const community = details.data?.community
   const offers = details.data ? availableOffers(details.data.offers) : []
+  // Kişisel kitapların katalog karşılığı yok: puan, yorum, fiyat ve uyum
+  // bölümleri onlar için anlamsız, raf seçici de katalog ucuna yazıyor.
+  const custom = Boolean(book?.is_custom)
 
   return (
     <Dialog open={Boolean(bookId)} title={book?.title ?? 'Kitap'} onClose={onClose} size="lg">
@@ -42,7 +45,7 @@ export function BookDetailDialog({ bookId, onClose, initialTab = 'genel' }: Book
       {details.isError && <ErrorState message={details.error.message} onRetry={() => details.refetch()} />}
       {book && details.data && (
         <>
-          <div className="book-detail__tabs">
+          {!custom && <div className="book-detail__tabs">
             <SegmentedTabs
               label="Kitap bölümleri"
               value={tab}
@@ -52,8 +55,8 @@ export function BookDetailDialog({ bookId, onClose, initialTab = 'genel' }: Book
                 { value: 'yorumlar', label: 'Puan ve yorumlar', count: community?.comments.length ?? 0 },
               ]}
             />
-          </div>
-          {tab === 'yorumlar' ? (
+          </div>}
+          {tab === 'yorumlar' && !custom ? (
             <BookCommunityPanel bookId={book.id} />
           ) : (
             <div className="book-detail">
@@ -72,29 +75,39 @@ export function BookDetailDialog({ bookId, onClose, initialTab = 'genel' }: Book
                     {book.themes.map((theme) => <li key={theme} className="mh-chip mh-chip--muted">{theme}</li>)}
                   </ul>
                 )}
-                {details.data.ai_match && (
+                {details.data.ai_match && !custom && (
                   <div className="book-detail__match mh-tile mh-tile--lilac">
                     <strong>Sana uyumu %{Math.round(details.data.ai_match.score * 100)}</strong>
                     {details.data.ai_match.reasons.length > 0 && <span>{details.data.ai_match.reasons.join(' · ')}</span>}
                   </div>
                 )}
-                <section aria-labelledby="detail-shelf">
-                  <h3 id="detail-shelf" className="book-detail__heading">Kitaplığına ekle</h3>
-                  <ShelfPicker bookId={book.id} title={book.title} current={entry?.shelf} totalPages={entry?.total_pages ?? book.page_count} />
-                  {entry && (
-                    <Link to={`${routes.quotes}?kitap=${encodeURIComponent(book.id)}`} className="book-detail__quote-link">
-                      <Quote size={16} aria-hidden="true" /> Bu kitaptan alıntı kartı yap
-                    </Link>
-                  )}
-                </section>
-                <section aria-labelledby="detail-offers">
-                  <h3 id="detail-offers" className="book-detail__heading">Fiyatlar</h3>
-                  <BookPrices bookId={book.id} offers={offers} />
-                </section>
-                <section aria-labelledby="detail-alert">
-                  <h3 id="detail-alert" className="book-detail__heading">Fiyat alarmı</h3>
-                  <PriceAlertForm bookId={book.id} title={book.title} bestPriceMinor={offers[0]?.price_minor ?? null} />
-                </section>
+                {custom ? (
+                  <p className="book-detail__note">
+                    Bu kitabı kendin ekledin. Katalogda karşılığı olmadığı için puan,
+                    yorum ve fiyat bilgisi gösterilmiyor. İlerlemeni kitaplığından
+                    güncelleyebilirsin.
+                  </p>
+                ) : (
+                  <>
+                    <section aria-labelledby="detail-shelf">
+                      <h3 id="detail-shelf" className="book-detail__heading">Kitaplığına ekle</h3>
+                      <ShelfPicker bookId={book.id} title={book.title} current={entry?.shelf} totalPages={entry?.total_pages ?? book.page_count} />
+                      {entry && (
+                        <Link to={`${routes.quotes}?kitap=${encodeURIComponent(book.id)}`} className="book-detail__quote-link">
+                          <Quote size={16} aria-hidden="true" /> Bu kitaptan alıntı kartı yap
+                        </Link>
+                      )}
+                    </section>
+                    <section aria-labelledby="detail-offers">
+                      <h3 id="detail-offers" className="book-detail__heading">Fiyatlar</h3>
+                      <BookPrices bookId={book.id} offers={offers} />
+                    </section>
+                    <section aria-labelledby="detail-alert">
+                      <h3 id="detail-alert" className="book-detail__heading">Fiyat alarmı</h3>
+                      <PriceAlertForm bookId={book.id} title={book.title} bestPriceMinor={offers[0]?.price_minor ?? null} />
+                    </section>
+                  </>
+                )}
               </div>
             </div>
           )}

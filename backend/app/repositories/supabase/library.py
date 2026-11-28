@@ -161,6 +161,15 @@ class SupabaseLibraryMixin:
         return rows[0]
 
 
+    def custom_book(self, user_id: str, custom_book_id: str, access_token: str | None = None) -> dict | None:
+        """Kullanıcının kendi eklediği kitabı okur. Katalogda karşılığı yoktur."""
+        rows = self._request(
+            "GET", "/rest/v1/user_custom_books", token=access_token,
+            params={"select": "*", "id": f"eq.{custom_book_id}", "user_id": f"eq.{user_id}", "limit": 1},
+        ).json()
+        return self._custom_book(rows[0]) if rows else None
+
+
     @staticmethod
     def _custom_book(row: dict) -> dict:
         total_pages = row.get("total_pages")
