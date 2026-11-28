@@ -38,7 +38,7 @@ Pygments==2.21.0
 pywebpush==2.4.0
 tzdata==2026.6
 pytest==9.1.1
-python-dotenv==1.2.3
+python-dotenv==1.2.4
 PyYAML==6.0.3
 requests==2.34.2
 redis==6.4.0
