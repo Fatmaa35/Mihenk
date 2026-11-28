@@ -297,6 +297,13 @@ class Repository(SQLiteLiveRoomsMixin):
         with self.connect() as connection:
             return [self._book(row) for row in connection.execute("SELECT * FROM books ORDER BY title")]
 
+
+    def book(self, book_id: str) -> dict | None:
+        """Tek kitabı doğrudan veritabanından okur; bellekteki kopyaya bağlı değildir."""
+        with self.connect() as connection:
+            row = connection.execute("SELECT * FROM books WHERE id=?", (book_id,)).fetchone()
+        return self._book(row) if row else None
+
     def search_books(self, query: str | None, limit: int, offset: int, sort: str = "title") -> dict:
         normalized = (query or "").strip()
         where, values = "", []

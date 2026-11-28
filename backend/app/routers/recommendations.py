@@ -173,7 +173,7 @@ def execute_chat_action(payload: ChatActionExecute, request: Request, response: 
     existing_result = repository.action_execution(user_id, payload.idempotency_key, token)
     if existing_result is not None:
         return {**existing_result, "replayed": True}
-    book = next((item for item in services.catalog if item["id"] == action.book_id), None)
+    book = find_book(action.book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Bu işlem yapılamıyor: kitap katalogda bulunamadı.")
     profile = repository.user_profile(user_id, token)

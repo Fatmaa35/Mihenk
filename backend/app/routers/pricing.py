@@ -24,7 +24,7 @@ def start_live_book_offers(book_id: str, request: Request, response: Response, f
     yine de aynı kitap on dakikada birden sık mağazalara sorulmaz.
     """
     current_session(request, response)
-    book = next((item for item in services.catalog if item["id"] == book_id), None)
+    book = find_book(book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Kitap bulunamadı.")
     try:

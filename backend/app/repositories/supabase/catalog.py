@@ -117,13 +117,37 @@ class SupabaseCatalogMixin:
         }
 
 
+    # PostgREST tek istekte en çok 1000 satır döndürür. Sabit limit katalogun
+    # geri kalanını görünmez yapıyordu: alfabenin sonundaki kitaplar öneriye de
+    # girmiyor, detay sayfasında "bulunamadı" veriyordu. Sayfalayarak okuyoruz.
+    PAGE_SIZE = 1000
+    MAX_PAGES = 50
+
     def list_books(self) -> list[dict]:
+        rows: list[dict] = []
+        for page in range(self.MAX_PAGES):
+            response = self._request(
+                "GET",
+                "/rest/v1/books",
+                params={"select": self.BOOK_COLUMNS, "order": "id.asc",
+                        "limit": self.PAGE_SIZE, "offset": page * self.PAGE_SIZE},
+            )
+            batch = response.json()
+            rows.extend(batch)
+            if len(batch) < self.PAGE_SIZE:
+                break
+        return sorted((self._book(row) for row in rows), key=lambda book: (book.get("title") or "").casefold())
+
+
+    def book(self, book_id: str) -> dict | None:
+        """Tek kitabı doğrudan veritabanından okur; bellekteki kopyaya bağlı değildir."""
         response = self._request(
             "GET",
             "/rest/v1/books",
-            params={"select": self.BOOK_COLUMNS, "order": "title.asc", "limit": 1000},
+            params={"select": self.BOOK_COLUMNS, "id": f"eq.{book_id}", "limit": 1},
         )
-        return [self._book(row) for row in response.json()]
+        rows = response.json()
+        return self._book(rows[0]) if rows else None
 
 
     @staticmethod
