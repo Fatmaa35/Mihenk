@@ -11,4 +11,4 @@ requests>=2.32,<3
 playwright>=1.50,<2
 redis>=6.4,<7
 pywebpush>=2.4,<3
-tzdata>=2026.3,<2027
+tzdata>=2026.6,<2027
