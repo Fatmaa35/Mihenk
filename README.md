@@ -19,16 +19,16 @@ canlı odalar sunar.
   okuma hızı ve toplam süre.
 - **Rozetler ve okuma takvimi:** seriler, seviyeler, yıllık hedef ve rozet
   vitrini; yeni kazanılan rozet konfeti ve paylaşılabilir kartla kutlanır.
-- **Yıllık okuma özeti (`/ozet`):** okunan sayfalar, en sevilen tür, en uzun
+- **Yıllık okuma özeti:** okunan sayfalar, en sevilen tür, en uzun
   seri ve okur tipi; hikâye formatında kart kart paylaşılır.
-- **Alıntı kartları (`/alintilar`):** kitaptan alıntıyı kapağın renkleriyle
+- **Alıntı kartları:** kitaptan alıntıyı kapağın renkleriyle
   hikâye ya da gönderi boyutunda görsele çevirip paylaşma.
 - **Topluluk:** kitaplara puan ve yorum, spoiler gizleme, faydalı bulma ve
   okurları takip etme.
 - **Kitap kulüpleri:** ortak kitap, spoiler korumalı tartışmalar, ortak
   ilerleme, etkinlikler, oylamalar ve okuma odası.
-- **Canlı odalar (`/odalar`):** arkadaşlarla aynı anda okuma ya da ders
-  çalışma. Ayrıntılar aşağıda.
+- **Canlı odalar:** arkadaşlarla aynı anda okuma ya da ders çalışma; kamera ve
+  mikrofon yoktur, katılım davet bağlantısı ya da kodla olur.
 - **Kitap asistanı:** yapay zekâ destekli sohbet; rafa ekleme gibi işlemleri
   yalnızca kullanıcının onayıyla yapar.
 - **Fiyatlar ve alarmlar:** kitap açıldığında izinli mağazalarda canlı fiyat
@@ -36,8 +36,8 @@ canlı odalar sunar.
   fiyata düşünce bildirim.
 - **Bildirimler ve hatırlatmalar:** uygulama içi bildirimler ve web push ile
   okuma hatırlatmaları.
-- **Yönetim paneli (`/yonetim`):** kullanıcılar, yorum şikâyetleri, katalog,
-  fiyat hattı ve kalite değerlendirmesi.
+- **Yönetim paneli:** kullanıcılar, yorum şikâyetleri, katalog, fiyat hattı ve
+  kalite değerlendirmesi; yalnızca yönetici hesaplarına açıktır.
 - **Gizlilik:** verileri indirme ve hesabı silme Ayarlar'dan yapılır.
 
 ## Ekran görüntüleri
@@ -47,72 +47,67 @@ canlı odalar sunar.
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/web/bugun.png" alt="Bugün" width="430"><br>
       <b>Bugün</b><br>
-      Günün başlangıç ekranı: kaldığın kitap ve ilerleme çubuğu, haftalık okuma süresi, yıllık hedef, kulübün ve “Canlı odada birlikte oku” kısayolu. Altında rafına göre seçilmiş öneriler.
+      Günün başlangıcı: kaldığın kitap ve ilerlemen, bu haftaki okuma süren, yıllık hedefin ve kulübün. Altında rafına göre seçilmiş öneriler.
     </td>
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/web/kesfet.png" alt="Keşfet" width="430"><br>
       <b>Keşfet</b><br>
-      Ne okumak istediğini kendi cümlenle yazarsın; her kitap bir uyum yüzdesi ve “neden sana uygun” açıklamasıyla listelenir. Üstteki şerit, sonucun profilindeki hangi sinyallerle ağırlıklandırıldığını söyler.
+      Ne okumak istediğini kendi cümlenle anlatırsın; katalog da tür, yazar ve ada göre taranabilir. Her kitap bir uyum yüzdesiyle gelir.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/web/kitap-detayi.png" alt="Kitap ayrıntısı" width="430"><br>
       <b>Kitap ayrıntısı</b><br>
-      Kitabın konusu, türü, temaları ve sana uyum puanı. Buradan rafa eklenir, alıntı kartı başlatılır, mağaza fiyatları karşılaştırılır ve hedef fiyat için alarm kurulur.
+      Kitabın künyesi, temaları ve sana uyumu; tek dokunuşla rafa ekleme, mağaza fiyatları ve hedef fiyat alarmı.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/kitapligim.png" alt="Kitaplığım" width="430"><br>
-      <b>Kitaplığım</b><br>
-      Okuyorum, okuyacağım, okudum, bıraktım ve favoriler rafları. Her kitapta sayfa ilerlemesi ve raf değiştirme; “Kitap ekle” ile katalogdan, barkoddan ya da elle kitap eklenir.
+      <img src="docs/assets/screenshots/web/alintilar.png" alt="Alıntılar" width="430"><br>
+      <b>Alıntılar</b><br>
+      Okurken kaydettiğin alıntılar; kapağın renkleriyle paylaşılabilir karta dönüşür.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/okuma-modu.png" alt="Okuma modu" width="430"><br>
+      <img src="docs/assets/screenshots/web/kitapligim.png" alt="Kitaplığım" width="430"><br>
+      <b>Kitaplığım</b><br>
+      Okuyorum, okuyacağım, okudum, bıraktım ve favoriler rafları; sayfa ilerlemesi her satırda görünür.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/assets/screenshots/web/topluluk.png" alt="Topluluk" width="430"><br>
+      <b>Topluluk</b><br>
+      Kitaplara puan ve yorum, spoiler gizleme ve takip ettiğin okurlar.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/assets/screenshots/web/odak.png" alt="Okuma modu" width="430"><br>
       <b>Okuma modu</b><br>
-      Pomodoro ya da kronometreyle okuma seansı; ortam sesi ve tema seçimi, tam ekran. Seans bitince okunan sayfalar takvime, serilere ve rozetlere işlenir.
+      Pomodoro sayacı ve ortam seçimiyle okuma seansı; altında yıllık okuma takvimi ve hedef ilerlemesi.
     </td>
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/web/profil.png" alt="Profil" width="430"><br>
       <b>Profil</b><br>
-      Seviye ve deneyim puanı, yıllık hedef, okunan sayfa, aktif gün ve seri kartları; yılın her gününü gösteren okuma takvimi, tür dağılımı ve rozet rafı.
+      Okuma istatistiklerin, rozetlerin ve yıllık hedefin bir arada.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/kulup.png" alt="Kitap kulübü" width="430"><br>
-      <b>Kitap kulübü</b><br>
-      Ayın kitabı, ortak ilerleme ve okuma yol haritası. Sekmelerde spoiler korumalı tartışmalar, kulüp okuma odası, etkinlikler, oylamalar ve istatistikler bulunur.
+      <img src="docs/assets/screenshots/web/yillik-ozet.png" alt="Yıllık özet" width="430"><br>
+      <b>Yıllık özet</b><br>
+      Yılın okuma karnesi: sayfalar, en sevdiğin tür, en uzun serin ve okur tipin.
     </td>
-    <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/canli-oda.png" alt="Canlı oda" width="430"><br>
-      <b>Canlı oda</b><br>
-      Kamera ve mikrofon olmadan birlikte okuma ya da ders çalışma. Solda o an odada olanlar ve ne yaptıkları, sağda giriş ve çıkışların da yazıldığı sohbet.
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/yillik-ozet.png" alt="Yıllık okuma özeti" width="430"><br>
-      <b>Yıllık okuma özeti</b><br>
-      Yılın okuma hikâyesi kart kart: toplam sayfa, en sevilen tür, en uzun seri, en verimli ay ve okur tipi. Her kart paylaşılabilir görsele dönüşür.
-    </td>
-    <td width="50%" valign="top">
-      <img src="docs/assets/screenshots/web/alinti-karti.png" alt="Alıntı kartı" width="430"><br>
-      <b>Alıntı kartı</b><br>
-      Alıntıyı yazarken sağda kart canlı olarak oluşur; renkler kitabın kapağından alınır. Hikâye ya da gönderi boyutunda indirilir veya paylaşılır.
-    </td>
-  </tr>
-  <tr>
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/web/bugun-koyu.png" alt="Koyu tema" width="430"><br>
       <b>Koyu tema</b><br>
-      Tüm ekranlar açık ve koyu temada çalışır; varsayılan olarak cihazın ayarı izlenir, Ayarlar’dan değiştirilebilir.
+      Tüm ekranlar koyu temayı destekler; varsayılan olarak sistem ayarı izlenir.
     </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/web/landing.png" alt="Tanıtım sayfası" width="430"><br>
       <b>Tanıtım sayfası</b><br>
-      Giriş yapmamış ziyaretçinin gördüğü sayfa. Hesap açmadan ruh hâline göre örnek öneri denenebilir.
+      Giriş yapmadan görünen karşılama sayfası.
     </td>
   </tr>
 </table>
@@ -191,23 +186,6 @@ iPhone’da bilmen gerekenler:
 - Uzun süre açılmayan sitelerin önbelleğini Safari silebilir; oturum sunucuda
   tutulduğu için en fazla yeniden giriş istenir.
 
-## Canlı odalar
-
-Kamera ve mikrofon yoktur. Oda açan kişi bir ad ve tür seçer (kitap okuma,
-ders çalışma ya da diğer), davet bağlantısını ya da 8 haneli kodu
-arkadaşlarına gönderir.
-
-- Katılımcı listesi o an odada olanları ve her kişinin ne yaptığını
-  ("Fizik, 3. ünite" gibi) gösterir.
-- Sohbette giriş ve çıkışlar otomatik olarak yazılır.
-- Sayfa birkaç saniyede bir odanın durumunu yeniler; bu istek aynı zamanda
-  "buradayım" sinyalidir. Sekme arka plandayken yenileme durur.
-- Odayı açan kişi katılımcıyı çıkarabilir (çıkarılan kişi geri dönemez) ve
-  odayı kapatabilir.
-
-Adresler: `/odalar` odaların listesi, `/odalar?davet=KOD` davetle katılma,
-`/odalar?oda=ID` oda ekranı. API `/me/live-rooms` altındadır.
-
 ## Sistem mimarisi
 
 Mihenk tek bir Docker imajıdır: FastAPI sunucusu hem API'yi hem de derlenmiş
@@ -239,7 +217,7 @@ flowchart TB
   end
   subgraph Zaman["Zamanlanmış işler"]
     GHA["GitHub Actions<br/>hatırlatma, saklama, yedek"]
-    GHAP["GitHub Actions<br/>fiyat taraması, her gün 04:15"]
+    GHAP["GitHub Actions<br/>günlük fiyat taraması"]
   end
   SPA -- "HTTPS + HTTP-only çerez" --> API
   SW -. "kabuk önbelleği" .-> SPA
@@ -267,6 +245,12 @@ flowchart TB
 | Redis | Dağıtık hız sınırı, e-posta gönderim koruması, metrikler | `backend/app/services/common/security.py` |
 | GitHub Actions | Test ve güvenlik taraması, hatırlatmalar, veri saklama, günlük fiyat taraması, şifreli yedek, imaj yayını | `.github/workflows` |
 
+Güvenlik, bu katmanların kendisine gömülüdür: oturumlar sunucuda doğrulanır,
+her yetki denetimi API'de yapılır ve kullanıcıya ait veriler veritabanında satır
+düzeyinde korunur. Uygulama ayrıca köken denetimi, hız sınırı ve standart
+güvenlik başlıklarıyla gelir. Ayrıntılar bilerek burada anlatılmaz; ilgilenen
+`backend/app/services/common/security.py` dosyasına bakabilir.
+
 ### Sunucunun katmanları
 
 Her istek aynı yoldan geçer. Router'lar yalnızca HTTP ile ilgilenir; iş
@@ -284,120 +268,6 @@ flowchart TB
   Contract --> SQLite[("SQLite<br/>yerel ve testler")]
   Contract --> Supa[("Supabase<br/>production")]
 ```
-
-### Bir öneri isteğinin yolu
-
-```mermaid
-sequenceDiagram
-  actor Okur
-  participant SPA as React SPA
-  participant API as FastAPI
-  participant DB as Supabase
-  participant AI as Yapay zekâ
-  Okur->>SPA: "Yağmurlu bir akşam için gizemli bir şey"
-  SPA->>API: POST /me/recommendations (çerezle)
-  API->>API: Köken ve hız sınırı denetimi (Redis)
-  API->>DB: Oturumu doğrula, profil ve tercihleri oku
-  API->>DB: Anlamsal arama (pgvector) ile aday kitaplar
-  API->>AI: Adaylar için uyum açıklaması
-  AI-->>API: Sıralı öneriler ve gerekçeler
-  API->>DB: Öneri etkileşimini kaydet
-  API-->>SPA: Uyum yüzdeleri ve açıklamalar
-  SPA-->>Okur: Keşfet ekranında liste
-```
-
-Yapay zekâ sağlayıcısına ulaşılamazsa sunucu yapay zekâsız açıklamaya geçer;
-öneri listesi yine döner.
-
-### Oturum ve güvenlik
-
-- **Web:** Giriş Supabase Auth ile yapılır; erişim ve yenileme anahtarları
-  tarayıcıda yalnızca HTTP-only, güvenli çerezlerde tutulur. JavaScript
-  anahtarlara erişemez.
-- **Mobil istemci:** Çerez yerine `Authorization: Bearer` ve `x-refresh-token`
-  başlıkları kullanılır; yenilenen anahtarlar yanıt başlıklarında döner.
-- **Veri erişimi:** Kullanıcıya ait tablolar Supabase'de satır düzeyinde
-  güvenlikle (RLS) korunur. Canlı oda tabloları istemciye tamamen kapalıdır;
-  yetki API'de denetlenir.
-- **Koruma:** Yabancı kökenden gelen istekler reddedilir, uç noktalar Redis
-  tabanlı hız sınırıyla korunur, kullanıcı metni HTML'den arındırılır.
-
-### Canlı odaların çalışma şekli
-
-WebSocket yerine kısa aralıklı yoklama kullanılır; Render'daki tek örnekli
-sunucu ve Supabase REST ile en sade ve dayanıklı yol budur.
-
-```mermaid
-sequenceDiagram
-  participant A as Okur (tarayıcı)
-  participant API as FastAPI
-  participant DB as Veritabanı
-  loop Her 4 saniyede bir, sekme görünürken
-    A->>API: GET /me/live-rooms/{id}?after=son_mesaj
-    API->>DB: Üyelik denetimi, last_seen_at güncelle
-    Note over API,DB: 40 saniyedir sinyal yoksa "odada değil",<br/>geri dönünce "odaya katıldı" satırı yazılır
-    API-->>A: Katılımcılar ve yalnızca yeni mesajlar
-  end
-  A->>API: POST /me/live-rooms/{id}/messages
-  A->>API: Sayfadan çıkınca POST /me/live-rooms/{id}/leave
-```
-
-### Fiyatların toplanma şekli
-
-Fiyatlar iki yoldan gelir. Kitap açıldığında sunucu izinli mağazalarda
-(Kitapseç, Kitapsepeti, BKM Kitap) **canlı** arama başlatır; mağazalar
-birbirini beklemez, her sonuç geldiği anda ekrana düşer ve aynı anda kayda
-geçer, böylece kitap ikinci açılışta dolu gelir. İkinci yol, her gün 04:15'te
-GitHub Actions üzerinde çalışan toplu taramadır; bu, uzun süredir açılmamış
-kitapların fiyatlarını da tazeler ve fiyat tahminlerini günceller.
-
-```mermaid
-sequenceDiagram
-  actor Okur
-  participant API as FastAPI
-  participant DB as Veritabanı
-  participant Shop as İzinli mağazalar
-  Okur->>API: Kitabı açar → POST /books/{id}/offers/live
-  API-->>Okur: 202, mağazalar "sıra bekliyor"
-  par Her mağaza kendi sırasında
-    API->>Shop: robots.txt denetimi, arama ve ürün sayfası
-    Shop-->>API: Fiyat ya da sonuç yok
-    API->>DB: Bulunan fiyatı kaydet
-  end
-  loop İki saniyede bir, arama bitene kadar
-    Okur->>API: GET /books/{id}/offers/live
-    API-->>Okur: Mağaza mağaza durum ve fiyatlar
-  end
-```
-
-Mağazalara yük bindirmemek için aynı mağazaya iki istek arasında en az dört
-saniye bırakılır, aynı anda en çok iki kitap aranır ve aynı kitap altı saatte
-bir (kişi "yenile" derse on dakikada bir) yeniden taranır. Hangi mağazanın
-neden açık ya da kapalı olduğu `docs/RETAILER_COMPLIANCE.md` dosyasındadır;
-Trendyol ve Amazon TR resmî API gerektirdiği için taranmaz.
-
-### Test, yayın ve zamanlanmış işler
-
-```mermaid
-flowchart LR
-  PR["Push / PR"] --> Q["quality iş akışı"]
-  Q --> T1["pytest · vitest · derleme"]
-  Q --> T2["Playwright<br/>masaüstü ve mobil"]
-  Q --> T3["pip-audit · npm audit"]
-  Q --> T4["migration-smoke<br/>Supabase şeması"]
-  Q --> T5["Docker imajı"]
-  T1 & T2 & T3 & T4 & T5 --> Main["main'e birleştirme"]
-  Main --> Deploy["Render otomatik yayın<br/>/ready sağlık denetimi"]
-  Main -. "elle: release" .-> GHCR["GHCR imajı<br/>değişmez sürüm"]
-  GHCR -.-> Deploy
-```
-
-| Zamanlanmış iş | Sıklık | Ne yapar |
-| --- | --- | --- |
-| Okuma hatırlatmaları | 15 dakikada bir | Zamanı gelen hatırlatmaları e-posta ve web push ile gönderir |
-| Veri saklama | Her gün 01:10 (UTC) | Süresi dolan olay kayıtlarını, okunmuş bildirimleri ve eski asistan sohbetlerini siler |
-| Şifreli yedek | Her gün 00:00 (UTC) | Supabase veritabanının mantıksal yedeğini alır |
-| Fiyat taraması | Her gün 04:15 (UTC) | İzinli mağazaların fiyatlarını yeniler ve fiyat tahminlerini günceller |
 
 ## Proje yapısı
 
@@ -490,9 +360,3 @@ Docker imajı depo kökünden `docker build -t mihenk .` ile oluşturulur.
 Render aynı kök `Dockerfile` dosyasını kullanır.
 
 
-## Landing Page
-
-
-<p align="center">
-  <img src="docs/assets/landing-page.png" alt="Mihenk landing page" width="900">
-</p>
