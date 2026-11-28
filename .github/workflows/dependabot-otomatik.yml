@@ -1,0 +1,30 @@
+# Dependabot'un yama ve ara sürüm güncellemelerini, tüm kontroller yeşile
+# döndüğünde kendiliğinden birleştirir. Ana sürüm atlamaları elde kalır:
+# kırılgan değişiklik taşırlar ve insan gözü isterler.
+#
+# İş akışı PR'ın kodunu indirmez; yalnızca Dependabot'un güncelleme üstverisini
+# okuyup birleştirmeyi sıraya alır. Bu yüzden `pull_request_target` burada
+# güvenlidir: çalıştırdığı hiçbir şey PR'dan gelmiyor.
+name: dependabot-otomatik
+
+on: pull_request_target
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  otomatik-birlestir:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Güncelleme üstverisini oku
+        id: ustveri
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.5.0
+
+      - name: Yama ve ara sürümleri sıraya al
+        if: steps.ustveri.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
