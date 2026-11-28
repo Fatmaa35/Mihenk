@@ -218,6 +218,20 @@ def refresh_catalog_state() -> None:
     services.refresh()
 
 
+def find_book(book_id: str) -> dict | None:
+    """Tek kitabı bulur: önce bellekteki katalog, sonra veritabanı.
+
+    Bellekteki kopya süreç başlarken doldurulur ve her şeyi içermeyebilir
+    (sayfalama sınırı, o süreçten sonra eklenen kitaplar). Bu yüzden bulunamayan
+    kimlik için veritabanına tek sorgu düşer; aksi hâlde var olan kitap
+    "bulunamadı" görünür.
+    """
+    cached = next((item for item in services.catalog if item["id"] == book_id), None)
+    if cached:
+        return cached
+    return repository.book(book_id)
+
+
 def save_isbn_lookup_to_catalog(book: dict, *, source_name: str, source_url: str | None,
                                 language: str = "tr", themes: list[str] | None = None) -> dict:
     """Persist barcode metadata idempotently and return catalog status to the client."""
