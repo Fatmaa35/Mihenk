@@ -1,0 +1,46 @@
+# Eski bağımlılıkları yeniden denetleyen tek mekanizma bu: güvenlik uyarıları
+# ve yama önerileri haftalık olarak PR'a dönüşür. Eylemler artık commit
+# karmasıyla sabitlendiği için karmaları da buradan güncellenir.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      # Geliştirme araçları tek PR'da gelsin; üretim paketleri ayrı kalsın.
+      dev-araclari:
+        dependency-type: development
+
+  - package-ecosystem: npm
+    directory: /mobile
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      dev-araclari:
+        dependency-type: development
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"

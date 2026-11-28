@@ -154,6 +154,10 @@ def delete_my_chat_message(message_id: str, request: Request, response: Response
 @router.post("/me/chat/stream")
 async def stream_book_assistant(payload: ChatRequest, request: Request) -> StreamingResponse:
     """SSE transport supports stop/retry UX; persistence uses the same validated chat path."""
+    # Oturum akış başlamadan doğrulanır: gövdenin içinde doğrulansaydı yetkisiz
+    # istek de 200 ile başlayıp yarıda kesilirdi, 401 yerine bozuk bir akış olurdu.
+    current_session(request, Response())
+
     async def events():
         result = await chat_with_book_assistant(payload, request, Response())
         for word in result.answer.split(" "):

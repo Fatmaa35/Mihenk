@@ -231,7 +231,9 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             "X-RateLimit-Remaining": str(remaining),
         })
         if self.strict_origin:
-            response.headers["Strict-Transport-Security"] = "max-age=31536000"
+            # Alt alan adları da kapsanır: biri HTTP'ye düşerse oradan çerez
+            # yazılıp ana alan adına taşınmasın.
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         if request.url.path.startswith(("/me/", "/admin/", "/auth/")):
             response.headers["Cache-Control"] = "no-store, private"
         return response
