@@ -3,12 +3,17 @@
 # karmasıyla sabitlendiği için karmaları da buradan güncellenir.
 version: 2
 updates:
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      guvenli-guncellemeler:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: pip
     directory: /backend
@@ -16,6 +21,10 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      guvenli-guncellemeler:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: npm
     directory: /frontend
@@ -24,9 +33,9 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     groups:
-      # Geliştirme araçları tek PR'da gelsin; üretim paketleri ayrı kalsın.
-      dev-araclari:
-        dependency-type: development
+      guvenli-guncellemeler:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: npm
     directory: /mobile
@@ -35,8 +44,9 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     groups:
-      dev-araclari:
-        dependency-type: development
+      guvenli-guncellemeler:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: docker
     directory: /
@@ -44,3 +54,7 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      guvenli-guncellemeler:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
