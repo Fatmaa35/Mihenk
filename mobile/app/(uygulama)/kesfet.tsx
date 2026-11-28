@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -174,7 +174,7 @@ export default function KesfetScreen() {
         onPress={() => router.push('/asistan')}
         style={styles.assistant}
       >
-        <Feather name="message-circle" size={18} color={theme.accentInk} />
+        <Image source={require('../../assets/baykus.png')} style={styles.assistantIcon} accessibilityIgnoresInvertColors />
         <Text style={styles.assistantLabel}>Kitap asistanına sor</Text>
       </Pressable>
     </ScrollView>
@@ -198,4 +198,9 @@ const styles = StyleSheet.create({
     borderColor: theme.line, paddingVertical: space[3], marginTop: space[2],
   },
   assistantLabel: { fontFamily: fonts.bodyBold, fontSize: 16, color: theme.accentInk },
+  // Baykuş mor zeminde kaybolmasın diye beyaz bir dairenin içinde duruyor.
+  assistantIcon: {
+    width: 32, height: 32, resizeMode: 'contain',
+    backgroundColor: theme.surface, borderRadius: 16,
+  },
 })
