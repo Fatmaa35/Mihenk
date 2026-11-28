@@ -14,9 +14,6 @@ async function* files(directory) {
 /** Dosya başına üst sınır (bayt). Barkod tarayıcı ve React çekirdeği ayrı parçalardır. */
 function limitFor(name) {
   if (name.includes('ISBNScanner')) return 700_000
-  // Üç boyutlu görüntüleyici yalnızca süs öğesi ekrana girince indirilir;
-  // ilk yükte yer almadığı için ayrı ve geniş bir sınırı var.
-  if (name.startsWith('model-viewer')) return 1_100_000
   if (name.endsWith('.css')) return 120_000
   if (name.startsWith('react-')) return 300_000
   return 180_000

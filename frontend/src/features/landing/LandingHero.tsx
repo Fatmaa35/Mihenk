@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { ArrowRight, Check, Flame, Sparkles } from 'lucide-react'
 import { api } from '../../shared/api/api'
 import type { RecommendationResult } from '../../shared/api/types'
-import { BookCover, Button, Model3D, Progress } from '../../shared/ui'
+import { BookCover, Button, Progress } from '../../shared/ui'
 import { routes } from '../../spa/routes'
 
 const EXAMPLES = ['Yağmurlu bir akşam için kısa ve gizemli', 'Karakteri zamanla değişen bir klasik', 'Melankolik ama umut veren bir roman']
@@ -105,9 +105,6 @@ export function Hero() {
     <section className="lp-hero" id="top">
       <div className="lp-container lp-hero__grid">
         <div className="lp-hero__copy">
-          <div className="lp-hero__ornament" aria-hidden="true">
-            <Model3D name="pusula-kitap" alt="" size="s" />
-          </div>
           <p className="lp-kicker"><Sparkles size={14} aria-hidden="true" /> Kişisel okuma pusulan</p>
           <h1>Bir sonraki kitabını <span className="lp-highlight">ruh hâline göre</span> bul.</h1>
           <p className="lp-lead">

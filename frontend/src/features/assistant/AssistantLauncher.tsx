@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Sparkles } from 'lucide-react'
 import { AssistantPanel } from './AssistantPanel'
 import './assistant.css'
 
@@ -12,7 +11,7 @@ export default function AssistantLauncher() {
     <>
       {!open && (
         <button type="button" className="assistant-fab" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="assistant-panel" aria-label="Kitap asistanı">
-          <Sparkles size={18} aria-hidden="true" />
+          <img src={`${import.meta.env.BASE_URL}gorseller/baykus-ikon.png`} alt="" aria-hidden="true" width={34} height={34} />
           <span>Kitap asistanı</span>
         </button>
       )}

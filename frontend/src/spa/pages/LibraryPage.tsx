@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, Pencil, Trash2 } from 'lucide-react'
+import { BookOpen, Heart, Pencil, Trash2 } from 'lucide-react'
 import { BookDetailDialog } from '../../features/catalog/BookDetailDialog'
 import { ProgressDialog } from '../../features/library/ProgressDialog'
 import { progressOf, SHELF_LABELS } from '../../features/library/shelves'
 import { customFields, useRemoveLibraryEntry, useUpsertLibraryEntry } from '../../shared/api/queries'
 import type { LibraryBook, Shelf } from '../../shared/api/types'
-import { BookCover, Dialog, EmptyState, IconButton, Model3D, Progress, SegmentedTabs, Button, useToast } from '../../shared/ui'
+import { BookCover, Dialog, EmptyState, IconButton, Progress, SegmentedTabs, Button, useToast } from '../../shared/ui'
 import { useSession } from '../layout/SessionGate'
 import { routes } from '../routes'
 import './pages.css'
@@ -123,7 +123,7 @@ export default function LibraryPage() {
       <div role="tabpanel" aria-label={tab}>
         {books.length === 0 ? (
           <EmptyState
-            icon={<Model3D name="okuma-kosesi" alt="" size="m" />}
+            icon={<BookOpen size={28} />}
             title={EMPTY_COPY[tab].title}
             description={EMPTY_COPY[tab].description}
             action={<Link className="mh-button mh-button--secondary mh-button--md" to={routes.discover}>Kitap keşfet</Link>}
