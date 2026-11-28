@@ -129,14 +129,14 @@ Servis çalışanı sitenin kökünden (`/service-worker.js`) sunulur ve tüm
 sayfaları kontrol eder. Manifest `backend/app/static/manifest.webmanifest`
 dosyasındadır.
 
-Telefon görüntüleri 390×844 boyutunda, Android ve iPhone tarayıcısıyla alındı.
+Telefon görüntüleri 390×844 telefon görünümünde alındı; kurulum kartları Android ve iPhone tarayıcılarının gördüğü hâlleriyle.
 
 <table>
   <tr>
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/pwa/android-yukle.png" alt="Android: tek dokunuşla kurulum" width="260"><br>
       <b>Android: tek dokunuşla kurulum</b><br>
-      Chrome, Edge ve Samsung Internet’te Bugün ekranında kart çıkar; “Yükle” tarayıcının kendi kurulum penceresini açar. Kart kapatılırsa 30 gün gösterilmez.
+      Chrome, Edge ve Samsung Internet'te Bugün ekranında kart çıkar; “Yükle” tarayıcının kendi kurulum penceresini açar. Kart kapatılırsa bir süre gösterilmez.
     </td>
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/pwa/iphone-ana-ekran.png" alt="iPhone: Ana Ekrana Ekle" width="260"><br>
@@ -151,9 +151,21 @@ Telefon görüntüleri 390×844 boyutunda, Android ve iPhone tarayıcısıyla al
       Kurulum durumu her zaman buradadır: yüklüyse bunu söyler, değilse cihaza uygun yolu anlatır.
     </td>
     <td width="50%" valign="top">
+      <img src="docs/assets/screenshots/pwa/bugun.png" alt="Telefonda Bugün" width="260"><br>
+      <b>Telefonda Bugün</b><br>
+      Kaldığın kitap, ilerlemen ve günün önerileri tek sütunda; altta beş sekmeli gezinme çubuğu.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
       <img src="docs/assets/screenshots/pwa/kesfet.png" alt="Telefonda Keşfet" width="260"><br>
       <b>Telefonda Keşfet</b><br>
-      Öneriler tek sütunda; alt gezinme çubuğuyla Bugün, Keşfet, Kitaplık, Topluluk ve Odak arasında geçilir.
+      Öneriler ve katalog tek sütunda; arama kutusu üstte sabit kalır.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/assets/screenshots/pwa/kitaplik.png" alt="Telefonda kitaplık" width="260"><br>
+      <b>Telefonda kitaplık</b><br>
+      Raflar arasında yatay sekmelerle geçilir; her satırda sayfa ilerlemesi görünür.
     </td>
   </tr>
   <tr>
@@ -172,7 +184,7 @@ Telefon görüntüleri 390×844 boyutunda, Android ve iPhone tarayıcısıyla al
     <td width="50%" valign="top">
       <img src="docs/assets/screenshots/pwa/canli-oda.png" alt="Telefonda canlı oda" width="260"><br>
       <b>Telefonda canlı oda</b><br>
-      Katılımcılar üstte kısa bir liste, altında sohbet. Yüzen asistan düğmesi bu ekranda gizlenir ki mesaj kutusunu örtmesin.
+      Katılımcılar üstte kısa bir liste, altında sohbet.
     </td>
     <td width="50%"></td>
   </tr>
