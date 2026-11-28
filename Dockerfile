@@ -6,7 +6,7 @@ COPY frontend ./frontend
 COPY backend/app/static ./backend/app/static
 RUN npm run build --prefix frontend
 
-FROM python:3.12-slim-bookworm AS runtime
+FROM python:3.15-slim-bookworm AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PORT=8010 WEB_CONCURRENCY=2
 WORKDIR /app
 RUN addgroup --system mihenk && adduser --system --ingroup mihenk mihenk
